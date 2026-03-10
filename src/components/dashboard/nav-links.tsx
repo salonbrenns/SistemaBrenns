@@ -23,6 +23,7 @@ const links = [
   { name: 'Servicios',  href: '/admin/servicios',    icon: SparklesIcon     },
   { name: 'Horarios',   href: '/admin/horarios',     icon: ClockIcon        },
   { name: 'Citas',      href: '/admin/citas',        icon: CalendarDaysIcon },
+  { name: 'Agendar',    href: '/admin/agendar',      icon: CalendarDaysIcon },
   { name: 'Cursos',     href: '/admin/cursos',       icon: AcademicCapIcon  },
   { name: 'Días Bloqueados', href: '/admin/dias-bloqueados', icon: CalendarDaysIcon },
 ];
