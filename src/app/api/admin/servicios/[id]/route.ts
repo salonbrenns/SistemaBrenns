@@ -55,7 +55,8 @@ export async function DELETE(
     const { id } = await params
     await prisma.servicio.delete({ where: { id: Number(id) } })
     return NextResponse.json({ ok: true })
-  } catch (err) {
+  } catch (_err) {
+    // Se añadió el guion bajo (_) para indicar que la variable no se usa intencionalmente
     return NextResponse.json({ error: "Error interno" }, { status: 500 })
   }
 }

@@ -5,14 +5,31 @@ import { auth } from "../../../../auth"
 
 const prisma = new PrismaClient()
 
+// 1. Definimos la interfaz para evitar el uso de 'any'
+interface CartItem {
+  id: number;
+  nombre: string;
+  precio: number;
+  cantidad: number;
+}
+
 export async function POST(req: Request) {
   try {
     const session = await auth()
-    if (!session) {
+    if (!session || !session.user?.id) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const { items, subtotal, costo_envio, total, nombre_cliente, correo_cliente, telefono_cliente } = await req.json()
+    const body = await req.json()
+    const { 
+      items, 
+      subtotal, 
+      costo_envio, 
+      total, 
+      nombre_cliente, 
+      correo_cliente, 
+      telefono_cliente 
+    } = body
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "El carrito está vacío" }, { status: 400 })
@@ -29,7 +46,8 @@ export async function POST(req: Request) {
         correo_cliente,
         telefono_cliente: telefono_cliente || null,
         detalles: {
-          create: items.map((item: any) => ({
+          // Aplicamos la interfaz CartItem aquí
+          create: items.map((item: CartItem) => ({
             producto_id: item.id,
             nombre_producto: item.nombre,
             precio_unitario: item.precio / 100, // convertir de centavos
@@ -52,7 +70,7 @@ export async function POST(req: Request) {
 export async function GET() {
   try {
     const session = await auth()
-    if (!session) {
+    if (!session || !session.user?.id) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
@@ -63,7 +81,8 @@ export async function GET() {
     })
 
     return NextResponse.json({ pedidos })
-  } catch (err) {
+  } catch {
+    // 2. Eliminamos 'err' porque no se estaba usando, resolviendo el warning
     return NextResponse.json({ error: "Error interno" }, { status: 500 })
   }
 }

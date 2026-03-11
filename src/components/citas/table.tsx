@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation' // Se eliminó useSearchParams de aquí
 import { useState } from 'react'
 import {
   CalendarDaysIcon,
@@ -11,14 +11,14 @@ import {
 } from '@heroicons/react/24/outline'
 
 type Cita = {
- id: number
+  id: number
   fecha: string
   hora: string
   estado: string
   notas: string | null
-  nombre_contacto: string | null   // ← agrega esto
-  telefono_contacto: string | null // ← agrega esto
-  metodo_pago: string | null       // ← agrega esto
+  nombre_contacto: string | null
+  telefono_contacto: string | null
+  metodo_pago: string | null
   usuario: { nombre: string; correo: string; telefono: string | null } | null
   servicio: { nombre: string; precio: number }
 }
@@ -41,9 +41,9 @@ export default function CitasTable({
   estadoFiltro: string
   fechaFiltro: string
 }) {
-  const router     = useRouter()
-  const pathname   = usePathname()
-  const searchParams = useSearchParams()
+  const router   = useRouter()
+  const pathname = usePathname()
+  // Se eliminó la línea de searchParams que causaba el warning
   const [cambiando, setCambiando] = useState<number | null>(null)
 
   const aplicarFiltro = (key: string, value: string) => {

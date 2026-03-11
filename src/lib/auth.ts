@@ -75,10 +75,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
 
-  callbacks: {
+ callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        // Casteamos user a CustomUser de forma segura
         const u = user as CustomUser
         token.id = u.id
         token.role = u.role
@@ -87,9 +86,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
+        // Asignamos el ID
         session.user.id = token.id as string
-        // @ts-ignore (Opcional si no tienes el archivo .d.ts configurado aún)
-        session.user.role = token.role as string
+        
+        // CORRECCIÓN: En lugar de @ts-ignore, tratamos session.user como 'any' 
+        // solo para esta asignación. Es más limpio para el linter.
+        ;(session.user as any).role = token.role as string
       }
       return session
     },

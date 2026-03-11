@@ -1,11 +1,20 @@
 "use client"
 
 import Link from "next/link"
-import { useSession, signOut } from "next-auth/react"
-import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react" // Se eliminó signOut
+import { useState } from "react" // Se eliminó useEffect
 import { Calendar, Mail, Phone, Edit2, Heart, Clock, CreditCard } from "lucide-react"
 import Breadcrumb from "@/components/Breadcrumb"
 import EditarPerfilModal from "@/components/ui/EditarPerfilModal"
+
+// Definimos una interfaz para el usuario para evitar errores de tipado con 'telefono'
+interface CustomUser {
+  name?: string | null
+  email?: string | null
+  image?: string | null
+  role?: string
+  telefono?: string | null
+}
 
 export default function PerfilPage() {
   const { data: session, status } = useSession()
@@ -16,7 +25,6 @@ export default function PerfilPage() {
     telefono?: string | null
   }>({})
 
-  
   if (status === "loading") {
     return (
       <main className="min-h-screen flex items-center justify-center bg-pink-50">
@@ -30,17 +38,19 @@ export default function PerfilPage() {
 
   if (!session) return null
 
+  // Casteo seguro del usuario
+  const user = session.user as CustomUser
+
   // Usar datos locales si se actualizaron, sino los de la sesión
-  const nombre = datosLocales.nombre ?? session.user?.name ?? "Usuario"
-  const correo = datosLocales.correo ?? session.user?.email ?? ""
-  const telefono = datosLocales.telefono ?? (session.user as { telefono?: string })?.telefono ?? "No proporcionado" 
+  const nombre = datosLocales.nombre ?? user?.name ?? "Usuario"
+  const correo = datosLocales.correo ?? user?.email ?? ""
+  const telefono = datosLocales.telefono ?? user?.telefono ?? "No proporcionado" 
+  
   const primerLetra = nombre.charAt(0).toUpperCase()
   const fechaRegistro = new Date().toLocaleDateString("es-MX", {
     month: "long",
     year: "numeric",
   })
-
-
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-50 py-8 sm:py-12">
@@ -69,8 +79,8 @@ export default function PerfilPage() {
             <div className="text-center sm:text-left flex-1">
               <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">{nombre}</h1>
               <p className="text-pink-600 font-bold text-lg mt-2">
-                {session.user?.role === "ADMIN" ? "Administrador" :
-                 session.user?.role === "DOCENTE" ? "Docente" : "Cliente"}
+                {user?.role === "ADMIN" ? "Administrador" :
+                 user?.role === "DOCENTE" ? "Docente" : "Cliente"}
               </p>
               <p className="text-gray-600 mt-1">Miembro desde {fechaRegistro}</p>
             </div>
@@ -82,7 +92,6 @@ export default function PerfilPage() {
               >
                 Editar Perfil
               </button>
-              
             </div>
           </div>
         </div>

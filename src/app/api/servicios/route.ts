@@ -23,7 +23,9 @@ export async function GET() {
         precio: Number(s.precio),
       }))
     })
-  } catch (_err) { // <--- Cambiado de 'err' a '_err'
+  } catch { 
+    // Al quitar (_err), TypeScript entiende que el error se captura 
+    // pero no se necesita instanciar ninguna variable.
     return NextResponse.json({ error: "Error interno" }, { status: 500 })
   }
 }

@@ -2,10 +2,10 @@
 import { ApiResponse, Usuario } from '@/types';
 
 export class AuthController {
-  // Usamos "_" antes del nombre de la variable para decirle a TS que sabemos que no se usa aún
-  static async login(_email: string, _password: string): Promise<ApiResponse<{ user: Usuario; token: string }>> {
+  // Eliminamos los nombres de los parámetros si no se usan, dejando solo el tipo
+  static async login(_: string, __: string): Promise<ApiResponse<{ user: Usuario; token: string }>> {
     try {
-      // TODO: Implementar lógica de login real con Prisma y bcrypt
+      // TODO: Implementar lógica de login real
       return {
         success: true,
         data: {
@@ -13,7 +13,8 @@ export class AuthController {
           token: '',
         },
       };
-    } catch (_error) {
+    } catch {
+      // Catch opcional (sin variable) para evitar el warning de _error
       return {
         success: false,
         error: 'Error al iniciar sesión',
@@ -21,14 +22,14 @@ export class AuthController {
     }
   }
 
-  static async register(_usuario: Partial<Usuario>, _password: string): Promise<ApiResponse<Usuario>> {
+  static async register(_: Partial<Usuario>, __: string): Promise<ApiResponse<Usuario>> {
     try {
       // TODO: Implementar lógica de registro real
       return {
         success: true,
         data: {} as Usuario,
       };
-    } catch (_error) {
+    } catch {
       return {
         success: false,
         error: 'Error al registrar usuario',
