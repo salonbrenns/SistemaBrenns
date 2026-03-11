@@ -13,6 +13,19 @@ enum Rol {
   CLIENTE
 }
 
+
+model TokenRecuperacion {
+  id         Int      @id @default(autoincrement())
+  usuario_id Int      @unique
+  token      String   @unique
+  expira     DateTime
+  usado      Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuario_id], references: [id])
+
+  @@map("tbltoken_recuperacion")
+}
 // ─── USUARIOS ─────────────────────────────────────────────────
 model Usuario {
   id               Int       @id @default(autoincrement())
@@ -28,6 +41,8 @@ model Usuario {
   fecha_registro   DateTime  @default(now()) @db.Timestamp(6)
   pedidos           Pedido[]
   citas             Cita[]
+  avisos AvisoAdmin[]
+  tokenRecuperacion TokenRecuperacion?
 
   @@map("tblusuarios")
 }
@@ -142,7 +157,7 @@ model Cita {
 
   usuario  Usuario?  @relation(fields: [usuario_id], references: [id])
   servicio Servicio  @relation(fields: [servicio_id], references: [id])
-
+  avisos AvisoAdmin[]
   @@map("tblcitas")
 }
 
@@ -182,6 +197,20 @@ model HorarioExcepcion {
 
   @@unique([fecha, hora])
   @@map("tblhorarios_excepciones")
+}
+
+model AvisoAdmin {
+  id         Int      @id @default(autoincrement())
+  cita_id    Int
+  usuario_id Int?
+  mensaje    String
+  leido      Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  cita    Cita     @relation(fields: [cita_id], references: [id])
+  usuario Usuario? @relation(fields: [usuario_id], references: [id])
+
+  @@map("tblavisos_admin")
 }
 
 //CURSOS
