@@ -8,24 +8,18 @@ async function isAdmin() {
   return session?.user?.role === "ADMIN"
 }
 
-export async function PUT(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!await isAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   const { id } = await params
   const body = await req.json()
   const horario = await prisma.horarioDisponible.update({
     where: { id: Number(id) },
-    data: body,
+    data: { activo: body.activo },
   })
   return NextResponse.json(horario)
 }
 
-export async function DELETE(
-  _: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!await isAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   const { id } = await params
   await prisma.horarioDisponible.delete({ where: { id: Number(id) } })

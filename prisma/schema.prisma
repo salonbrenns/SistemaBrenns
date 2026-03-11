@@ -13,6 +13,19 @@ enum Rol {
   CLIENTE
 }
 
+
+model TokenRecuperacion {
+  id         Int      @id @default(autoincrement())
+  usuario_id Int      @unique
+  token      String   @unique
+  expira     DateTime
+  usado      Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuario_id], references: [id])
+
+  @@map("tbltoken_recuperacion")
+}
 // ─── USUARIOS ─────────────────────────────────────────────────
 model Usuario {
   id               Int       @id @default(autoincrement())
@@ -28,6 +41,8 @@ model Usuario {
   fecha_registro   DateTime  @default(now()) @db.Timestamp(6)
   pedidos           Pedido[]
   citas             Cita[]
+  avisos AvisoAdmin[]
+  tokenRecuperacion TokenRecuperacion?
 
   @@map("tblusuarios")
 }
@@ -128,26 +143,30 @@ model Servicio {
 }
 
 model Cita {
-  id          Int        @id @default(autoincrement())
-  usuario_id  Int
-  servicio_id Int
-  fecha       DateTime
-  hora        String
-  estado      EstadoCita @default(PENDIENTE)
-  notas       String?
-  createdAt   DateTime   @default(now())
+  id                Int        @id @default(autoincrement())
+  usuario_id        Int?       // ← cambia a opcional
+  servicio_id       Int
+  fecha             DateTime
+  hora              String
+  estado            EstadoCita @default(PENDIENTE)
+  notas             String?
+  nombre_contacto   String?    // ← nuevo
+  telefono_contacto String?    // ← nuevo
+  metodo_pago       String?    // ← nuevo (EFECTIVO, TRANSFERENCIA, TARJETA)
+  createdAt         DateTime   @default(now())
 
-  usuario  Usuario  @relation(fields: [usuario_id], references: [id])
-  servicio Servicio @relation(fields: [servicio_id], references: [id])
-
+  usuario  Usuario?  @relation(fields: [usuario_id], references: [id])
+  servicio Servicio  @relation(fields: [servicio_id], references: [id])
+  avisos AvisoAdmin[]
   @@map("tblcitas")
 }
 
 model HorarioDisponible {
-  id     Int     @id @default(autoincrement())
-  hora   String  // "10:00", "10:30", "11:00", etc.
-  activo Boolean @default(true)
-
+  id        Int     @id @default(autoincrement())
+  hora      String
+  diaSemana Int @default(1)
+  activo    Boolean @default(true)
+  @@unique([hora, diaSemana])
   @@map("tblhorarios")
 }
 
@@ -160,3 +179,76 @@ model DiaBloqueado {
   @@map("tbldiasbloquedos")
 }
 
+
+model HoraBloqueada {
+  id     Int      @id @default(autoincrement())
+  fecha  DateTime @db.Date
+  hora   String
+  motivo String?
+  @@unique([fecha, hora])
+  @@map("tblhoras_bloqueadas")
+}
+
+model HorarioExcepcion {
+  id      Int      @id @default(autoincrement())
+  fecha   DateTime @db.Date
+  hora    String
+  motivo  String?
+
+  @@unique([fecha, hora])
+  @@map("tblhorarios_excepciones")
+}
+
+model AvisoAdmin {
+  id         Int      @id @default(autoincrement())
+  cita_id    Int
+  usuario_id Int?
+  mensaje    String
+  leido      Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  cita    Cita     @relation(fields: [cita_id], references: [id])
+  usuario Usuario? @relation(fields: [usuario_id], references: [id])
+
+  @@map("tblavisos_admin")
+}
+
+//CURSOS
+model Curso {
+  id              Int       @id @default(autoincrement())
+  codigo          String    @unique @db.VarChar(50)
+  titulo          String    @db.VarChar(200)
+  descripcion     String?
+  precio_total    Decimal   @db.Decimal(10, 2)
+  cupo_maximo     Int
+  inscritos       Int       @default(0)
+  duracion_horas  Int?
+  nivel           String?   @db.VarChar(50)
+  activo          Boolean   @default(true)
+  fecha_inicio    DateTime? @db.Date
+  fecha_fin       DateTime? @db.Date
+  created_at      DateTime  @default(now())
+
+  @@map("tblcursos")
+}
+model Inscripcion {
+  id                Int      @id @default(autoincrement())
+  usuario_id        Int
+  curso_id          Int
+  fecha_inscripcion DateTime @default(now())
+  estado            String   @default("ACTIVO") @db.VarChar(50)
+
+  @@map("tblinscripciones")
+}
+
+model PagoCurso {
+  id             Int      @id @default(autoincrement())
+  inscripcion_id Int
+  numero_pago    Int?
+  monto          Decimal  @db.Decimal(10, 2)
+  metodo_pago    String?  @db.VarChar(50)
+  estado         String   @default("PAGADO") @db.VarChar(50)
+  fecha_pago     DateTime @default(now())
+
+  @@map("tblpagos_curso")
+}

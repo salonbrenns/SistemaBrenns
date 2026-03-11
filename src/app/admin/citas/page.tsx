@@ -42,6 +42,7 @@ export default async function CitasPage({
       ...c.servicio,
       precio: Number(c.servicio.precio),
     },
+      usuario: c.usuario ?? null,
   }))
 
   return (

@@ -1,18 +1,32 @@
-// src/components/Header.tsx
+// src/components/ui/Header.tsx
 "use client"
 import Image from "next/image"
 import Link from "next/link"
-import { User, ShoppingCart, Menu, X } from "lucide-react"
-import { useState } from "react"
+import { User, ShoppingCart, Menu, X, Bell } from "lucide-react"
+import { useState, useEffect } from "react"
 import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
 export default function Header() {
   const [cantidadCarrito, setCantidadCarrito] = useState(0)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [menuOpen,  setMenuOpen]  = useState(false)
+  const [noLeidos,  setNoLeidos]  = useState(0)
   const { data: session, status } = useSession()
   const router = useRouter()
   const autenticado = status === "authenticated"
+
+  // Cargar mensajes no leídos
+  useEffect(() => {
+    if (!autenticado) return
+    fetch("/api/usuario/mensajes")
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setNoLeidos(data.filter((m: { leido: boolean }) => !m.leido).length)
+        }
+      })
+      .catch(() => {})
+  }, [autenticado])
 
   const handleLogout = async () => {
     await signOut({ redirect: false })
@@ -37,7 +51,7 @@ export default function Header() {
               />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-lg md:text-2xl font-bold text-gray-900">Brenn's</h1>
+              <h1 className="text-lg md:text-2xl font-bold text-gray-900">Brenn&apos;s</h1>
               <p className="text-xs md:text-sm text-pink-600 font-medium">Academia • Distribuidora • Salón</p>
             </div>
           </Link>
@@ -53,16 +67,30 @@ export default function Header() {
           {/* Right Icons */}
           <div className="flex items-center gap-3 md:gap-4">
 
-            {/* Si está autenticado */}
             {autenticado && (
               <>
-                {/* Ícono de perfil */}
-                <Link href="/perfil" className="text-gray-600 hover:text-pink-600 transition p-2 rounded-full hover:bg-pink-50" title={session?.user?.name || "Mi perfil"}>
+                {/* Perfil */}
+                <Link href="/perfil"
+                  className="text-gray-600 hover:text-pink-600 transition p-2 rounded-full hover:bg-pink-50"
+                  title={session?.user?.name || "Mi perfil"}>
                   <User className="w-5 h-5 md:w-6 md:h-6" />
                 </Link>
 
+                {/* Mensajes / Notificaciones */}
+                <Link href="/mis-mensajes"
+                  className="relative text-gray-600 hover:text-pink-600 transition p-2 rounded-full hover:bg-pink-50"
+                  title="Mis mensajes">
+                  <Bell className="w-5 h-5 md:w-6 md:h-6" />
+                  {noLeidos > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-pink-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
+                      {noLeidos}
+                    </span>
+                  )}
+                </Link>
+
                 {/* Carrito */}
-                <Link href="/carrito" className="relative text-gray-600 hover:text-pink-600 transition p-2 rounded-full hover:bg-pink-50">
+                <Link href="/carrito"
+                  className="relative text-gray-600 hover:text-pink-600 transition p-2 rounded-full hover:bg-pink-50">
                   <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
                   {cantidadCarrito > 0 && (
                     <span className="absolute -top-1 -right-1 bg-pink-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
@@ -72,10 +100,8 @@ export default function Header() {
                 </Link>
 
                 {/* Cerrar sesión desktop */}
-                <button
-                  onClick={handleLogout}
-                  className="hidden md:inline-block text-sm px-4 py-2 rounded-full border border-pink-200 hover:bg-pink-50 text-pink-600 font-semibold transition"
-                >
+                <button onClick={handleLogout}
+                  className="hidden md:inline-block text-sm px-4 py-2 rounded-full border border-pink-200 hover:bg-pink-50 text-pink-600 font-semibold transition">
                   Cerrar sesión
                 </button>
               </>
@@ -83,19 +109,15 @@ export default function Header() {
 
             {/* Si NO está autenticado */}
             {!autenticado && status !== "loading" && (
-              <Link
-                href="/login"
-                className="hidden md:block bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-2 rounded-full shadow-lg hover:shadow-xl transition transform hover:scale-105 text-sm"
-              >
+              <Link href="/login"
+                className="hidden md:block bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-2 rounded-full shadow-lg hover:shadow-xl transition transform hover:scale-105 text-sm">
                 Iniciar Sesión
               </Link>
             )}
 
             {/* Botón menú móvil */}
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="lg:hidden text-gray-600 hover:text-pink-600 transition p-2 rounded-full hover:bg-pink-50"
-            >
+            <button onClick={() => setMenuOpen(!menuOpen)}
+              className="lg:hidden text-gray-600 hover:text-pink-600 transition p-2 rounded-full hover:bg-pink-50">
               {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
@@ -114,25 +136,24 @@ export default function Header() {
                 <Link href="/perfil" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>
                   Mi Perfil
                 </Link>
+                <Link href="/mis-mensajes" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>
+                  Mensajes {noLeidos > 0 && <span className="bg-pink-600 text-white text-xs rounded-full px-1.5 ml-1">{noLeidos}</span>}
+                </Link>
                 <Link href="/mis-cursos" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>
                   Mi Historial
                 </Link>
                 <Link href="/carrito" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>
                   Carrito {cantidadCarrito > 0 && `(${cantidadCarrito})`}
                 </Link>
-                <button
-                  onClick={handleLogout}
-                  className="block w-full border border-pink-200 text-pink-600 font-bold px-6 py-2 rounded-full text-center mt-2"
-                >
+                <button onClick={handleLogout}
+                  className="block w-full border border-pink-200 text-pink-600 font-bold px-6 py-2 rounded-full text-center mt-2">
                   Cerrar sesión
                 </button>
               </>
             ) : (
-              <Link
-                href="/login"
+              <Link href="/login"
                 className="block bg-pink-600 text-white font-bold px-6 py-2 rounded-full text-center mt-4"
-                onClick={() => setMenuOpen(false)}
-              >
+                onClick={() => setMenuOpen(false)}>
                 Iniciar Sesión
               </Link>
             )}

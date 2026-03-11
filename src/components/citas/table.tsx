@@ -11,12 +11,15 @@ import {
 } from '@heroicons/react/24/outline'
 
 type Cita = {
-  id: number
+ id: number
   fecha: string
   hora: string
   estado: string
   notas: string | null
-  usuario:  { nombre: string; correo: string; telefono: string | null }
+  nombre_contacto: string | null   // ← agrega esto
+  telefono_contacto: string | null // ← agrega esto
+  metodo_pago: string | null       // ← agrega esto
+  usuario: { nombre: string; correo: string; telefono: string | null } | null
   servicio: { nombre: string; precio: number }
 }
 
@@ -131,9 +134,9 @@ export default function CitasTable({
                     <div className="flex items-center gap-2">
                       <UserIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{cita.usuario.nombre}</p>
-                        <p className="text-xs text-gray-500">{cita.usuario.correo}</p>
-                        {cita.usuario.telefono && (
+                        <p className="text-sm font-medium text-gray-900">{cita.usuario?.nombre || cita.nombre_contacto || "Sin nombre"}</p>
+                        <p className="text-xs text-gray-500">{cita.usuario?.correo}</p>
+                        {cita.usuario?.telefono && (
                           <p className="text-xs text-gray-400">{cita.usuario.telefono}</p>
                         )}
                       </div>
