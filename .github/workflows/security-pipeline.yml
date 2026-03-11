@@ -28,13 +28,13 @@ jobs:
       - name: Instalar Snyk
         run: npm install -g snyk
 
+      - name: Autenticar Snyk
+        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+
       - name: Ejecutar Snyk
         run: snyk test
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Ejecutar SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          
