@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import { auth } from "../../../../../auth"
 import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
+import { randomBytes } from "crypto"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -23,8 +24,7 @@ export async function POST(req: Request) {
 
     // Nombre único para evitar colisiones
     const ext      = file.name.split(".").pop() || "jpg"
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-
+   const filename = `${Date.now()}-${randomBytes(8).toString("hex")}.${ext}`
     // Guardar en public/uploads/
     const uploadDir = join(process.cwd(), "public", "uploads")
     await mkdir(uploadDir, { recursive: true })

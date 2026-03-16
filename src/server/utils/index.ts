@@ -25,11 +25,11 @@ export const errorResponse = (error: string, message?: string) => {
 /**
  * Validar que un email tenga formato correcto
  */
-export const isValidEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
+export const validarEmail = (email: string): boolean => {
+  if (email.length > 254) return false
+  const regex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/
+  return regex.test(email)
+}
 /**
  * Validar que una contraseña sea segura
  */

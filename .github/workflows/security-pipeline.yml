@@ -21,13 +21,14 @@ jobs:
           cache: npm
 
       - name: Instalar dependencias
-        run: npm ci || npm install
+        run: npm ci --ignore-scripts || npm install --ignore-scripts
+
 
       - name: Ejecutar ESLint Security
         run: npx eslint . || true
 
       - name: Instalar Snyk
-        run: npm install -g snyk
+        run: npm install -g snyk --ignore-scripts
 
       - name: Ejecutar Snyk
         run: snyk test --org=salonbrenns || true
@@ -35,7 +36,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Ejecutar SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v2
+       uses: SonarSource/sonarqube-scan-action@49e14773429a92758f671f96e2c5fcca3dc7b9d0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
