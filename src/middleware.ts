@@ -1,15 +1,15 @@
-// middleware.ts — RAÍZ del proyecto (junto a auth.ts)
-import { auth } from "./auth"
+import { auth } from "../auth"  // ← sube un nivel porque auth.ts está en la raíz
 import { NextResponse } from "next/server"
 
 export default auth((req) => {
   const { nextUrl } = req
-  const session     = req.auth
-  const isLoggedIn  = !!session
-  const path        = nextUrl.pathname
-  const role        = session?.user?.role
+  const session = req.auth
+  const path = req.nextUrl.pathname
+  const isLoggedIn = !!session
+  const role = session?.user?.role
 
-  // ── Rutas de Admin ──────────────────────────────────────────
+  console.log("🛡️ path:", path, "| role:", role, "| loggedIn:", isLoggedIn)
+
   if (path.startsWith("/admin")) {
     if (!isLoggedIn) {
       const url = new URL("/login", nextUrl.origin)
@@ -21,7 +21,6 @@ export default auth((req) => {
     }
   }
 
-  // ── Rutas de Docente ────────────────────────────────────────
   if (path.startsWith("/docente")) {
     if (!isLoggedIn) {
       const url = new URL("/login", nextUrl.origin)
@@ -33,19 +32,8 @@ export default auth((req) => {
     }
   }
 
-  // ── Rutas privadas de cliente ───────────────────────────────
-  const rutasCliente = [
-    "/perfil",
-    "/carrito",
-    "/checkout",
-    "/pago",
-    "/mis-cursos",
-    "/agendar",
-    "/inscribirse",
-  ]
-
-  const esRutaCliente = rutasCliente.some(r => path.startsWith(r))
-  if (esRutaCliente && !isLoggedIn) {
+  const rutasCliente = ["/perfil", "/carrito", "/checkout", "/pago", "/mis-cursos", "/agendar", "/inscribirse"]
+  if (rutasCliente.some(r => path.startsWith(r)) && !isLoggedIn) {
     const url = new URL("/login", nextUrl.origin)
     url.searchParams.set("next", path)
     return NextResponse.redirect(url)

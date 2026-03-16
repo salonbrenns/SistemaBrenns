@@ -1,4 +1,3 @@
-// src/app/api/auth/reset-contrasena/route.ts
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
@@ -14,35 +13,35 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "La contraseña debe tener al menos 6 caracteres" }, { status: 400 })
   }
 
-  // Buscar token válido
   const registro = await prisma.tokenRecuperacion.findUnique({
     where: { token },
     include: { usuario: true },
   })
 
-  if (!registro) {
-    return NextResponse.json({ error: "Token inválido o expirado" }, { status: 400 })
-  }
+  console.log("🔍 Token encontrado:", !!registro)
+  console.log("👤 Usuario ID:", registro?.usuario_id)
 
-  if (registro.usado) {
-    return NextResponse.json({ error: "Este enlace ya fue usado" }, { status: 400 })
-  }
+  if (!registro) return NextResponse.json({ error: "Token inválido o expirado" }, { status: 400 })
+  if (registro.usado) return NextResponse.json({ error: "Este enlace ya fue usado" }, { status: 400 })
+  if (new Date() > registro.expira) return NextResponse.json({ error: "El enlace ha expirado" }, { status: 400 })
 
-  if (new Date() > registro.expira) {
-    return NextResponse.json({ error: "El enlace ha expirado. Solicita uno nuevo" }, { status: 400 })
-  }
-
-  // Actualizar contraseña
   const hash = await bcrypt.hash(password, 10)
-  await prisma.usuario.update({
-    where: { id: registro.usuario_id },
-    data:  { password: hash, intentos_fallidos: 0, cuenta_bloqueada: false },
-  })
+  console.log("🔑 Hash generado:", hash.substring(0, 20) + "...")
 
-  // Marcar token como usado
+  try {
+    const actualizado = await prisma.usuario.update({
+      where: { id: registro.usuario_id },
+      data: { password: hash, intentos_fallidos: 0, cuenta_bloqueada: false },
+    })
+    console.log("✅ Contraseña actualizada para:", actualizado.correo)
+  } catch (err) {
+    console.error("❌ Error actualizando contraseña:", err)
+    return NextResponse.json({ error: "Error al actualizar contraseña" }, { status: 500 })
+  }
+
   await prisma.tokenRecuperacion.update({
     where: { token },
-    data:  { usado: true },
+    data: { usado: true },
   })
 
   return NextResponse.json({ ok: true })

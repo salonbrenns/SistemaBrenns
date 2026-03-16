@@ -60,6 +60,8 @@ function AgendarContenido() {
       .catch(() => setCargandoSrv(false))
   }, [servicioId])
 
+  
+
   // Cargar días bloqueados
   useEffect(() => {
     fetch("/api/dias-bloqueados")
@@ -70,16 +72,19 @@ function AgendarContenido() {
       .catch(() => {})
   }, [])
 
-  useEffect(() => {
-    if (!fechaSel) return
-    setCargandoHor(true)
-    setHoraSel(null)
-    const fechaStr = format(fechaSel, "yyyy-MM-dd")
-    fetch(`/api/horarios?fecha=${fechaStr}&servicioId=${servicioId || ""}`)
-      .then(r => r.json())
-      .then(data => { setHorarios(data); setCargandoHor(false) })
-      .catch(() => setCargandoHor(false))
-  }, [fechaSel, servicioId])
+ useEffect(() => {
+  if (!fechaSel) return
+  setCargandoHor(true)
+  setHoraSel(null)
+  const fechaStr = format(fechaSel, "yyyy-MM-dd")
+  fetch(`/api/horarios?fecha=${fechaStr}&servicioId=${servicioId || ""}`)
+    .then(r => r.json())
+    .then(data => {
+      setHorarios(Array.isArray(data) ? data : [])  // ← cambio aquí
+      setCargandoHor(false)
+    })
+    .catch(() => { setHorarios([]); setCargandoHor(false) })
+}, [fechaSel, servicioId])
 
   const diasDelMes = eachDayOfInterval({
     start: startOfMonth(mesActual),

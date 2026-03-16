@@ -95,6 +95,8 @@ export default function Header() {
             <Link href="/servicios" className="text-gray-700 hover:text-pink-600 font-medium transition text-sm">Servicios</Link>
             <Link href="/cursos" className="text-gray-700 hover:text-pink-600 font-medium transition text-sm">Cursos</Link>
             <Link href="/catalogo" className="text-gray-700 hover:text-pink-600 font-medium transition text-sm">Catálogo</Link>
+            <Link href="/nosotros" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Nosotros</Link>
+
           </nav>
 
           {/* Right Icons */}
@@ -162,6 +164,8 @@ export default function Header() {
             <Link href="/servicios" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Servicios</Link>
             <Link href="/cursos" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Cursos</Link>
             <Link href="/catalogo" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Catálogo</Link>
+            <Link href="/nosotros" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Nosotros</Link>
+
 
             {autenticado ? (
               <>

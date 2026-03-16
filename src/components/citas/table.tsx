@@ -33,7 +33,7 @@ const estadoConfig: Record<string, { label: string; color: string }> = {
 }
 
 export default function CitasTable({
-  citas,
+  citas = [],
   estadoFiltro,
   fechaFiltro,
 }: {
