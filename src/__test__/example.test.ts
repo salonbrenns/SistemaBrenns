@@ -1,5 +1,5 @@
-describe('Setup básico', () => {
-  it('should pass', () => {
-    expect(true).toBe(true)
-  })
-})
+describe('Prueba básica', () => {
+  it('debería sumar correctamente', () => {
+    expect(1 + 1).toBe(2);
+  });
+});
