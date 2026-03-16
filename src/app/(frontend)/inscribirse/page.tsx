@@ -204,7 +204,7 @@ export default function InscribirsePage() {
     <AuthGuard>
       <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white py-12">
         <div className="max-w-7xl mx-auto px-6">
-          <h1 className="sr-only">Inscripción y pago del curso - Brenn's</h1>
+          <h1 className="sr-only">Inscripción y pago del curso - Brenn&apos;s</h1>
           
           {/* ENVOLTURA SUSPENSE: Esto soluciona el error del Build */}
           <Suspense fallback={<div className="text-center py-20 text-pink-600 font-bold">Cargando formulario de pago...</div>}>

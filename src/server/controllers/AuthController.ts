@@ -2,10 +2,8 @@
 import { ApiResponse, Usuario } from '@/types';
 
 export class AuthController {
-  // Eliminamos los nombres de los parámetros si no se usan, dejando solo el tipo
-  static async login(_: string, __: string): Promise<ApiResponse<{ user: Usuario; token: string }>> {
+  static async login(_correo: string, _password: string): Promise<ApiResponse<{ user: Usuario; token: string }>> {
     try {
-      // TODO: Implementar lógica de login real
       return {
         success: true,
         data: {
@@ -14,7 +12,6 @@ export class AuthController {
         },
       };
     } catch {
-      // Catch opcional (sin variable) para evitar el warning de _error
       return {
         success: false,
         error: 'Error al iniciar sesión',
@@ -22,9 +19,8 @@ export class AuthController {
     }
   }
 
-  static async register(_: Partial<Usuario>, __: string): Promise<ApiResponse<Usuario>> {
+  static async register(_datos: Partial<Usuario>, _password: string): Promise<ApiResponse<Usuario>> {
     try {
-      // TODO: Implementar lógica de registro real
       return {
         success: true,
         data: {} as Usuario,

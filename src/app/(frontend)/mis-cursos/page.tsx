@@ -1,6 +1,6 @@
 // src/app/(frontend)/mis-cursos/page.tsx
 "use client"
-
+import React from "react"
 import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
@@ -37,7 +37,7 @@ type Cita = {
 }
 
 // ── Estado badge configs ───────────────────────────────────────
-const pedidoEstado: Record<string, { label: string; color: string; icon: any }> = {
+const pedidoEstado: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   PENDIENTE:  { label: "Pendiente",  color: "bg-yellow-100 text-yellow-700", icon: Clock },
   PAGADO:     { label: "Pagado",     color: "bg-blue-100 text-blue-700",     icon: CheckCircle },
   ENVIADO:    { label: "Enviado",    color: "bg-purple-100 text-purple-700", icon: Truck },
@@ -84,7 +84,7 @@ export default function MisCursosPage() {
 
           <header className="text-center mb-10">
             <h1 className="text-4xl sm:text-5xl font-bold text-pink-600">Mi Historial</h1>
-            <p className="text-gray-600 mt-3 text-lg">Todo lo que has hecho en Brenn's está aquí ♡</p>
+            <p className="text-gray-600 mt-3 text-lg">Todo lo que has hecho en Brenn&apos;s está aquí ♡</p>
           </header>
 
           {/* Pestañas */}
@@ -199,7 +199,7 @@ export default function MisCursosPage() {
                       </div>
                     </div>
                     {cita.notas && (
-                      <div className="px-6 pb-4 text-sm text-gray-500 italic">"{cita.notas}"</div>
+                      <div className="px-6 pb-4 text-sm text-gray-500 italic">&quot;{cita.notas}&quot;</div>
                     )}
                   </div>
                 )
@@ -221,7 +221,7 @@ export default function MisCursosPage() {
 
           <div className="text-center mt-12">
             <p className="text-gray-500">
-              ¡Gracias por ser parte de la familia Brenn's, {session?.user?.name?.split(" ")[0]}! ♡
+              ¡Gracias por ser parte de la familia Brenn&apos;s, {session?.user?.name?.split(" ")[0]}! ♡
             </p>
           </div>
         </div>

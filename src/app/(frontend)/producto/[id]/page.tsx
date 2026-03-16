@@ -33,15 +33,21 @@ export default function ProductoDetalle({ params }: { params: Promise<{ id: stri
 
   const autenticado = !!session
 
+  type CartItem = {
+  id: number
+  nombre: string
+  precio: number
+  cantidad: number
+  img: string
+}
   const agregarAlCarrito = () => {
     const stored = localStorage.getItem("nail_store_cart") || "[]"
     const carrito = JSON.parse(stored)
-    const existe = carrito.find((item: any) => item.id === producto.id)
-
-    const nuevoCarrito = existe
-      ? carrito.map((item: any) =>
-          item.id === producto.id ? { ...item, cantidad: item.cantidad + quantity } : item
-        )
+    const existe = carrito.find((item: CartItem) => item.id === producto.id)
+const nuevoCarrito = existe
+  ? carrito.map((item: CartItem) =>
+      item.id === producto.id ? { ...item, cantidad: item.cantidad + quantity } : item
+    )
       : [...carrito, { ...producto, cantidad: quantity }]
 
     localStorage.setItem("nail_store_cart", JSON.stringify(nuevoCarrito))

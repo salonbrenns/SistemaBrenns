@@ -88,10 +88,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         // Asignamos el ID
         session.user.id = token.id as string
-        
-        // CORRECCIÓN: En lugar de @ts-ignore, tratamos session.user como 'any' 
-        // solo para esta asignación. Es más limpio para el linter.
-        ;(session.user as any).role = token.role as string
+      
+       Object.assign(session.user, { role: token.role as string })
       }
       return session
     },

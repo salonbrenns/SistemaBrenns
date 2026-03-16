@@ -3,7 +3,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { Search, Heart, User } from "lucide-react"
+import { Heart, User } from "lucide-react"
 import { useState } from "react"
 // 1. Importar el componente modular FilterSidebar
 import FilterSidebar from '@/components/ui/filter-sidebar'; 

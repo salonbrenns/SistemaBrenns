@@ -29,13 +29,12 @@ export default function CarritoPage() {
     items.reduce((sum, item) => sum + item.cantidad, 0), 
   [items])
 
-  useEffect(() => {
-    const stored = localStorage.getItem("nail_store_cart")
-    if (stored) {
-      setItems(JSON.parse(stored))
-    }
-    setIsLoaded(true)
-  }, [])
+ useEffect(() => {
+  const stored = localStorage.getItem("nail_store_cart")
+  const parsed = stored ? JSON.parse(stored) : []
+  setItems(parsed)
+  setIsLoaded(true)
+}, [])
 
   return (
     <AuthGuard>

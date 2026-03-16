@@ -1,6 +1,6 @@
-import Link from "next/link"
+
 import { MapPin, Clock, Mail } from "lucide-react"
-import path from "path/win32"
+
 
 export const metadata = {
   title: "Nosotros — Brenn's",
