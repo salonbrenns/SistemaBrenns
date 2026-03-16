@@ -21,13 +21,15 @@ jobs:
           cache: npm
 
       - name: Instalar dependencias
-        run: npm ci || npm install
+        run: npm ci --ignore-scripts || npm install --ignore-scripts
+
 
       - name: Ejecutar ESLint Security
         run: npx eslint . || true
 
       - name: Instalar Snyk
-        run: npm install -g snyk
+        run: npm install -g snyk --ignore-scripts
+
 
       - name: Ejecutar Snyk
         run: snyk test --org=salonbrenns || true
