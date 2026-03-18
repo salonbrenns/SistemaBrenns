@@ -1,0 +1,7 @@
+{
+  "plugins": ["security"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:security/recommended"
+  ]
+}

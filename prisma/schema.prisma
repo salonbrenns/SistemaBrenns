@@ -1,36 +1,267 @@
 generator client {
   provider = "prisma-client-js"
-  
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  
+  schemas  = ["agenda", "catalogos", "cursos", "seguridad", "ventas"]
+}
+
+model tblcitas {
+  id                Int               @id @default(autoincrement())
+  usuario_id        Int?
+  servicio_id       Int
+  fecha             DateTime
+  hora              String
+  estado            EstadoCita        @default(PENDIENTE)
+  notas             String?
+  createdAt         DateTime          @default(now())
+  metodo_pago       String?
+  nombre_contacto   String?
+  telefono_contacto String?
+  tblservicios      tblservicios      @relation(fields: [servicio_id], references: [id])
+  tblusuarios       tblusuarios?      @relation(fields: [usuario_id], references: [id])
+  tblavisos_admin   tblavisos_admin[]
+
+  @@schema("agenda")
+}
+
+model tbldiasbloquedos {
+  id        Int      @id @default(autoincrement())
+  fecha     DateTime @db.Date
+  motivo    String?
+  createdAt DateTime @default(now())
+
+  @@schema("agenda")
+}
+
+model tblhorarios {
+  id        Int     @id @default(autoincrement())
+  hora      String
+  activo    Boolean @default(true)
+  diaSemana Int     @default(1)
+
+  @@unique([hora, diaSemana])
+  @@schema("agenda")
+}
+
+model tblhorarios_excepciones {
+  id     Int      @id @default(autoincrement())
+  fecha  DateTime @db.Date
+  hora   String
+  motivo String?
+
+  @@unique([fecha, hora])
+  @@schema("agenda")
+}
+
+model tblhoras_bloqueadas {
+  id     Int      @id @default(autoincrement())
+  fecha  DateTime @db.Date
+  hora   String
+  motivo String?
+
+  @@unique([fecha, hora])
+  @@schema("agenda")
 }
 
 model Marca {
-  id           Int            @id @default(autoincrement())
-  nombre       String         @unique @db.VarChar(100)
+  id     Int    @id @default(autoincrement())
+  nombre String @unique @db.VarChar(100)
+  activo    Boolean    @default(true) 
   productos Producto[]
 
   @@map("tblmarcas")
+  @@schema("catalogos")
 }
+model Categoria {
+  id        Int        @id @default(autoincrement())
+  nombre    String     @unique @db.VarChar(100)
+  activo    Boolean    @default(true) 
+  productos Producto[]
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+  @@map("tblcategorias")
+  @@schema("catalogos")
+}
 model Producto {
-  id                  Int        @id @default(autoincrement())
-  codigo              String     @db.VarChar(50)
-  nombre              String     @db.VarChar(150)
+  id                  Int                  @id @default(autoincrement())
+  codigo              String               @db.VarChar(50)
+  nombre              String               @db.VarChar(150)
   descripcion         String?
-  precio_costo        Decimal    @db.Decimal(10, 2)
-  precio_venta        Decimal    @db.Decimal(10, 2)
+  precio_costo        Decimal              @db.Decimal(10, 2)
+  precio_venta        Decimal              @db.Decimal(10, 2)
   marca_id            Int?
-  stock               Int        @default(0)
-  activo              Boolean?   @default(true)
-  fecha_creacion      DateTime?  @default(now()) @db.Timestamp(6)
-  fecha_actualizacion DateTime?  @default(now()) @db.Timestamp(6)
-  marca            Marca? @relation(fields: [marca_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  categoria_id        Int?
+  stock               Int                  @default(0)
+  activo              Boolean?             @default(true)
+  fecha_creacion      DateTime?            @default(now()) @db.Timestamp(6)
+  fecha_actualizacion DateTime?            @default(now()) @db.Timestamp(6)
+  imagen              String?
+  tbldetalle_pedidos  tbldetalle_pedidos[]
+  marca               Marca?               @relation(fields: [marca_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  categoria           Categoria?           @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@map("tblproductos")
+  @@schema("ventas")
+}
+
+model tblservicios {
+  id          Int        @id @default(autoincrement())
+  nombre      String
+  descripcion String?
+  precio      Float
+  duracion    String
+  categoria   String
+  imagen      String?
+  activo      Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime
+  tblcitas    tblcitas[]
+
+  @@schema("catalogos")
+}
+
+model tblcursos {
+  id             Int       @id @default(autoincrement())
+  codigo         String    @unique @db.VarChar(50)
+  titulo         String    @db.VarChar(200)
+  descripcion    String?
+  precio_total   Decimal   @db.Decimal(10, 2)
+  cupo_maximo    Int
+  inscritos      Int       @default(0)
+  duracion_horas Int?
+  nivel          String?   @db.VarChar(50)
+  activo         Boolean   @default(true)
+  fecha_inicio   DateTime? @db.Date
+  fecha_fin      DateTime? @db.Date
+  created_at     DateTime  @default(now())
+  imagenes       Json?
+
+  @@schema("cursos")
+}
+
+model tblinscripciones {
+  id                Int      @id @default(autoincrement())
+  usuario_id        Int
+  curso_id          Int
+  fecha_inscripcion DateTime @default(now())
+  estado            String   @default("ACTIVO") @db.VarChar(50)
+
+  @@schema("cursos")
+}
+
+model tblpagos_curso {
+  id             Int      @id @default(autoincrement())
+  inscripcion_id Int
+  numero_pago    Int?
+  monto          Decimal  @db.Decimal(10, 2)
+  metodo_pago    String?  @db.VarChar(50)
+  estado         String   @default("PAGADO") @db.VarChar(50)
+  fecha_pago     DateTime @default(now())
+
+  @@schema("cursos")
+}
+
+model tblavisos_admin {
+  id          Int          @id @default(autoincrement())
+  cita_id     Int
+  usuario_id  Int?
+  mensaje     String
+  leido       Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  tblcitas    tblcitas     @relation(fields: [cita_id], references: [id])
+  tblusuarios tblusuarios? @relation(fields: [usuario_id], references: [id])
+
+  @@schema("seguridad")
+}
+
+model tbltoken_recuperacion {
+  id          Int         @id @default(autoincrement())
+  usuario_id  Int         @unique
+  token       String      @unique
+  expira      DateTime
+  usado       Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  tblusuarios tblusuarios @relation(fields: [usuario_id], references: [id])
+
+  @@schema("seguridad")
+}
+
+model tblusuarios {
+  id                    Int                    @id @default(autoincrement())
+  nombre                String                 @db.VarChar(150)
+  correo                String                 @unique @db.VarChar(100)
+  password              String                 @db.VarChar(255)
+  telefono              String?                @db.VarChar(20)
+  rol                   Rol                    @default(CLIENTE)
+  activo                Boolean                @default(true)
+  intentos_fallidos     Int                    @default(0)
+  cuenta_bloqueada      Boolean                @default(false)
+  fecha_registro        DateTime               @default(now()) @db.Timestamp(6)
+  tblcitas              tblcitas[]
+  tblavisos_admin       tblavisos_admin[]
+  tbltoken_recuperacion tbltoken_recuperacion?
+  tblpedidos            tblpedidos[]
+
+  @@schema("seguridad")
+}
+
+model tbldetalle_pedidos {
+  id              Int        @id @default(autoincrement())
+  pedido_id       Int
+  producto_id     Int
+  nombre_producto String     @db.VarChar(150)
+  precio_unitario Decimal    @db.Decimal(10, 2)
+  cantidad        Int
+  subtotal        Decimal    @db.Decimal(10, 2)
+  tblpedidos      tblpedidos @relation(fields: [pedido_id], references: [id])
+  producto        Producto @relation(fields: [producto_id], references: [id])
+
+  @@schema("ventas")
+}
+
+model tblpedidos {
+  id                 Int                  @id @default(autoincrement())
+  usuario_id         Int
+  estado             EstadoPedido         @default(PENDIENTE)
+  subtotal           Decimal              @db.Decimal(10, 2)
+  costo_envio        Decimal              @default(0) @db.Decimal(10, 2)
+  total              Decimal              @db.Decimal(10, 2)
+  nombre_cliente     String               @db.VarChar(200)
+  correo_cliente     String               @db.VarChar(100)
+  telefono_cliente   String?              @db.VarChar(20)
+  fecha_pedido       DateTime             @default(now()) @db.Timestamp(6)
+  tbldetalle_pedidos tbldetalle_pedidos[]
+  tblusuarios        tblusuarios          @relation(fields: [usuario_id], references: [id])
+
+  @@schema("ventas")
+}
+
+enum EstadoCita {
+  PENDIENTE
+  CONFIRMADA
+  COMPLETADA
+  CANCELADA
+
+  @@schema("agenda")
+}
+
+enum Rol {
+  ADMIN
+  DOCENTE
+  EMPLEADO
+  CLIENTE
+
+  @@schema("seguridad")
+}
+
+enum EstadoPedido {
+  PENDIENTE
+  PAGADO
+  ENVIADO
+  ENTREGADO
+  CANCELADO
+
+  @@schema("ventas")
 }

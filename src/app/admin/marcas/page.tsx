@@ -1,37 +1,58 @@
 import { Metadata } from 'next'
 import MarcaTable from '@/components/marcas/table'
 import Search from '@/components/search'
-import { PrismaClient } from '@prisma/client'
-
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma' 
 
 export const metadata: Metadata = {
   title: 'Marcas',
   description: 'Administración de marcas del salón',
 }
 
-export default async function MarcasPage() {
+interface Props {
+  searchParams?: Promise<{  
+    query?: string
+    page?: string
+  }>
+}
+
+const ITEMS_PER_PAGE = 5
+
+export default async function MarcasPage({ searchParams }: Props) {
+  const params = await searchParams  
+  const query = params?.query || ''
+  const currentPage = Number(params?.page) || 1
+
+  const totalMarcas = await prisma.marca.count({
+    where: { nombre: { contains: query, mode: 'insensitive' } },
+  })
+
+  const totalPages = Math.ceil(totalMarcas / ITEMS_PER_PAGE)
+
   const marcas = await prisma.marca.findMany({
-    orderBy: {
-      id: 'asc'
-    }
+    select: {
+    id: true,
+    nombre: true,
+    activo: true,  
+  },
+    where: { nombre: { contains: query, mode: 'insensitive' } },
+    orderBy: { id: 'asc' },
+    skip: (currentPage - 1) * ITEMS_PER_PAGE,
+    take: ITEMS_PER_PAGE,
   })
 
   return (
     <div className="space-y-6">
-
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-pink-900">
-          Marcas
-        </h1>
+        <h1 className="text-2xl font-bold text-pink-900">Marcas</h1>
       </div>
-
       <div className="flex items-center gap-4">
         <Search placeholder="Buscar marcas..." />
       </div>
-
-      <MarcaTable marcas={marcas} />
+      <MarcaTable
+        marcas={marcas}
+        currentPage={currentPage}
+        totalPages={totalPages}
+      />
     </div>
   )
 }

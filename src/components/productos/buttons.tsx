@@ -3,46 +3,39 @@
 import Link from 'next/link'
 import { PencilIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { useState, useTransition } from 'react'
-import { toggleCategorias } from '@/lib/actionsCategorias'
+import { toggleProducto } from '@/lib/actionsproductos'
 
-export function CreateCategoria() {
+export function CreateProducto() {
   return (
     <Link
-      href="/admin/categorias/create"
+      href="/admin/productos/create"
       className="inline-flex items-center gap-2 rounded-lg bg-pink-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-pink-800 transition"
     >
       <PlusIcon className="h-5 w-5" />
-      Nueva Categoría
+      Nuevo Producto
     </Link>
   )
 }
 
-export function UpdateCategoria({ id }: { id: number }) {
+export function UpdateProducto({ id }: { id: number }) {
   return (
     <Link
-      href={`/admin/categorias/${id}/edit`}
+      href={`/admin/productos/${id}/edit`}
       className="rounded-md p-2 hover:bg-green-100 transition"
-      title="Editar categoría"
     >
       <PencilIcon className="h-4 w-4 text-green-700" />
     </Link>
   )
 }
 
-export function ToggleCategoria({
-  id,
-  nombre,
-  activo,
-}: {
-  id: number
-  nombre: string
-  activo: boolean
-}) {
+// ← Reemplaza DeleteProducto por ToggleProducto
+export function ToggleProducto({ id, nombre, activo }: { id: number; nombre: string; activo: boolean }) {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   return (
     <>
+      {/* Botón que cambia según el estado */}
       <button
         onClick={() => setOpen(true)}
         className={`rounded-md px-2 py-1 text-xs font-medium transition ${
@@ -54,19 +47,20 @@ export function ToggleCategoria({
         {activo ? 'Desactivar' : 'Activar'}
       </button>
 
+      {/* Modal de confirmación */}
       {open && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
-            <h2 className="text-lg font-semibold text-gray-800">
-              {activo ? 'Desactivar categoría' : 'Activar categoría'}
+            <h2 className="text-lg font-semibold">
+              {activo ? 'Desactivar producto' : 'Activar producto'}
             </h2>
 
             <p className="mt-2 text-sm text-gray-600">
-              ¿Deseas {activo ? 'desactivar' : 'activar'} la categoría{' '}
-              <span className="font-medium text-gray-800">&quot;{nombre}&quot;</span>?
+              ¿Deseas {activo ? 'desactivar' : 'activar'} el producto{' '}
+              <span className="font-medium">&quot;{nombre}&quot;</span>?
               {activo && (
                 <span className="block mt-1 text-gray-400">
-                  La categoría dejará de aparecer en el catálogo pero no se eliminará.
+                  El producto dejará de aparecer en el catálogo pero no se eliminará.
                 </span>
               )}
             </p>
@@ -74,7 +68,7 @@ export function ToggleCategoria({
             <div className="mt-4 flex justify-end gap-3">
               <button
                 onClick={() => setOpen(false)}
-                className="px-4 py-2 text-sm rounded-md border border-gray-300 hover:bg-gray-50"
+                className="px-4 py-2 text-sm rounded-md border"
               >
                 Cancelar
               </button>
@@ -82,7 +76,7 @@ export function ToggleCategoria({
               <button
                 onClick={() => {
                   startTransition(async () => {
-                    await toggleCategorias(id, !activo)
+                    await toggleProducto(id, !activo)
                     setOpen(false)
                   })
                 }}

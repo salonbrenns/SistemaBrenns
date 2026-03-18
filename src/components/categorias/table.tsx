@@ -1,63 +1,94 @@
 'use client'
 
-import Link from 'next/link'
-import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { useSearchParams, usePathname } from 'next/navigation'
+import { CreateCategoria, UpdateCategoria, ToggleCategoria } from './buttons'
 
-// Renombramos a Categoria para que coincida con el componente
-export interface Categoria {
-  id: string | number // Aceptamos ambos por si la DB usa números o UUIDs
+interface Categoria {
+  id: number
   nombre: string
+  activo: boolean  
 }
 
-export default function CategoriaTable({ categorias }: { categorias: Categoria[] }) {
+interface Props {
+  categorias: Categoria[]
+  currentPage: number
+  totalPages: number
+}
+
+export default function CategoriaTable({ categorias, currentPage, totalPages }: Props) {
+  const searchParams = useSearchParams()
+  const pathname     = usePathname()
+
+  const createPageURL = (pageNumber: number) => {
+    const params = new URLSearchParams(searchParams)
+    params.set('page', pageNumber.toString())
+    return `${pathname}?${params.toString()}`
+  }
+
+  const generatePagination = () => {
+    const pages: (number | string)[] = []
+    const start = Math.max(1, currentPage - 2)
+    const end   = Math.min(totalPages, currentPage + 2)
+    if (start > 1) { pages.push(1); if (start > 2) pages.push('...') }
+    for (let i = start; i <= end; i++) pages.push(i)
+    if (end < totalPages) { if (end < totalPages - 1) pages.push('...'); pages.push(totalPages) }
+    return pages
+  }
+
   return (
     <div className="space-y-4">
-      {/* Botón crear */}
+
       <div className="flex justify-end">
-        <Link
-          href="/admin/categorias/create"
-          className="inline-flex items-center gap-2 rounded-lg bg-pink-700 px-4 py-2 text-sm font-medium text-white hover:bg-pink-800 transition"
-        >
-          <PlusIcon className="h-5 w-5" />
-          Nueva Categoria
-        </Link>
+        <CreateCategoria />
       </div>
 
-      {/* Tabla */}
-      <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-        <table className="min-w-full bg-white">
-          <thead className="bg-pink-900 text-white">
+      <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+        <table className="min-w-full divide-y divide-gray-200">
+
+          <thead className="bg-pink-900">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase">ID</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase">Nombre</th>
-              <th className="px-6 py-3 text-right text-xs font-semibold uppercase">Acciones</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">ID</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Nombre</th>
+              {/* Columna estado ← nueva */}
+              <th className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Estado</th>
+              <th className="px-6 py-3 text-right text-xs font-semibold text-white uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="bg-white divide-y divide-gray-200">
             {categorias.length === 0 ? (
               <tr>
-                <td colSpan={3} className="px-6 py-6 text-center text-sm text-gray-500">
-                  No hay categorias registradas
+                <td colSpan={4} className="px-6 py-6 text-center text-sm text-gray-500">
+                  No se encontraron categorías
                 </td>
               </tr>
             ) : (
               categorias.map((categoria) => (
-                <tr key={categoria.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm">{categoria.id}</td>
-                  <td className="px-6 py-4 text-sm font-medium">{categoria.nombre}</td>
+                <tr
+                  key={categoria.id}
+                  className={`transition-colors ${
+                    !categoria.activo ? 'bg-gray-50 opacity-60' : 'hover:bg-pink-50'
+                  }`}
+                >
+                  <td className="px-6 py-4 text-sm text-gray-900">{categoria.id}</td>
+
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{categoria.nombre}</td>
+
+                  {/* ESTADO ← badge */}
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      categoria.activo
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      {categoria.activo ? 'Activa' : 'Inactiva'}
+                    </span>
+                  </td>
+
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
-                      <Link
-                        href={`/admin/categorias/editar/${categoria.id}`}
-                        className="rounded-md p-2 hover:bg-green-100"
-                      >
-                        <PencilIcon className="h-4 w-4 text-green-700" />
-                      </Link>
-
-                      <button className="rounded-md p-2 hover:bg-red-100">
-                        <TrashIcon className="h-4 w-4 text-red-700" />
-                      </button>
+                      <UpdateCategoria id={categoria.id} />
+                      <ToggleCategoria id={categoria.id} nombre={categoria.nombre} activo={categoria.activo} />
                     </div>
                   </td>
                 </tr>
@@ -65,6 +96,36 @@ export default function CategoriaTable({ categorias }: { categorias: Categoria[]
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Paginación */}
+      <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
+        <a
+          href={createPageURL(currentPage - 1)}
+          className={`px-3 py-1 rounded border ${currentPage <= 1 ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100'}`}
+        >
+          Anterior
+        </a>
+
+        {generatePagination().map((page, index) => {
+          if (typeof page === 'string') return <span key={index} className="px-2 text-gray-500">...</span>
+          return (
+            <a
+              key={index}
+              href={createPageURL(page)}
+              className={`px-3 py-1 rounded border ${currentPage === page ? 'bg-pink-900 text-white' : 'hover:bg-gray-100'}`}
+            >
+              {page}
+            </a>
+          )
+        })}
+
+        <a
+          href={createPageURL(currentPage + 1)}
+          className={`px-3 py-1 rounded border ${currentPage >= totalPages ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100'}`}
+        >
+          Siguiente
+        </a>
       </div>
     </div>
   )
