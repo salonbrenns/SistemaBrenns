@@ -1,8 +1,10 @@
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 import { prisma } from "@/lib/prisma"
-import bcrypt from "bcryptjs"
 
-export async function POST(req: Request) {
+import { withRasp } from "@/lib/withRasp";import bcrypt from "bcryptjs"
+
+async function resetHandler(req: NextRequest) {
+ {
   const { token, password } = await req.json()
 
   if (!token || !password) {
@@ -18,15 +20,13 @@ export async function POST(req: Request) {
     include: { usuario: true },
   })
 
-  console.log("🔍 Token encontrado:", !!registro)
-  console.log("👤 Usuario ID:", registro?.usuario_id)
+ 
 
   if (!registro) return NextResponse.json({ error: "Token inválido o expirado" }, { status: 400 })
   if (registro.usado) return NextResponse.json({ error: "Este enlace ya fue usado" }, { status: 400 })
   if (new Date() > registro.expira) return NextResponse.json({ error: "El enlace ha expirado" }, { status: 400 })
 
   const hash = await bcrypt.hash(password, 10)
-  console.log("🔑 Hash generado:", hash.substring(0, 20) + "...")
 
   try {
     const actualizado = await prisma.usuario.update({
@@ -45,4 +45,5 @@ export async function POST(req: Request) {
   })
 
   return NextResponse.json({ ok: true })
-}
+}}
+export const POST = withRasp(resetHandler);

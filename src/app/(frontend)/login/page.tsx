@@ -32,12 +32,14 @@ function LoginContenido() {
         const role = session?.user?.role
 
         if (role === "ADMIN") {
-          router.push("/admin/dashboard")
-        } else if (role === "DOCENTE") {
-          router.push("/docente/dashboard")
-        } else {
-          router.push("/perfil")
-        }
+  router.push("/admin/dashboard")
+} else if (role === "EMPLEADO") {
+  router.push("/admin/dashboard")  // ← agregar esto
+} else if (role === "DOCENTE") {
+  router.push("/docente/dashboard")
+} else {
+  router.push("/perfil")
+}
       }
       router.refresh()
     } catch {

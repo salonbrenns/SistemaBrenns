@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react"
 import {
   Calendar, Clock, User, Search, CreditCard,
-  Banknote, ArrowRight, CheckCircle, Loader2, AlertCircle, Phone
+  Banknote, ArrowRight, CheckCircle, Loader2, AlertCircle, Phone, Users
 } from "lucide-react"
 import { format, addMonths, subMonths, startOfMonth, endOfMonth,
          eachDayOfInterval, isBefore, isToday, isSameDay } from "date-fns"
@@ -12,9 +12,10 @@ import { es } from "date-fns/locale"
 
 export const dynamic = 'force-dynamic'
 
-type Servicio = { id: number; nombre: string; precio: number; duracion: string }
-type Horario  = { id: number; hora: string; disponible: boolean }
-type Usuario  = { id: number; nombre: string; correo: string; telefono?: string }
+type Servicio  = { id: number; nombre: string; precio: number; duracion: string }
+type Horario   = { id: number; hora: string; disponible: boolean }
+type Usuario   = { id: number; nombre: string; correo: string; telefono?: string }
+type Empleado  = { id: number; nombre: string; correo: string }
 
 const METODOS_PAGO = [
   { id: "EFECTIVO",      label: "Efectivo",      icon: Banknote   },
@@ -23,44 +24,50 @@ const METODOS_PAGO = [
 ]
 
 export default function AdminAgendarPage() {
-  const [paso, setPaso] = useState<1 | 2 | 3>(1)
+  const [paso, setPaso] = useState<1 | 2 | 3 | 4>(1)
 
   // Paso 1 — Servicio
-  const [servicios,     setServicios]     = useState<Servicio[]>([])
-  const [servicioSel,   setServicioSel]   = useState<Servicio | null>(null)
+  const [servicios,   setServicios]   = useState<Servicio[]>([])
+  const [servicioSel, setServicioSel] = useState<Servicio | null>(null)
 
-  // Paso 2 — Fecha y hora
-  const [mesActual,  setMesActual]  = useState(new Date())
-  const [fechaSel,   setFechaSel]   = useState<Date | null>(null)
-  const [horarios,   setHorarios]   = useState<Horario[]>([])
-  const [cargandoHor,setCargandoHor]= useState(false)
-  const [horaSel,    setHoraSel]    = useState<string | null>(null)
+  // Paso 2 — Empleado
+  const [empleados,       setEmpleados]       = useState<Empleado[]>([])
+  const [empleadoSel,     setEmpleadoSel]     = useState<Empleado | null>(null)
+  const [cargandoEmpleados, setCargandoEmpleados] = useState(false)
+  const [sinEmpleado,     setSinEmpleado]     = useState(false)
+
+  // Paso 3 — Fecha y hora
+  const [mesActual,      setMesActual]      = useState(new Date())
+  const [fechaSel,       setFechaSel]       = useState<Date | null>(null)
+  const [horarios,       setHorarios]       = useState<Horario[]>([])
+  const [cargandoHor,    setCargandoHor]    = useState(false)
+  const [horaSel,        setHoraSel]        = useState<string | null>(null)
   const [diasBloqueados, setDiasBloqueados] = useState<string[]>([])
 
-  // Paso 3 — Cliente y pago
-  const [busqueda,       setBusqueda]       = useState("")
-  const [resultados,     setResultados]     = useState<Usuario[]>([])
-  const [buscando,       setBuscando]       = useState(false)
-  const [usuarioSel,     setUsuarioSel]     = useState<Usuario | null>(null)
-  const [sinUsuario,     setSinUsuario]     = useState(false)
-  const [nombreContacto, setNombreContacto] = useState("")
-  const [telefonoContacto,setTelefonoContacto] = useState("")
-  const [metodoPago,     setMetodoPago]     = useState("EFECTIVO")
-  const [notas,          setNotas]          = useState("")
+  // Paso 4 — Cliente y pago
+  const [busqueda,        setBusqueda]        = useState("")
+  const [resultados,      setResultados]      = useState<Usuario[]>([])
+  const [buscando,        setBuscando]        = useState(false)
+  const [usuarioSel,      setUsuarioSel]      = useState<Usuario | null>(null)
+  const [sinUsuario,      setSinUsuario]      = useState(false)
+  const [nombreContacto,  setNombreContacto]  = useState("")
+  const [telefonoContacto,setTelefonoContacto]= useState("")
+  const [metodoPago,      setMetodoPago]      = useState("EFECTIVO")
+  const [notas,           setNotas]           = useState("")
 
   const [guardando, setGuardando] = useState(false)
   const [error,     setError]     = useState("")
   const [exito,     setExito]     = useState(false)
 
-  // Cargar servicios
+  // ── Cargar servicios
   useEffect(() => {
     fetch("/api/admin/servicios")
       .then(r => r.json())
-    .then(data => setServicios(Array.isArray(data) ? data : data.servicios || []))
+      .then(data => setServicios(Array.isArray(data) ? data : data.servicios || []))
       .catch(() => {})
   }, [])
 
-  // Cargar días bloqueados
+  // ── Cargar días bloqueados
   useEffect(() => {
     fetch("/api/dias-bloqueados")
       .then(r => r.json())
@@ -68,19 +75,35 @@ export default function AdminAgendarPage() {
       .catch(() => {})
   }, [])
 
-  // Cargar horarios al seleccionar fecha
+  // ── Cargar empleados al pasar al paso 2
+  useEffect(() => {
+    if (paso !== 2) return
+    setCargandoEmpleados(true)
+    fetch("/api/admin/empleados")
+      .then(r => r.json())
+      .then(data => { setEmpleados(Array.isArray(data) ? data : []); setCargandoEmpleados(false) })
+      .catch(() => setCargandoEmpleados(false))
+  }, [paso])
+
+  // ── Cargar horarios al seleccionar fecha (filtra por empleado si se escogió uno)
   useEffect(() => {
     if (!fechaSel || !servicioSel) return
     setCargandoHor(true)
     setHoraSel(null)
     const fechaStr = format(fechaSel, "yyyy-MM-dd")
-    fetch(`/api/horarios?fecha=${fechaStr}&servicioId=${servicioSel.id}`)
+    const params = new URLSearchParams({
+      fecha:      fechaStr,
+      servicioId: String(servicioSel.id),
+    })
+    if (empleadoSel) params.set("empleadoId", String(empleadoSel.id))
+
+    fetch(`/api/horarios?${params}`)
       .then(r => r.json())
       .then(data => { setHorarios(data); setCargandoHor(false) })
       .catch(() => setCargandoHor(false))
-  }, [fechaSel, servicioSel])
+  }, [fechaSel, servicioSel, empleadoSel])
 
-  // Buscar usuarios
+  // ── Buscar usuarios registrados
   useEffect(() => {
     if (!busqueda || busqueda.length < 2) { setResultados([]); return }
     setBuscando(true)
@@ -100,8 +123,8 @@ export default function AdminAgendarPage() {
   const handleGuardar = async () => {
     setError("")
     if (!servicioSel || !fechaSel || !horaSel) { setError("Completa servicio, fecha y hora"); return }
-    if (!sinUsuario && !usuarioSel) { setError("Selecciona un cliente o marca 'Sin usuario'"); return }
-    if (sinUsuario && !nombreContacto) { setError("Ingresa el nombre del cliente"); return }
+    if (!sinUsuario && !usuarioSel)             { setError("Selecciona un cliente o marca 'Sin usuario'"); return }
+    if (sinUsuario && !nombreContacto)           { setError("Ingresa el nombre del cliente"); return }
 
     setGuardando(true)
     try {
@@ -110,6 +133,7 @@ export default function AdminAgendarPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           servicio_id:       servicioSel.id,
+          empleado_id:       empleadoSel?.id || null,   // ← NUEVO
           fecha:             format(fechaSel, "yyyy-MM-dd"),
           hora:              horaSel,
           usuario_id:        usuarioSel?.id || null,
@@ -131,11 +155,13 @@ export default function AdminAgendarPage() {
   }
 
   const resetear = () => {
-    setPaso(1); setServicioSel(null); setFechaSel(null); setHoraSel(null)
-    setUsuarioSel(null); setSinUsuario(false); setNombreContacto(""); setTelefonoContacto("")
-    setMetodoPago("EFECTIVO"); setNotas(""); setExito(false); setError("")
+    setPaso(1); setServicioSel(null); setEmpleadoSel(null); setSinEmpleado(false)
+    setFechaSel(null); setHoraSel(null); setUsuarioSel(null); setSinUsuario(false)
+    setNombreContacto(""); setTelefonoContacto(""); setMetodoPago("EFECTIVO")
+    setNotas(""); setExito(false); setError("")
   }
 
+  // ── Pantalla de éxito
   if (exito) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -147,9 +173,10 @@ export default function AdminAgendarPage() {
           <p className="text-gray-500 mb-1"><strong>{servicioSel?.nombre}</strong></p>
           <p className="text-gray-500 mb-1">{fechaSel && format(fechaSel, "EEEE d 'de' MMMM", { locale: es })}</p>
           <p className="text-pink-600 font-bold text-lg mb-2">{horaSel}</p>
-          <p className="text-gray-500 mb-6">
-            Cliente: <strong>{usuarioSel?.nombre || nombreContacto}</strong>
-          </p>
+          {empleadoSel && (
+            <p className="text-gray-500 mb-1">Empleado: <strong>{empleadoSel.nombre}</strong></p>
+          )}
+          <p className="text-gray-500 mb-6">Cliente: <strong>{usuarioSel?.nombre || nombreContacto}</strong></p>
           <p className="text-sm text-gray-400 mb-6">Pago: {metodoPago}</p>
           <button onClick={resetear}
             className="bg-pink-600 text-white font-bold px-8 py-3 rounded-full hover:bg-pink-700 transition">
@@ -160,6 +187,13 @@ export default function AdminAgendarPage() {
     )
   }
 
+  const PASOS = [
+    { n: 1, label: "Servicio"      },
+    { n: 2, label: "Empleado"      },
+    { n: 3, label: "Fecha y hora"  },
+    { n: 4, label: "Cliente y pago"},
+  ]
+
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
@@ -168,12 +202,8 @@ export default function AdminAgendarPage() {
       </div>
 
       {/* Indicador de pasos */}
-      <div className="flex items-center gap-3">
-        {[
-          { n: 1, label: "Servicio" },
-          { n: 2, label: "Fecha y hora" },
-          { n: 3, label: "Cliente y pago" },
-        ].map(({ n, label }) => (
+      <div className="flex items-center gap-3 flex-wrap">
+        {PASOS.map(({ n, label }) => (
           <div key={n} className="flex items-center gap-2">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition ${
               paso > n ? "bg-green-500 text-white" : paso === n ? "bg-pink-600 text-white" : "bg-gray-200 text-gray-500"
@@ -181,7 +211,7 @@ export default function AdminAgendarPage() {
               {paso > n ? "✓" : n}
             </div>
             <span className={`text-sm font-medium hidden sm:block ${paso >= n ? "text-pink-700" : "text-gray-400"}`}>{label}</span>
-            {n < 3 && <div className="w-8 h-0.5 bg-gray-200 hidden sm:block" />}
+            {n < 4 && <div className="w-8 h-0.5 bg-gray-200 hidden sm:block" />}
           </div>
         ))}
       </div>
@@ -216,12 +246,105 @@ export default function AdminAgendarPage() {
             </div>
           )}
 
-          {/* ── PASO 2: Fecha y hora ──────────────────────────── */}
+          {/* ── PASO 2: Empleado ─────────────────────────────── */}
           {paso === 2 && (
+            <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-6">
+              <h2 className="font-bold text-gray-800 mb-1 flex items-center gap-2">
+                <Users className="w-5 h-5 text-pink-500" /> Selecciona un empleado
+              </h2>
+              <p className="text-xs text-gray-400 mb-5">
+                Los horarios disponibles se filtrarán según la agenda del empleado elegido.
+              </p>
+
+              {cargandoEmpleados ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-6 h-6 text-pink-400 animate-spin" />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {/* Opción: sin preferencia */}
+                  <button
+                    onClick={() => { setEmpleadoSel(null); setSinEmpleado(true) }}
+                    className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${
+                      sinEmpleado && !empleadoSel
+                        ? "border-pink-600 bg-pink-50"
+                        : "border-gray-100 hover:border-pink-200"
+                    }`}>
+                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      <Users className="w-5 h-5 text-gray-400" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-700">Sin preferencia</p>
+                      <p className="text-xs text-gray-400">Cualquier empleado disponible</p>
+                    </div>
+                    {sinEmpleado && !empleadoSel && (
+                      <CheckCircle className="w-5 h-5 text-pink-500 ml-auto" />
+                    )}
+                  </button>
+
+                  {/* Lista de empleados */}
+                  {empleados.map(emp => (
+                    <button key={emp.id}
+                      onClick={() => { setEmpleadoSel(emp); setSinEmpleado(false) }}
+                      className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${
+                        empleadoSel?.id === emp.id
+                          ? "border-pink-600 bg-pink-50"
+                          : "border-gray-100 hover:border-pink-200"
+                      }`}>
+                      <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
+                        <span className="text-pink-600 font-bold text-sm">
+                          {emp.nombre.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-800">{emp.nombre}</p>
+                        <p className="text-xs text-gray-400">{emp.correo}</p>
+                      </div>
+                      {empleadoSel?.id === emp.id && (
+                        <CheckCircle className="w-5 h-5 text-pink-500 ml-auto" />
+                      )}
+                    </button>
+                  ))}
+
+                  {empleados.length === 0 && !cargandoEmpleados && (
+                    <p className="text-center text-gray-400 py-4 text-sm">
+                      No hay empleados activos registrados
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="flex gap-3 mt-6">
+                <button onClick={() => setPaso(1)}
+                  className="flex-1 border-2 border-pink-200 text-pink-600 font-bold py-3 rounded-full hover:bg-pink-50 transition">
+                  ← Atrás
+                </button>
+                <button
+                  onClick={() => setPaso(3)}
+                  disabled={!sinEmpleado && !empleadoSel}
+                  className="flex-1 bg-pink-600 text-white font-bold py-3 rounded-full hover:bg-pink-700 transition disabled:opacity-40">
+                  Continuar →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── PASO 3: Fecha y hora ──────────────────────────── */}
+          {paso === 3 && (
             <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-6">
               <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-pink-500" /> Fecha y hora
               </h2>
+
+              {/* Badge de empleado seleccionado */}
+              {empleadoSel && (
+                <div className="mb-4 flex items-center gap-2 bg-pink-50 border border-pink-100 rounded-xl px-4 py-2.5 text-sm">
+                  <div className="w-7 h-7 rounded-full bg-pink-200 flex items-center justify-center flex-shrink-0">
+                    <span className="text-pink-700 font-bold text-xs">{empleadoSel.nombre.charAt(0)}</span>
+                  </div>
+                  <span className="text-gray-600">Viendo disponibilidad de <strong className="text-pink-700">{empleadoSel.nombre}</strong></span>
+                </div>
+              )}
 
               {/* Calendario */}
               <div className="bg-pink-50/50 rounded-2xl p-4 border border-pink-100">
@@ -256,9 +379,9 @@ export default function AdminAgendarPage() {
                     return (
                       <button key={dia.toISOString()} disabled={disabled} onClick={() => setFechaSel(dia)}
                         className={`aspect-square flex items-center justify-center rounded-lg text-sm font-bold transition-all ${
-                          selected ? "bg-pink-600 text-white shadow-md"
+                          selected    ? "bg-pink-600 text-white shadow-md"
                           : bloqueado ? "bg-orange-50 text-orange-300 cursor-not-allowed"
-                          : disabled ? "text-gray-300 cursor-not-allowed"
+                          : disabled  ? "text-gray-300 cursor-not-allowed"
                           : isToday(dia) ? "bg-pink-100 text-pink-600 border-2 border-pink-300"
                           : "bg-white hover:bg-pink-100 text-gray-700"
                         }`}>
@@ -276,7 +399,9 @@ export default function AdminAgendarPage() {
                     Horarios — {format(fechaSel, "EEEE d 'de' MMMM", { locale: es })}
                   </p>
                   {cargandoHor ? (
-                    <div className="flex justify-center py-6"><Loader2 className="w-6 h-6 text-pink-400 animate-spin" /></div>
+                    <div className="flex justify-center py-6">
+                      <Loader2 className="w-6 h-6 text-pink-400 animate-spin" />
+                    </div>
                   ) : horarios.length === 0 ? (
                     <p className="text-center text-gray-400 py-4 text-sm">Sin horarios configurados para este día</p>
                   ) : (
@@ -297,11 +422,11 @@ export default function AdminAgendarPage() {
               )}
 
               <div className="flex gap-3 mt-6">
-                <button onClick={() => setPaso(1)}
+                <button onClick={() => setPaso(2)}
                   className="flex-1 border-2 border-pink-200 text-pink-600 font-bold py-3 rounded-full hover:bg-pink-50 transition">
                   ← Atrás
                 </button>
-                <button onClick={() => setPaso(3)} disabled={!fechaSel || !horaSel}
+                <button onClick={() => setPaso(4)} disabled={!fechaSel || !horaSel}
                   className="flex-1 bg-pink-600 text-white font-bold py-3 rounded-full hover:bg-pink-700 transition disabled:opacity-40">
                   Continuar →
                 </button>
@@ -309,8 +434,8 @@ export default function AdminAgendarPage() {
             </div>
           )}
 
-          {/* ── PASO 3: Cliente y pago ────────────────────────── */}
-          {paso === 3 && (
+          {/* ── PASO 4: Cliente y pago ────────────────────────── */}
+          {paso === 4 && (
             <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-6 space-y-5">
               <h2 className="font-bold text-gray-800 flex items-center gap-2">
                 <User className="w-5 h-5 text-pink-500" /> Cliente y pago
@@ -318,23 +443,22 @@ export default function AdminAgendarPage() {
 
               {/* Toggle sin usuario */}
               <label className="flex items-center gap-3 cursor-pointer group">
-  <div 
-    role="checkbox"
-    aria-checked={sinUsuario}
-    tabIndex={0}
-    onClick={() => { setSinUsuario(!sinUsuario); setUsuarioSel(null); setBusqueda("") }}
-    onKeyDown={(e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        setSinUsuario(!sinUsuario); setUsuarioSel(null); setBusqueda("");
-      }
-    }}
-    className={`w-10 h-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-pink-400 ${sinUsuario ? "bg-pink-600" : "bg-gray-200"}`}
-  >
-    <div className={`w-5 h-5 bg-white rounded-full shadow mt-0.5 transition-transform ${sinUsuario ? "translate-x-4" : "translate-x-0.5"}`} />
-  </div>
-  <span className="text-sm font-medium text-gray-700">Cliente sin cuenta (walk-in / teléfono)</span>
-</label>
+                <div
+                  role="checkbox"
+                  aria-checked={sinUsuario}
+                  tabIndex={0}
+                  onClick={() => { setSinUsuario(!sinUsuario); setUsuarioSel(null); setBusqueda("") }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setSinUsuario(!sinUsuario); setUsuarioSel(null); setBusqueda("")
+                    }
+                  }}
+                  className={`w-10 h-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-pink-400 ${sinUsuario ? "bg-pink-600" : "bg-gray-200"}`}>
+                  <div className={`w-5 h-5 bg-white rounded-full shadow mt-0.5 transition-transform ${sinUsuario ? "translate-x-4" : "translate-x-0.5"}`} />
+                </div>
+                <span className="text-sm font-medium text-gray-700">Cliente sin cuenta (walk-in / teléfono)</span>
+              </label>
 
               {/* Buscar usuario registrado */}
               {!sinUsuario && (
@@ -423,7 +547,7 @@ export default function AdminAgendarPage() {
               )}
 
               <div className="flex gap-3">
-                <button onClick={() => setPaso(2)}
+                <button onClick={() => setPaso(3)}
                   className="flex-1 border-2 border-pink-200 text-pink-600 font-bold py-3 rounded-full hover:bg-pink-50 transition">
                   ← Atrás
                 </button>
@@ -436,7 +560,7 @@ export default function AdminAgendarPage() {
           )}
         </div>
 
-        {/* Resumen lateral */}
+        {/* ── Resumen lateral ───────────────────────────────── */}
         <aside className="lg:col-span-1">
           <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-5 sticky top-6">
             <h3 className="font-bold text-pink-600 mb-4">Resumen</h3>
@@ -450,6 +574,15 @@ export default function AdminAgendarPage() {
               ) : (
                 <p className="text-gray-400 text-xs">Sin servicio seleccionado</p>
               )}
+
+              {/* Empleado en resumen */}
+              {(empleadoSel || sinEmpleado) && (
+                <div className="flex items-center gap-2 text-gray-600 bg-gray-50 rounded-xl px-3 py-2">
+                  <Users className="w-4 h-4 text-pink-400" />
+                  <span>{empleadoSel ? empleadoSel.nombre : "Sin preferencia"}</span>
+                </div>
+              )}
+
               {fechaSel && (
                 <div className="flex items-center gap-2 text-gray-600 bg-gray-50 rounded-xl px-3 py-2">
                   <Calendar className="w-4 h-4 text-pink-400" />
@@ -468,7 +601,7 @@ export default function AdminAgendarPage() {
                   <span>{usuarioSel?.nombre || nombreContacto}</span>
                 </div>
               )}
-              {metodoPago && paso === 3 && (
+              {metodoPago && paso === 4 && (
                 <div className="flex items-center gap-2 text-gray-600 bg-gray-50 rounded-xl px-3 py-2">
                   <CreditCard className="w-4 h-4 text-pink-400" />
                   <span>{metodoPago}</span>

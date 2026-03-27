@@ -5,7 +5,7 @@ import Link from "next/link"
 import AuthGuard from "@/components/ui/AuthGuard"
 import Breadcrumb from "@/components/Breadcrumb"
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react"
-import { useState, useEffect, useMemo } from "react"
+import { useState, useMemo } from "react"
 
 const ENVIO_GRATIS_DESDE = 150000
 const COSTO_ENVIO = 10000

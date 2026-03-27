@@ -94,7 +94,7 @@ export default function Header() {
             <Link href="/" className="text-gray-700 hover:text-pink-600 font-medium transition text-sm">Inicio</Link>
             <Link href="/servicios" className="text-gray-700 hover:text-pink-600 font-medium transition text-sm">Servicios</Link>
             <Link href="/cursos" className="text-gray-700 hover:text-pink-600 font-medium transition text-sm">Cursos</Link>
-            <Link href="/catalogo" className="text-gray-700 hover:text-pink-600 font-medium transition text-sm">Catálogo</Link>
+            <Link href="/catalogo" className="text-gray-700 hover:text-pink-600 font-medium transition text-sm">Tienda</Link>
             <Link href="/nosotros" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Nosotros</Link>
 
           </nav>
@@ -149,6 +149,13 @@ export default function Header() {
               </Link>
             )}
 
+              {!autenticado && status !== "loading" && (
+              <Link href="/register"
+                className="hidden md:block bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-2 rounded-full shadow-lg hover:shadow-xl transition transform hover:scale-105 text-sm">
+                Registrarse
+              </Link>
+            )}
+
             {/* Botón menú móvil */}
             <button onClick={() => setMenuOpen(!menuOpen)}
               className="lg:hidden text-gray-600 hover:text-pink-600 transition p-2 rounded-full hover:bg-pink-50">
@@ -163,36 +170,9 @@ export default function Header() {
             <Link href="/" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Inicio</Link>
             <Link href="/servicios" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Servicios</Link>
             <Link href="/cursos" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Cursos</Link>
-            <Link href="/catalogo" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Catálogo</Link>
+            <Link href="/catalogo" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Tienda</Link>
             <Link href="/nosotros" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Nosotros</Link>
 
-
-            {autenticado ? (
-              <>
-                <Link href="/perfil" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>
-                  Mi Perfil
-                </Link>
-                <Link href="/mis-mensajes" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>
-                  Mensajes {noLeidos > 0 && <span className="bg-pink-600 text-white text-xs rounded-full px-1.5 ml-1">{noLeidos}</span>}
-                </Link>
-                <Link href="/mis-cursos" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>
-                  Mi Historial
-                </Link>
-                <Link href="/carrito" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>
-                  Carrito {cantidadCarrito > 0 && `(${cantidadCarrito})`}
-                </Link>
-                <button onClick={handleLogout}
-                  className="block w-full border border-pink-200 text-pink-600 font-bold px-6 py-2 rounded-full text-center mt-2">
-                  Cerrar sesión
-                </button>
-              </>
-            ) : (
-              <Link href="/login"
-                className="block bg-pink-600 text-white font-bold px-6 py-2 rounded-full text-center mt-4"
-                onClick={() => setMenuOpen(false)}>
-                Iniciar Sesión
-              </Link>
-            )}
           </nav>
         )}
       </div>

@@ -1,7 +1,9 @@
 // src/app/api/auth/forgot-password/route.ts
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
+import { withRasp } from "@/lib/withRasp";
 
-export async function POST(req: Request) {
+
+async function forgotPasswordHandler(req: NextRequest) {
   try {
     const { email } = await req.json();
 
@@ -19,3 +21,4 @@ export async function POST(req: Request) {
   console.error("Error en forgot-password:", error); // Ahora sí se usa la variable
   return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
 }}
+export const POST = withRasp(forgotPasswordHandler);
