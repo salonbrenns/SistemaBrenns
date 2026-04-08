@@ -5,11 +5,12 @@ import { Heart, ShoppingBag } from 'lucide-react'
 export type ProductoCardType = {
   id: number
   nombre: string
-  precio_venta: number
-  stock: number
+  precio_min: number
+  en_stock: boolean
   imagen: unknown
-  marca: { nombre: string } | null
+  marca:     { nombre: string } | null
   categoria: { nombre: string } | null
+  variantes: { id: number; tono: string | null; presentacion: string | null; precio_venta: number; stock: number }[]
 }
 
 function getImagen(imagen: unknown): string | null {
@@ -18,16 +19,13 @@ function getImagen(imagen: unknown): string | null {
   return null
 }
 
-function getTotalFotos(imagen: unknown): number {
-  if (Array.isArray(imagen)) return imagen.length
-  if (typeof imagen === 'string') return 1
-  return 0
-}
-
 export default function ProductoCard({ producto }: { producto: ProductoCardType }) {
   const foto = getImagen(producto.imagen)
-  const totalFotos = getTotalFotos(producto.imagen)
-  const sinStock = producto.stock === 0
+  const sinStock = !producto.en_stock
+
+  // Si tiene variantes con tonos distintos, mostramos chips de color
+  const tonos = [...new Set(producto.variantes.map(v => v.tono).filter(Boolean))] as string[]
+  const tieneVariantes = producto.variantes.length > 1
 
   return (
     <article
@@ -52,9 +50,10 @@ export default function ProductoCard({ producto }: { producto: ProductoCardType 
             </div>
           )}
 
-          {totalFotos > 1 && (
+          {/* Badge variantes */}
+          {tieneVariantes && (
             <span className="absolute top-3 left-3 bg-black/50 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full">
-              +{totalFotos} fotos
+              {producto.variantes.length} variantes
             </span>
           )}
 
@@ -88,12 +87,32 @@ export default function ProductoCard({ producto }: { producto: ProductoCardType 
               </span>
             )}
           </div>
-          <h3 className="text-base font-bold text-gray-800 mb-3 group-hover:text-rose-600 transition-colors line-clamp-2 leading-snug">
+
+          <h3 className="text-base font-bold text-gray-800 mb-2 group-hover:text-rose-600 transition-colors line-clamp-2 leading-snug">
             {producto.nombre}
           </h3>
+
+          {/* Chips de tonos (máx 5 + "más") */}
+          {tonos.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-2">
+              {tonos.slice(0, 5).map(tono => (
+                <span key={tono} className="text-[10px] bg-rose-50 text-rose-600 border border-rose-100 px-1.5 py-0.5 rounded-full font-medium">
+                  {tono}
+                </span>
+              ))}
+              {tonos.length > 5 && (
+                <span className="text-[10px] text-gray-400 px-1 py-0.5">+{tonos.length - 5}</span>
+              )}
+            </div>
+          )}
+
+          {/* Precio */}
           <div className="flex items-baseline gap-1">
+            {tieneVariantes && (
+              <span className="text-xs text-gray-400 font-medium">desde</span>
+            )}
             <span className="text-2xl font-black text-gray-900">
-              ${Number(producto.precio_venta).toLocaleString('es-MX')}
+              ${producto.precio_min.toLocaleString('es-MX')}
             </span>
             <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter">MXN</span>
           </div>
