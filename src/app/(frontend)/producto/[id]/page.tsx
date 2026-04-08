@@ -1,130 +1,187 @@
-"use client"
+import Image from 'next/image'
+import Link from 'next/link'
+import { ArrowLeft, Heart, ShoppingBag, Tag, Layers, Package } from 'lucide-react'
+import { notFound } from 'next/navigation'
+import { prisma } from '@/lib/prisma'
 
-import { useState, use } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { notFound } from "next/navigation"
-import { useSession } from "next-auth/react"
-import { ChevronLeft, Star, Plus, Minus, ShoppingBag } from "lucide-react"
+export default async function DetalleProducto({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
 
-const productos = {
-  "1": { id: 1, nombre: "Esmalte Rojo", precio: 15000, categoria: "Nail Art", marca: "Renova Matte", img: "/catalogo/Rojo.jpg", rating: 4.5, reviews: 128, descripcion: "Un hermoso esmalte de color rojo que aporta un toque de elegancia a tus uñas." },
-  "2": { id: 2, nombre: "Removedor Sin Acetona", precio: 16000, categoria: "Foot Care", marca: "Brenn's Care", img: "/catalogo/renovador.jpg", rating: 4.8, reviews: 89, descripcion: "Removedor suave sin acetona, ideal para uñas sensibles." },
-  "3": { id: 3, nombre: "Kit Manicura Profesional", precio: 45000, categoria: "Salon Pro", marca: "Brenn's", img: "/catalogo/kit.jpg", rating: 5.0, reviews: 203, descripcion: "Kit completo con todo lo necesario para manicura profesional." }
-}
-
-export default function ProductoDetalle({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
-  const producto = productos[id as keyof typeof productos]
-  const { data: session, status } = useSession()
-  const router = useRouter()
-  const [quantity, setQuantity] = useState(1)
-  const [agregado, setAgregado] = useState(false)
+  const producto = await prisma.producto.findUnique({
+    where: { id: Number(id), activo: true },
+    include: {
+      marca: true,
+      categoria: true,
+    },
+  })
 
   if (!producto) return notFound()
 
-  // Mientras carga la sesión no mostrar nada para evitar parpadeo
-  if (status === "loading") {
-    return <div className="min-h-screen flex items-center justify-center bg-pink-50">
-      <div className="w-10 h-10 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
-    </div>
-  }
+  // Normalizar imágenes desde JsonValue
+  const imagenes: string[] = Array.isArray(producto.imagen)
+    ? (producto.imagen as string[]).filter(u => typeof u === 'string')
+    : typeof producto.imagen === 'string'
+    ? [producto.imagen]
+    : []
 
-  const autenticado = !!session
-
-  type CartItem = {
-  id: number
-  nombre: string
-  precio: number
-  cantidad: number
-  img: string
-}
-  const agregarAlCarrito = () => {
-    const stored = localStorage.getItem("nail_store_cart") || "[]"
-    const carrito = JSON.parse(stored)
-    const existe = carrito.find((item: CartItem) => item.id === producto.id)
-const nuevoCarrito = existe
-  ? carrito.map((item: CartItem) =>
-      item.id === producto.id ? { ...item, cantidad: item.cantidad + quantity } : item
-    )
-      : [...carrito, { ...producto, cantidad: quantity }]
-
-    localStorage.setItem("nail_store_cart", JSON.stringify(nuevoCarrito))
-    window.dispatchEvent(new Event("carrito-actualizado"))
-    setAgregado(true)
-    setTimeout(() => setAgregado(false), 2000)
-  }
+  const imagenPrincipal = imagenes[0] ?? null
+  const imagenesSecundarias = imagenes.slice(1)
+  const sinStock = producto.stock === 0
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-50 py-12">
-      <div className="max-w-6xl mx-auto px-6">
-        <Link href="/catalogo" className="inline-flex items-center gap-2 text-pink-600 hover:text-pink-700 font-semibold mb-8">
-          <ChevronLeft className="w-5 h-5" />
-          Volver al Catálogo
+    <div className="min-h-screen bg-[#fffafa]">
+
+      {/* Nav breadcrumb */}
+      <div className="max-w-7xl mx-auto px-6 pt-8">
+        <Link
+          href="/productos"
+          className="inline-flex items-center gap-2 text-rose-600 hover:text-rose-800 font-semibold text-sm transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Volver al catálogo
         </Link>
+      </div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Imagen */}
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-white border border-pink-100">
-            <Image src={producto.img} alt={producto.nombre} width={600} height={600} className="object-cover w-full h-auto" priority />
-          </div>
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="grid lg:grid-cols-2 gap-12 items-start">
 
-          {/* Info */}
-          <div className="flex flex-col justify-center">
-            <span className="bg-pink-100 text-pink-700 px-4 py-1 rounded-full text-xs font-bold w-fit mb-4">{producto.categoria}</span>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">{producto.nombre}</h1>
-            <p className="text-pink-600 font-medium mb-6">{producto.marca}</p>
+          {/* ── Galería de imágenes ── */}
+          <div className="space-y-3 lg:sticky lg:top-8">
+            {/* Imagen principal */}
+            <div className="relative rounded-3xl overflow-hidden bg-rose-50 shadow-xl aspect-square">
+              {imagenPrincipal ? (
+                <Image
+                  src={imagenPrincipal}
+                  alt={producto.nombre}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
+                  priority
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <ShoppingBag className="w-24 h-24 text-rose-200" />
+                </div>
+              )}
 
-            <div className="flex items-center gap-2 mb-6">
-              <Star className="w-5 h-5 text-yellow-400 fill-current" />
-              <span className="font-bold">{producto.rating}</span>
-              <span className="text-gray-400 text-sm">({producto.reviews} reseñas)</span>
+              {/* Badge agotado */}
+              {sinStock && (
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                  <span className="bg-white text-gray-800 text-sm font-black px-6 py-3 rounded-full shadow-lg uppercase tracking-widest">
+                    Agotado
+                  </span>
+                </div>
+              )}
+
+              {/* Favorito */}
+              <button
+                aria-label="Añadir a favoritos"
+                className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-xl hover:bg-rose-600 hover:text-white transition-all text-rose-600"
+              >
+                <Heart className="w-5 h-5" />
+              </button>
             </div>
 
-            <p className="text-gray-600 mb-8 leading-relaxed">{producto.descripcion}</p>
-
-            <div className="text-3xl font-bold text-pink-600 mb-8">${(producto.precio / 100).toFixed(2)} MXN</div>
-
-            {autenticado ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center border-2 border-pink-100 rounded-full p-1">
-                    <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-2 hover:bg-pink-50 rounded-full transition">
-                      <Minus className="w-4 h-4" />
-                    </button>
-                    <span className="w-8 text-center font-bold">{quantity}</span>
-                    <button onClick={() => setQuantity(q => q + 1)} className="p-2 hover:bg-pink-50 rounded-full transition">
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <button
-                    onClick={agregarAlCarrito}
-                    className={`flex-1 py-4 rounded-full font-bold shadow-lg transition flex items-center justify-center gap-2 ${
-                      agregado
-                        ? "bg-green-500 text-white"
-                        : "bg-pink-600 hover:bg-pink-700 text-white"
-                    }`}
+            {/* Miniaturas */}
+            {imagenesSecundarias.length > 0 && (
+              <div className="grid grid-cols-3 gap-3">
+                {imagenesSecundarias.map((url, i) => (
+                  <div
+                    key={i}
+                    className="relative aspect-square rounded-2xl overflow-hidden bg-rose-50 border-2 border-rose-100 hover:border-rose-400 transition-colors cursor-pointer shadow-sm"
                   >
-                    <ShoppingBag className="w-5 h-5" />
-                    {agregado ? "¡Agregado!" : "Agregar al Carrito"}
-                  </button>
-                </div>
-                <button
-                  onClick={() => router.push("/carrito")}
-                  className="w-full border-2 border-pink-300 text-pink-600 py-4 rounded-full font-bold hover:bg-pink-50 transition"
-                >
-                  Ver Carrito
-                </button>
+                    <Image
+                      src={url}
+                      alt={`${producto.nombre} vista ${i + 2}`}
+                      fill
+                      sizes="(max-width: 1024px) 33vw, 15vw"
+                      className="object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                ))}
               </div>
-            ) : (
-              <Link
-                href={`/login?next=/producto/${id}`}
-                className="w-full bg-gray-800 text-white py-4 rounded-full font-bold text-center block hover:bg-gray-900 transition"
-              >
-                Inicia sesión para comprar
-              </Link>
             )}
+          </div>
+
+          {/* ── Info del producto ── */}
+          <div className="space-y-6">
+
+            {/* Marca + categoría */}
+            <div className="flex items-center gap-3 flex-wrap">
+              {producto.marca && (
+                <span className="inline-flex items-center gap-1.5 bg-rose-100 text-rose-700 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest">
+                  <Tag className="w-3 h-3" />
+                  {producto.marca.nombre}
+                </span>
+              )}
+              {producto.categoria && (
+                <span className="inline-flex items-center gap-1.5 bg-pink-100 text-pink-700 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest">
+                  <Layers className="w-3 h-3" />
+                  {producto.categoria.nombre}
+                </span>
+              )}
+            </div>
+
+            {/* Nombre */}
+            <div>
+              <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-1">
+                Cód. {producto.codigo}
+              </p>
+              <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight">
+                {producto.nombre}
+              </h1>
+            </div>
+
+            {/* Precio */}
+            <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-6 border border-rose-100">
+              <p className="text-4xl font-black text-gray-900">
+                ${Number(producto.precio_venta).toLocaleString('es-MX')}
+                <span className="text-lg font-semibold text-gray-400 ml-2">MXN</span>
+              </p>
+            </div>
+
+            {/* Descripción */}
+            {producto.descripcion && (
+              <div>
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
+                  Descripción
+                </p>
+                <p className="text-gray-600 leading-relaxed text-base">
+                  {producto.descripcion}
+                </p>
+              </div>
+            )}
+
+            {/* Stock */}
+            <div className="flex items-center gap-2">
+              <Package className="w-4 h-4 text-gray-400" />
+              {sinStock ? (
+                <span className="text-sm font-semibold text-red-500">Sin stock disponible</span>
+              ) : producto.stock <= 5 ? (
+                <span className="text-sm font-semibold text-amber-600">
+                  ¡Solo quedan {producto.stock} unidades!
+                </span>
+              ) : (
+                <span className="text-sm font-semibold text-green-600">En stock</span>
+              )}
+            </div>
+
+            {/* CTA */}
+            <button
+              disabled={sinStock}
+              className="w-full bg-gray-900 hover:bg-rose-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-black py-4 rounded-2xl transition-all shadow-lg active:scale-95 text-base uppercase tracking-wide"
+            >
+              {sinStock ? 'Producto agotado' : 'Agregar al carrito'}
+            </button>
+
+            {/* Volver */}
+            <Link href="/productos" className="block text-center text-sm text-gray-400 hover:text-rose-600 transition-colors font-medium">
+              ← Seguir comprando
+            </Link>
           </div>
         </div>
       </div>

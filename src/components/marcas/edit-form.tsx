@@ -29,14 +29,23 @@ export default function EditMarcaForm({ marca }: { marca: Marca }) {
         defaultValue={marca.nombre}
         className="border p-2 rounded w-full"
       />
+      <div className="flex gap-3 pt-2">
+        <button
+          type="button"
+          onClick={() => router.push('/admin/marcas')}
+          className="border px-4 py-2 rounded"
+        >
+          Cancelar
+        </button>
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="bg-pink-600 text-white px-4 py-2 rounded"
-      >
-        {isPending ? 'Actualizando...' : 'Actualizar'}
-      </button>
+        <button
+          type="submit"
+          disabled={isPending}
+          className="bg-pink-600 text-white px-4 py-2 rounded"
+        >
+          {isPending ? 'Actualizando...' : 'Actualizar'}
+        </button>
+      </div>
     </form>
   )
 }

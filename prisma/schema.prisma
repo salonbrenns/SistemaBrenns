@@ -39,6 +39,16 @@ model DiaBloquedo {
   @@schema("agenda")
 }
 
+model DiaBloquedo {
+  id        Int      @id @default(autoincrement())
+  fecha     DateTime @db.Date
+  motivo    String?
+  createdAt DateTime @default(now())
+
+  @@map("tbldiasbloquedos")
+  @@schema("agenda")
+}
+
 model HorarioDisponible {
   id        Int     @id @default(autoincrement())
   hora      String
@@ -106,6 +116,7 @@ model Producto {
   fecha_creacion      DateTime?       @default(now()) @db.Timestamp(6)
   fecha_actualizacion DateTime?       @default(now()) @db.Timestamp(6)
   imagen              String?
+  imagen              Json?
   detalles            DetallePedido[]
   categoria           Categoria?      @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   marca               Marca?          @relation(fields: [marca_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -226,6 +237,11 @@ model Usuario {
   pedidos           Pedido[]
   tokenRecuperacion TokenRecuperacion?
   
+  avisos            AvisoAdmin[]
+  permisos          PermisoUsuario[]
+  tokenRecuperacion TokenRecuperacion?
+  pedidos           Pedido[]
+
   @@map("tblusuarios")
   @@schema("seguridad")
 }
@@ -252,6 +268,7 @@ model PermisoUsuario {
   activo     Boolean @default(false)
 
   usuario Usuario @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  usuario    Usuario @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
 
   @@unique([usuario_id, permiso])
   @@map("tblpermisos_usuario")

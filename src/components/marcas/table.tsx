@@ -1,50 +1,94 @@
 'use client'
 
-import { CreateMarca, UpdateMarca, DeleteMarca } from '../marcas/buttons'
-import { Marca } from '@prisma/client'   
+import { useSearchParams, usePathname } from 'next/navigation'
+import { CreateMarca, UpdateMarca, ToggleMarca } from './buttons'
 
-export default function MarcaTable({ marcas }: { marcas: Marca[] }) {
+interface Marca {
+  id: number
+  nombre: string
+  activo: boolean  // ← nuevo
+}
+
+interface Props {
+  marcas: Marca[]
+  currentPage: number
+  totalPages: number
+}
+
+export default function MarcaTable({ marcas, currentPage, totalPages }: Props) {
+  const searchParams = useSearchParams()
+  const pathname     = usePathname()
+
+  const createPageURL = (pageNumber: number) => {
+    const params = new URLSearchParams(searchParams)
+    params.set('page', pageNumber.toString())
+    return `${pathname}?${params.toString()}`
+  }
+
+  const generatePagination = () => {
+    const pages: (number | string)[] = []
+    const start = Math.max(1, currentPage - 2)
+    const end   = Math.min(totalPages, currentPage + 2)
+    if (start > 1) { pages.push(1); if (start > 2) pages.push('...') }
+    for (let i = start; i <= end; i++) pages.push(i)
+    if (end < totalPages) { if (end < totalPages - 1) pages.push('...'); pages.push(totalPages) }
+    return pages
+  }
+
   return (
     <div className="space-y-4">
-      
+
       <div className="flex justify-end">
         <CreateMarca />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-        <table className="min-w-full bg-white">
-          <thead className="bg-pink-900 text-white">
+      <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+        <table className="min-w-full divide-y divide-gray-200">
+
+          <thead className="bg-pink-900">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase">
-                ID
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold uppercase">
-                Nombre
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-semibold uppercase">
-                Acciones
-              </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">ID</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Nombre</th>
+              {/* Columna estado ← nueva */}
+              <th className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Estado</th>
+              <th className="px-6 py-3 text-right text-xs font-semibold text-white uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="bg-white divide-y divide-gray-200">
             {marcas.length === 0 ? (
               <tr>
-                <td colSpan={3} className="px-6 py-6 text-center text-sm text-gray-500">
-                  No hay marcas registradas
+                <td colSpan={4} className="px-6 py-6 text-center text-sm text-gray-500">
+                  No se encontraron marcas
                 </td>
               </tr>
             ) : (
               marcas.map((marca) => (
-                <tr key={marca.id} className="hover:bg-pink-50 transition">
-                  <td className="px-6 py-4 text-sm">{marca.id}</td>
-                  <td className="px-6 py-4 text-sm font-medium">
-                    {marca.nombre}
+                <tr
+                  key={marca.id}
+                  className={`transition-colors ${
+                    !marca.activo ? 'bg-gray-50 opacity-60' : 'hover:bg-pink-50'
+                  }`}
+                >
+                  <td className="px-6 py-4 text-sm text-gray-900">{marca.id}</td>
+
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{marca.nombre}</td>
+
+                  {/* ESTADO ← badge */}
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      marca.activo
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      {marca.activo ? 'Activa' : 'Inactiva'}
+                    </span>
                   </td>
+
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <UpdateMarca id={marca.id} />
-                      <DeleteMarca id={marca.id} nombre={marca.nombre} />
+                      <ToggleMarca id={marca.id} nombre={marca.nombre} activo={marca.activo} />
                     </div>
                   </td>
                 </tr>
@@ -52,6 +96,36 @@ export default function MarcaTable({ marcas }: { marcas: Marca[] }) {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Paginación */}
+      <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
+        <a
+          href={createPageURL(currentPage - 1)}
+          className={`px-3 py-1 rounded border ${currentPage <= 1 ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100'}`}
+        >
+          Anterior
+        </a>
+
+        {generatePagination().map((page, index) => {
+          if (typeof page === 'string') return <span key={index} className="px-2 text-gray-500">...</span>
+          return (
+            <a
+              key={index}
+              href={createPageURL(page)}
+              className={`px-3 py-1 rounded border ${currentPage === page ? 'bg-pink-900 text-white' : 'hover:bg-gray-100'}`}
+            >
+              {page}
+            </a>
+          )
+        })}
+
+        <a
+          href={createPageURL(currentPage + 1)}
+          className={`px-3 py-1 rounded border ${currentPage >= totalPages ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100'}`}
+        >
+          Siguiente
+        </a>
       </div>
     </div>
   )

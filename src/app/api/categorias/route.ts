@@ -6,12 +6,12 @@ const prisma = new PrismaClient()
 
 export async function GET() {
   try {
-    const marcas = await prisma.marca.findMany()
-    return NextResponse.json(marcas)
+    const categorias = await prisma.categoria.findMany()
+    return NextResponse.json(categorias)
   } catch {
 
     return NextResponse.json(
-      { error: 'Error al obtener marcas' },
+      { error: 'Error al obtener categorías' },
       { status: 500 }
     )
   }
