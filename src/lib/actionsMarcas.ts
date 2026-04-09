@@ -6,7 +6,6 @@ import {prisma} from '@/lib/prisma'
 export async function createMarca(formData: FormData) {
   const nombre = formData.get('nombre') as string
   
-  //const activa = formData.get('activa') === 'on'
 
   await prisma.marca.create({
     data: {
@@ -33,9 +32,11 @@ export async function updateMarca(id: number, formData: FormData) {
 }
 
 
-export async function deleteMarca(id: number) {
-  await prisma.marca.delete({
+export async function toggleMarca(id: number, activo: boolean) {
+  await prisma.marca.update({
     where: { id },
+    data: { activo },
+  
   })
 
   revalidatePath('/admin/marcas')

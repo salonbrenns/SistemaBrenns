@@ -25,15 +25,17 @@ export default function Search({ placeholder }: { placeholder: string }) {
       <label htmlFor="search" className="sr-only">
         Buscar
       </label>
+
       <input
         id="search"
         type="search"
-        className="peer w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-[#1e343b] placeholder:text-gray-400 focus:border-[#66b0ca] focus:outline-none focus:ring-2 focus:ring-[#a8d8ea]/50 transition-all"
+        className="peer w-full rounded-lg border border-[#f3a6c6] bg-white py-2 pl-10 pr-4 text-sm text-[#1e343b] placeholder:text-gray-400 focus:border-[#e75480] focus:outline-none focus:ring-2 focus:ring-[#f3a6c6]/40 transition-all"
         placeholder={placeholder}
         onChange={(e) => handleSearch(e.target.value)}
         defaultValue={searchParams.get('query')?.toString()}
       />
-      <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+
+      <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-2.5 h-5 w-5 text-gray-400 transition-colors peer-focus:text-[#e75480]" />
     </div>
   );
 }
