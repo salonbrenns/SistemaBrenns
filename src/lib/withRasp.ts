@@ -12,7 +12,7 @@ const XSS_PATTERNS = [
    /<script[^>]*>[^<]*<\/script>/i,
   /javascript\s*:/i,
   /on\w+\s*=\s*["'][^"']*["']/i,
-  /<[^>]+\s+on\w+\s*=/i,
+  /<[^>]{1,200}\son\w{1,50}\s*=/i,
 ];
 
 // ─── RATE LIMITER MANUAL (por IP) ────────────────────────────────────────────
