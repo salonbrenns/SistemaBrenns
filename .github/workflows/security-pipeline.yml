@@ -23,7 +23,7 @@ jobs:
           cache: npm
 
       - name: Instalar dependencias
-        run: npm ci --ignore-scripts || npm install --ignore-scripts
+        run: npm ci || npm install
 
       - name: Ejecutar pruebas y cobertura   # ← NUEVO
         run: npm run test:coverage
