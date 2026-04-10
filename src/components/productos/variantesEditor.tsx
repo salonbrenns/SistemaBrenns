@@ -1,16 +1,11 @@
 'use client'
 
-/**
- * VariantesEditor — gestiona la lista de variantes dentro del form de producto.
- * Cada variante se serializa como campos hidden + inputs con índice numérico
- * para que actionsproductos.ts pueda parsearlos con parseVariantes().
- */
-
 import { useState } from 'react'
 import { Plus, Trash2, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react'
 
+// Definimos la interfaz aquí para asegurar que sea consistente
 export interface VarianteForm {
-  id?: number        // undefined = nueva, number = existente
+  id?: number
   codigo: string
   tono: string
   presentacion: string
@@ -29,13 +24,14 @@ const inputClass =
   'w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition'
 const labelClass = 'text-[11px] font-semibold text-gray-500 uppercase tracking-wider'
 
+// CORRECCIÓN SONAR: Props marcadas como readonly
 interface Props {
-  initialVariantes?: VarianteForm[]
+  readonly initialVariantes?: readonly VarianteForm[];
 }
 
 export default function VariantesEditor({ initialVariantes }: Props) {
   const [variantes, setVariantes] = useState<VarianteForm[]>(
-    initialVariantes?.length ? initialVariantes : [varianteVacia()]
+    initialVariantes?.length ? [...initialVariantes] : [varianteVacia()]
   )
   const [expandido, setExpandido] = useState<number | null>(0)
 
@@ -46,7 +42,7 @@ export default function VariantesEditor({ initialVariantes }: Props) {
   }
 
   const eliminar = (i: number) => {
-    if (variantes.length === 1) return // siempre al menos una
+    if (variantes.length === 1) return
     setVariantes(prev => prev.filter((_, idx) => idx !== i))
     setExpandido(null)
   }
@@ -66,7 +62,8 @@ export default function VariantesEditor({ initialVariantes }: Props) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-xs font-black text-gray-500 uppercase tracking-widest">
-          Variantes <span className="font-normal text-gray-400">({variantes.length})</span>
+          Variantes{' '}
+          <span className="font-normal text-gray-400">({variantes.length})</span>
         </p>
         <button
           type="button"
@@ -86,11 +83,13 @@ export default function VariantesEditor({ initialVariantes }: Props) {
 
       <div className="space-y-2">
         {variantes.map((v, i) => (
-          <div key={i} className="border border-gray-200 rounded-xl overflow-hidden">
+          /* CORRECCIÓN SONAR: Key única (usamos ID o prefijo) */
+          <div key={v.id ?? `nueva-${i}`} className="border border-gray-200 rounded-xl overflow-hidden">
 
-            {/* Header del acordeón */}
-            <div
-              className="flex items-center justify-between px-4 py-3 bg-gray-50 cursor-pointer hover:bg-rose-50 transition-colors"
+            {/* CORRECCIÓN SONAR: Elemento interactivo nativo (button) para el acordeón */}
+            <button
+              type="button"
+              className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-rose-50 transition-colors"
               onClick={() => setExpandido(expandido === i ? null : i)}
             >
               <div className="flex items-center gap-3">
@@ -117,23 +116,20 @@ export default function VariantesEditor({ initialVariantes }: Props) {
                   : <ChevronDown className="w-4 h-4 text-gray-400" />
                 }
               </div>
-            </div>
+            </button>
 
-            {/* Inputs ocultos — siempre presentes para que lleguen al FormData */}
+            {/* Inputs ocultos */}
             {v.id && <input type="hidden" name={`variante_id_${i}`} value={v.id} />}
             <input type="hidden" name={`variante_codigo_${i}`}       value={v.codigo} />
             <input type="hidden" name={`variante_tono_${i}`}         value={v.tono} />
             <input type="hidden" name={`variante_presentacion_${i}`} value={v.presentacion} />
             <input type="hidden" name={`variante_precio_costo_${i}`} value={v.precio_costo} />
             <input type="hidden" name={`variante_precio_venta_${i}`} value={v.precio_venta} />
-            <input type="hidden" name={`variante_stock_${i}`}        value={v.stock} />
+            <input type="hidden" name={`variante_stock_${i}`}         value={v.stock} />
             <input type="hidden" name={`variante_activo_${i}`}       value={String(v.activo)} />
 
-            {/* Cuerpo del acordeón */}
             {expandido === i && (
               <div className="p-4 grid grid-cols-2 gap-3 bg-white">
-
-                {/* Tono */}
                 <div className="space-y-1">
                   <label className={labelClass}>Tono / Color</label>
                   <input
@@ -145,7 +141,6 @@ export default function VariantesEditor({ initialVariantes }: Props) {
                   />
                 </div>
 
-                {/* Presentación */}
                 <div className="space-y-1">
                   <label className={labelClass}>Presentación</label>
                   <input
@@ -157,7 +152,6 @@ export default function VariantesEditor({ initialVariantes }: Props) {
                   />
                 </div>
 
-                {/* Código */}
                 <div className="space-y-1">
                   <label className={labelClass}>Código</label>
                   <input
@@ -169,7 +163,6 @@ export default function VariantesEditor({ initialVariantes }: Props) {
                   />
                 </div>
 
-                {/* Stock */}
                 <div className="space-y-1">
                   <label className={labelClass}>Stock *</label>
                   <input
@@ -182,7 +175,6 @@ export default function VariantesEditor({ initialVariantes }: Props) {
                   />
                 </div>
 
-                {/* Precio costo */}
                 <div className="space-y-1">
                   <label className={labelClass}>Precio Costo *</label>
                   <div className="relative">
@@ -199,7 +191,6 @@ export default function VariantesEditor({ initialVariantes }: Props) {
                   </div>
                 </div>
 
-                {/* Precio venta */}
                 <div className="space-y-1">
                   <label className={labelClass}>Precio Venta *</label>
                   <div className="relative">
@@ -216,7 +207,6 @@ export default function VariantesEditor({ initialVariantes }: Props) {
                   </div>
                 </div>
 
-                {/* Activo toggle */}
                 <div className="col-span-2 flex items-center gap-2 pt-1">
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <div className="relative">
@@ -232,7 +222,6 @@ export default function VariantesEditor({ initialVariantes }: Props) {
                     <span className="text-xs font-medium text-gray-600">Variante activa</span>
                   </label>
                 </div>
-
               </div>
             )}
           </div>
