@@ -359,12 +359,13 @@ model Empleado {
   @@schema("catalogos")
 }
 
-model tblcategorias_servicios {
+model categorias_servicios {
   id           Int        @id @default(autoincrement())
   nombre       String     @unique @db.VarChar(100)
   activo       Boolean    @default(true)
   tblservicios Servicio[]
-
+ 
+  @@map("tblcategorias_servicios")
   @@schema("catalogos")
 }
 
