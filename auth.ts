@@ -25,9 +25,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             where: { correo: credentials.correo as string },
           })
 
-          console.log("👤 Usuario:", usuario?.correo)
-          console.log("🔑 Hash en BD:", usuario?.password?.substring(0, 20))
-          console.log("📝 Password ingresada:", credentials.password)
+      
 
           if (!usuario) throw new Error("Correo o contraseña incorrectos")
           if (usuario.cuenta_bloqueada) throw new Error("Tu cuenta está bloqueada.")

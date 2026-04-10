@@ -65,7 +65,7 @@ export default function ProductosPage() {
   const productosPagina = productosFiltrados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
 
   // Resetear página al cambiar búsqueda
-  useEffect(() => { setPagina(1) }, [busqueda])
+const handleBusqueda = (valor: string) => { setBusqueda(valor); setPagina(1) }
 
   return (
     <main className="min-h-screen bg-[#fffafa]">
@@ -92,7 +92,7 @@ export default function ProductosPage() {
         {/* Filtros */}
         <ProductosFiltros
           busqueda={busqueda}
-          setBusqueda={setBusqueda}
+          setBusqueda={handleBusqueda}
           marcasDisponibles={marcasDisponibles}
           marcasSeleccionadas={marcasSeleccionadas}
           toggleMarca={toggleMarca}

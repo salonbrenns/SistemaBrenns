@@ -1,28 +1,37 @@
-import { PartyPopper, Sparkles } from "lucide-react";
+"use client"
+import { Tag, Sparkles } from "lucide-react"
 
 export default function PromoBanner() {
   return (
-    <div className="w-full bg-gradient-to-r from-pink-600 to-pink-400 text-white py-3 overflow-hidden">
-      <div className="animate-marquee whitespace-nowrap flex items-center gap-3">
-        <PartyPopper className="w-5 h-5 text-white" />
-        <span className="font-semibold text-sm sm:text-base tracking-wide">
-          ¡Super Oferta del Día! — 20% de descuento en Material de Uñas
-        </span>
-        <Sparkles className="w-5 h-5 text-white" />
+    <div className="w-full bg-gradient-to-r from-rose-600 via-pink-600 to-pink-500 text-white py-2.5 overflow-hidden">
+      <div className="flex animate-marquee whitespace-nowrap">
+        {[1, 2, 3].map(i => (
+          <span key={i} className="inline-flex items-center gap-10 mx-6">
+            <span className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide">
+              <Tag className="w-3.5 h-3.5 flex-shrink-0" />
+              20% de descuento en Material de Uñas
+            </span>
+            <span className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide">
+              <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
+              Nuevos cursos disponibles — ¡Inscríbete ahora!
+            </span>
+            <span className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide">
+              <Tag className="w-3.5 h-3.5 flex-shrink-0" />
+              Envío gratis en compras mayores a $150
+            </span>
+          </span>
+        ))}
       </div>
-
-      {/* Animación */}
       <style>{`
         .animate-marquee {
           display: inline-block;
-          padding-left: 100%;
-          animation: marquee 12s linear infinite;
+          animation: marquee 28s linear infinite;
         }
         @keyframes marquee {
           0%   { transform: translateX(0); }
-          100% { transform: translateX(-100%); }
+          100% { transform: translateX(-33.33%); }
         }
       `}</style>
     </div>
-  );
+  )
 }

@@ -14,8 +14,8 @@ function parseImagenes(value: unknown): string[] {
 export function serializeProducto(producto: Producto & { marca?: unknown; categoria?: unknown }) {
   return {
     ...producto,
-    precio_costo: producto.precio_costo.toNumber(),
-    precio_venta: producto.precio_venta.toNumber(),
+   precio_costo: producto.precio_costo?.toNumber() ?? 0,
+precio_venta: producto.precio_venta?.toNumber() ?? 0,
     imagenes: parseImagenes(producto.imagen), // ← string[] limpio
   }
 }

@@ -1,193 +1,221 @@
-
-import { MapPin, Clock, Mail } from "lucide-react"
-
+import { MapPin, Clock, Mail, Users, Award, Heart } from "lucide-react";
 
 export const metadata = {
-  title: "Nosotros — Brenn's",
-  description: "Conoce a Brenn's: academia, distribuidora y salón de belleza en Huejutla de Reyes, Hidalgo.",
-}
+  title: "Nosotros — Brenn&apos;s",
+  description: "Conoce a Brenn&apos;s: academia, distribuidora y salón de belleza en Huejutla de Reyes, Hidalgo.",
+};
 
 export default function NosotrosPage() {
   return (
     <div className="min-h-screen bg-white">
+      {/* HERO - Más impactante y con mejor uso del espacio */}
+      <section className="relative bg-gradient-to-br from-[#FF5BA8] via-[#FF8AC2] to-pink-50 py-24 md:py-32 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(at_top_right,#ffffff20_0%,transparent_50%)]" />
+        
+        <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
+          <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-md px-5 py-2 rounded-full mb-6 border border-white/50">
+            <span className="text-xs font-semibold tracking-[2px] text-pink-600 uppercase">Academia • Distribuidora • Salón</span>
+          </div>
 
-      {/* ── HERO ── */}
-      <section className="bg-gradient-to-br from-pink-50 to-white border-b border-pink-100 py-20 px-4 text-center">
-        <div className="max-w-2xl mx-auto">
-          
-          <p className="text-xs font-bold tracking-widest text-pink-500 uppercase mb-3">
-            Academia · Distribuidora · Salón
-          </p>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4" style={{ fontFamily: "Georgia, serif" }}>
+          <h1 
+            className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight"
+            style={{ fontFamily: "Georgia, serif" }}
+          >
             Somos Brenn&apos;s
           </h1>
-          <p className="text-gray-500 text-lg leading-relaxed">
-            El ecosistema de belleza integral de la Huasteca: formamos profesionales,
-            ofrecemos servicios de alta gama y ponemos los mejores insumos al alcance de todas.
+
+          <p className="max-w-2xl mx-auto text-white/90 text-lg md:text-xl leading-relaxed">
+            El ecosistema de belleza integral de la Huasteca.<br />
+            Formamos profesionales, embellecemos con excelencia y ofrecemos los mejores insumos.
           </p>
         </div>
       </section>
 
-      <div className="max-w-4xl mx-auto px-4 py-12 space-y-8">
+      <div className="max-w-6xl mx-auto px-6 py-16 space-y-20">
 
-        {/* ── MISIÓN + VISIÓN ── */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-pink-50 border border-pink-200 rounded-2xl p-6">
-            <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mb-4">
-              <svg className="w-5 h-5 stroke-pink-600" viewBox="0 0 24 24" fill="none" strokeWidth={2}>
-                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
-              </svg>
+        {/* MISIÓN + VISIÓN */}
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="bg-gradient-to-br from-pink-50 to-white border border-pink-100 rounded-3xl p-10 group hover:shadow-xl transition-all duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-[#FF5BA8] flex items-center justify-center mb-6">
+              <Heart className="w-7 h-7 text-white" />
             </div>
-            <p className="text-xs font-bold tracking-widest text-pink-500 uppercase mb-1">Misión</p>
-            <p className="text-pink-900 text-sm leading-relaxed">
-              Empoderar y embellecer a la mujer de la Huasteca a través de un modelo integral que ofrece
-              formación profesional de excelencia, servicios de cuidado personal de alta gama y suministros
-              de calidad superior a precios accesibles. Transformamos la pasión por la belleza en una
-              profesión rentable y una experiencia de bienestar única.
+            <h3 className="text-2xl font-semibold text-gray-900 mb-4">Misión</h3>
+            <p className="text-gray-600 leading-relaxed text-[15.5px]">
+              Empoderar y embellecer a la mujer de la Huasteca a través de un modelo integral que combina 
+              <span className="font-medium text-pink-600"> formación profesional de excelencia</span>, 
+              servicios de cuidado personal de alta gama y suministros de calidad superior a precios accesibles.
             </p>
           </div>
-          <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-            <div className="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center mb-4">
-              <svg className="w-5 h-5 stroke-pink-600" viewBox="0 0 24 24" fill="none" strokeWidth={2}>
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-              </svg>
+
+          <div className="bg-white border border-gray-100 rounded-3xl p-10 shadow-sm hover:shadow-xl transition-all duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-pink-100 flex items-center justify-center mb-6">
+              <Award className="w-7 h-7 text-[#FF5BA8]" />
             </div>
-            <p className="text-xs font-bold tracking-widest text-pink-500 uppercase mb-1">Visión</p>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              Ser el ecosistema de belleza más importante de Huejutla y sus alrededores en los próximos
-              5 años, convirtiéndonos en el referente obligado para toda mujer que busque desde un
-              servicio de uñas impecable hasta la mejor educación y los insumos más confiables del mercado.
+            <h3 className="text-2xl font-semibold text-gray-900 mb-4">Visión</h3>
+            <p className="text-gray-600 leading-relaxed text-[15.5px]">
+              Ser el ecosistema de belleza más importante de Huejutla y la Huasteca en los próximos 5 años, 
+              convirtiéndonos en el referente obligado para toda mujer que busca calidad, profesionalismo y calidez.
             </p>
           </div>
         </div>
 
-        {/* ── VALORES ── */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-          <p className="text-xs font-bold tracking-widest text-pink-500 uppercase mb-1">Lo que nos define</p>
-          <h2 className="text-xl font-bold text-gray-900 mb-6" style={{ fontFamily: "Georgia, serif" }}>
-            Nuestros valores
-          </h2>
-          <div className="grid sm:grid-cols-2 gap-5">
+        {/* VALORES */}
+        <div>
+          <div className="text-center mb-12">
+            <p className="uppercase tracking-[3px] text-pink-500 text-sm font-semibold mb-2">Lo que nos define</p>
+            <h2 className="text-4xl font-bold text-gray-900" style={{ fontFamily: "Georgia, serif" }}>
+              Nuestros Valores
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { titulo: "Integralidad",         desc: "Ofrecemos la solución completa: capacitación, herramientas y resultados." },
-              { titulo: "Calidad garantizada",  desc: "Solo enseñamos y vendemos lo que nosotros mismos usamos en el salón." },
-              { titulo: "Compromiso social",    desc: "Impulsamos la economía local formando nuevas emprendedoras." },
-              { titulo: "Calidez",              desc: "Cada alumna y clienta se siente valorada y especial en nuestro espacio." },
-            ].map(v => (
-              <div key={v.titulo} className="flex items-start gap-3">
-                <div className="w-2 h-2 rounded-full bg-pink-500 mt-1.5 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-gray-800 text-sm">{v.titulo}</p>
-                  <p className="text-gray-500 text-xs leading-relaxed mt-1">{v.desc}</p>
+              { 
+                icon: Users, 
+                titulo: "Integralidad", 
+                desc: "Ofrecemos la solución completa: capacitación, herramientas y resultados." 
+              },
+              { 
+                icon: Award, 
+                titulo: "Calidad garantizada", 
+                desc: "Solo enseñamos y vendemos lo que nosotros mismos usamos en el salón." 
+              },
+              { 
+                icon: Heart, 
+                titulo: "Compromiso social", 
+                desc: "Impulsamos la economía local formando nuevas emprendedoras." 
+              },
+              { 
+                icon: Users, 
+                titulo: "Calidez humana", 
+                desc: "Cada alumna y clienta se siente valorada y especial en nuestro espacio." 
+              },
+            ].map((v, i) => (
+              <div key={i} className="bg-white border border-gray-100 rounded-3xl p-8 hover:border-pink-200 transition-all group">
+                <div className="w-12 h-12 rounded-2xl bg-pink-50 flex items-center justify-center mb-6 group-hover:bg-[#FF5BA8] group-hover:text-white transition-colors">
+                  <v.icon className="w-6 h-6 text-[#FF5BA8] group-hover:text-white" />
                 </div>
+                <h3 className="font-semibold text-xl text-gray-900 mb-3">{v.titulo}</h3>
+                <p className="text-gray-600 text-[15px] leading-relaxed">{v.desc}</p>
               </div>
             ))}
           </div>
         </div>
-            
 
-        {/* ── TRES PILARES ── */}
-<div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-  <p className="text-xs font-bold tracking-widest text-pink-500 uppercase mb-1">¿Qué hacemos?</p>
-  <h2 className="text-xl font-bold text-gray-900 mb-6" style={{ fontFamily: "Georgia, serif" }}>
-    Tres pilares, una pasión
-  </h2>
-  <div className="space-y-3">
-
-    {/* Academia */}
-    <div className="flex items-start gap-4 bg-gray-50 rounded-xl p-4">
-      <div className="w-10 h-10 rounded-full bg-pink-600 flex items-center justify-center flex-shrink-0">
-        <svg className="w-4 h-4 stroke-white" viewBox="0 0 24 24" fill="none" strokeWidth={2}>
-          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
-        </svg>
-      </div>
-      <div>
-        <p className="font-semibold text-gray-800 text-sm">Academia</p>
-        <p className="text-gray-500 text-xs leading-relaxed mt-1">
-          Cursos y talleres presenciales para estilistas de todos los niveles. Formamos profesionales que transforman su pasión en negocio.
-        </p>
-      </div>
-    </div>
-
-    {/* Distribuidora */}
-    <div className="flex items-start gap-4 bg-gray-50 rounded-xl p-4">
-      <div className="w-10 h-10 rounded-full bg-pink-600 flex items-center justify-center flex-shrink-0">
-        <svg className="w-4 h-4 stroke-white" viewBox="0 0 24 24" fill="none" strokeWidth={2}>
-          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-          <line x1="3" y1="6" x2="21" y2="6"/>
-          <path d="M16 10a4 4 0 01-8 0"/>
-        </svg>
-      </div>
-      <div>
-        <p className="font-semibold text-gray-800 text-sm">Distribuidora</p>
-        <p className="text-gray-500 text-xs leading-relaxed mt-1">
-          Insumos de calidad superior a precios accesibles. Solo vendemos lo que nosotros mismas utilizamos en el salón.
-        </p>
-      </div>
-    </div>
-
-    {/* Salón */}
-    <div className="flex items-start gap-4 bg-gray-50 rounded-xl p-4">
-      <div className="w-10 h-10 rounded-full bg-pink-600 flex items-center justify-center flex-shrink-0">
-        <svg className="w-4 h-4 stroke-white" viewBox="0 0 24 24" fill="none" strokeWidth={2}>
-          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-      </div>
-      <div>
-        <p className="font-semibold text-gray-800 text-sm">Salón</p>
-        <p className="text-gray-500 text-xs leading-relaxed mt-1">
-          Servicios de uñas, cabello y bienestar de alta gama. Un espacio donde cada mujer vive una experiencia única.
-        </p>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-        {/* ── UBICACIÓN + CONTACTO ── */}
-        <div className="grid md:grid-cols-2 gap-6">
-
-          {/* Ubicación */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-            <p className="text-xs font-bold tracking-widest text-pink-500 uppercase mb-1">Encuéntranos</p>
-            <h2 className="text-xl font-bold text-gray-900 mb-5" style={{ fontFamily: "Georgia, serif" }}>
-              Ubicación
+        {/* TRES PILARES */}
+        <div>
+          <div className="text-center mb-12">
+            <p className="uppercase tracking-widest text-pink-500 text-sm font-semibold mb-3">¿Qué hacemos?</p>
+            <h2 className="text-4xl font-bold text-gray-900" style={{ fontFamily: "Georgia, serif" }}>
+              Tres pilares, una pasión
             </h2>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-pink-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <MapPin className="w-4 h-4 text-pink-500" />
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Academia */}
+            <div className="bg-white border border-gray-100 rounded-3xl p-10 hover:shadow-xl transition-all group">
+              <div className="w-16 h-16 rounded-2xl bg-[#FF5BA8] flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18 9.246 18 10.832 18.477 12 19.253zm0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18 14.754 18 13.168 18.477 12 19.253z" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-semibold mb-4">Academia</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Cursos y talleres presenciales de alta calidad para estilistas de todos los niveles. 
+                Formamos profesionales que transforman su pasión por la belleza en un negocio rentable.
+              </p>
+            </div>
+
+            {/* Distribuidora */}
+            <div className="bg-white border border-gray-100 rounded-3xl p-10 hover:shadow-xl transition-all group">
+              <div className="w-16 h-16 rounded-2xl bg-[#FF5BA8] flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-semibold mb-4">Distribuidora</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Insumos profesionales de la más alta calidad a precios accesibles. 
+                Solo vendemos productos que nosotros mismos utilizamos en nuestro salón.
+              </p>
+            </div>
+
+            {/* Salón */}
+            <div className="bg-white border border-gray-100 rounded-3xl p-10 hover:shadow-xl transition-all group">
+              <div className="w-16 h-16 rounded-2xl bg-[#FF5BA8] flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2v-2a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-semibold mb-4">Salón de Belleza</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Servicios premium de uñas, cabello, manicura, pedicura y bienestar. 
+                Un espacio elegante donde cada clienta vive una experiencia única y relajante.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* UBICACIÓN Y CONTACTO - Más amplio */}
+        <div className="grid lg:grid-cols-5 gap-8">
+          {/* Ubicación */}
+          <div className="lg:col-span-3 bg-white border border-gray-100 rounded-3xl p-10">
+            <h2 className="text-3xl font-bold mb-8" style={{ fontFamily: "Georgia, serif" }}>Encuéntranos</h2>
+            
+            <div className="space-y-8">
+              <div className="flex gap-5">
+                <div className="w-12 h-12 rounded-2xl bg-pink-50 flex-shrink-0 flex items-center justify-center">
+                  <MapPin className="w-6 h-6 text-[#FF5BA8]" />
                 </div>
-                <div className="text-sm text-gray-600 leading-relaxed">
-                  Calle Juan Mogica Ugalde 5A, Zona Centro<br />
-                  <span className="text-xs text-gray-400">Una calle detrás del cine (donde antes era Uniformes Bekita)</span><br />
-                  <strong className="text-gray-800">Huejutla de Reyes, Hidalgo</strong>
+                <div>
+                  <p className="font-semibold text-gray-900">Dirección</p>
+                  <p className="text-gray-600 mt-1 leading-relaxed">
+                    Calle Juan Mogica Ugalde 5A, Zona Centro<br />
+                    Una calle detrás del cine (donde antes era Uniformes Bekita)<br />
+                    <span className="font-medium">Huejutla de Reyes, Hidalgo</span>
+                  </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-pink-50 flex items-center justify-center flex-shrink-0">
-                  <Clock className="w-4 h-4 text-pink-500" />
+
+              <div className="flex gap-5">
+                <div className="w-12 h-12 rounded-2xl bg-pink-50 flex-shrink-0 flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-[#FF5BA8]" />
                 </div>
-                <div className="text-sm text-gray-600">
-                  <p>Lun – Vie &nbsp;&nbsp; 9:00 – 19:00</p>
-                  <p>Sábado &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 9:00 – 15:00</p>
+                <div>
+                  <p className="font-semibold text-gray-900">Horarios</p>
+                  <p className="text-gray-600 mt-1">Lunes a Viernes: 9:00 - 19:00<br />Sábado: 9:00 - 15:00</p>
                 </div>
               </div>
             </div>
-            {/* Mapa */}
-            <div className="mt-4 rounded-xl overflow-hidden border border-gray-100 h-48">
+
+            <div className="mt-10 rounded-2xl overflow-hidden border border-gray-100 shadow-inner h-[380px]">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.0!2d-98.4190!3d21.1390!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sHuejutla+de+Reyes%2C+Hidalgo!5e0!3m2!1ses!2smx!4v1"
                 className="w-full h-full border-none"
                 allowFullScreen
                 loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
               />
             </div>
           </div>
 
-          {/* Redes y contacto */}
+          {/* Contacto */}
+          <div className="lg:col-span-2 bg-gradient-to-br from-pink-50 to-white border border-pink-100 rounded-3xl p-10">
+            <h2 className="text-3xl font-bold mb-8" style={{ fontFamily: "Georgia, serif" }}>Contáctanos</h2>
+            
+            <div className="space-y-6">
+              <a href="mailto:salonbrenns11@gmail.com" className="flex items-center gap-4 group">
+                <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm group-hover:bg-[#FF5BA8] transition-colors">
+                  <Mail className="w-6 h-6 text-pink-500 group-hover:text-white" />
+                </div>
+                <div>
+                  <p className="font-medium">Correo electrónico</p>
+                  <p className="text-pink-600 group-hover:text-pink-700">salonbrenns11@gmail.com</p>
+                </div>
+              </a>
+
+              {/* WhatsApp, Instagram y Facebook igual que antes pero con mejor espaciado */}
+              {/* ... (puedes mantener los enlaces que ya tenías) */}
+              {/* Redes y contacto */}
           <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
             <p className="text-xs font-bold tracking-widest text-pink-500 uppercase mb-1">Contáctanos</p>
             <h2 className="text-xl font-bold text-gray-900 mb-5" style={{ fontFamily: "Georgia, serif" }}>
@@ -240,11 +268,11 @@ export default function NosotrosPage() {
 
             </div>
           </div>
+            </div>
+          </div>
         </div>
-
-      
 
       </div>
     </div>
-  )
+  );
 }

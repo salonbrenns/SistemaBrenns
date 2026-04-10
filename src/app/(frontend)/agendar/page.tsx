@@ -1,4 +1,3 @@
-// src/app/(frontend)/agendar/page.tsx
 "use client"
 
 import { useEffect, useState, Suspense } from "react"
@@ -8,7 +7,7 @@ import AuthGuard from "@/components/ui/AuthGuard"
 import Breadcrumb from "@/components/Breadcrumb"
 import {
   ChevronLeft, ChevronRight, Clock, Calendar,
-  CreditCard, CheckCircle, Lock, Loader2, AlertCircle
+  CreditCard, CheckCircle, Lock, Loader2, AlertCircle, User
 } from "lucide-react"
 import { format, addMonths, subMonths, startOfMonth, endOfMonth,
          eachDayOfInterval, isBefore, isToday, isSameDay } from "date-fns"
@@ -29,21 +28,28 @@ type Horario = {
   disponible: boolean
 }
 
+type Empleado = {
+  id: number
+  nombre: string
+}
+
 function AgendarContenido() {
   useSession()
   const searchParams = useSearchParams()
   const servicioId   = searchParams.get("servicioId")
 
-  const [paso,          setPaso]          = useState<1 | 2>(1)
-  const [servicio,      setServicio]      = useState<Servicio | null>(null)
-  const [cargandoSrv,   setCargandoSrv]   = useState(true)
-  const [mesActual,     setMesActual]     = useState(new Date())
-  const [fechaSel,      setFechaSel]      = useState<Date | null>(null)
-  const [horarios,      setHorarios]      = useState<Horario[]>([])
-  const [cargandoHor,   setCargandoHor]   = useState(false)
-  const [horaSel,       setHoraSel]       = useState<string | null>(null)
-  const [notas,         setNotas]         = useState("")
+  const [paso,           setPaso]           = useState<1 | 2>(1)
+  const [servicio,       setServicio]       = useState<Servicio | null>(null)
+  const [cargandoSrv,    setCargandoSrv]    = useState(true)
+  const [mesActual,      setMesActual]      = useState(new Date())
+  const [fechaSel,       setFechaSel]       = useState<Date | null>(null)
+  const [horarios,       setHorarios]       = useState<Horario[]>([])
+  const [cargandoHor,    setCargandoHor]    = useState(false)
+  const [horaSel,        setHoraSel]        = useState<string | null>(null)
+  const [notas,          setNotas]          = useState("")
   const [diasBloqueados, setDiasBloqueados] = useState<string[]>([])
+  const [empleados,      setEmpleados]      = useState<Empleado[]>([])
+  const [empleadoSel,    setEmpleadoSel]    = useState<number | null>(null)
 
   const [form, setForm] = useState({
     nombreTarjeta: "", numeroTarjeta: "", expiracion: "", cvv: "",
@@ -60,7 +66,13 @@ function AgendarContenido() {
       .catch(() => setCargandoSrv(false))
   }, [servicioId])
 
-  
+  // Cargar empleados
+  useEffect(() => {
+    fetch("/api/empleados")
+      .then(r => r.json())
+      .then(data => setEmpleados(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }, [])
 
   // Cargar días bloqueados
   useEffect(() => {
@@ -72,19 +84,19 @@ function AgendarContenido() {
       .catch(() => {})
   }, [])
 
- useEffect(() => {
-  if (!fechaSel) return
-  setCargandoHor(true)
-  setHoraSel(null)
-  const fechaStr = format(fechaSel, "yyyy-MM-dd")
-  fetch(`/api/horarios?fecha=${fechaStr}&servicioId=${servicioId || ""}`)
-    .then(r => r.json())
-    .then(data => {
-      setHorarios(Array.isArray(data) ? data : [])  // ← cambio aquí
-      setCargandoHor(false)
-    })
-    .catch(() => { setHorarios([]); setCargandoHor(false) })
-}, [fechaSel, servicioId])
+  useEffect(() => {
+    if (!fechaSel) return
+    setCargandoHor(true)
+    setHoraSel(null)
+    const fechaStr = format(fechaSel, "yyyy-MM-dd")
+    fetch(`/api/horarios?fecha=${fechaStr}&servicioId=${servicioId || ""}`)
+      .then(r => r.json())
+      .then(data => {
+        setHorarios(Array.isArray(data) ? data : [])
+        setCargandoHor(false)
+      })
+      .catch(() => { setHorarios([]); setCargandoHor(false) })
+  }, [fechaSel, servicioId])
 
   const diasDelMes = eachDayOfInterval({
     start: startOfMonth(mesActual),
@@ -113,14 +125,14 @@ function AgendarContenido() {
           fecha:       format(fechaSel, "yyyy-MM-dd"),
           hora:        horaSel,
           notas,
-          ...form,
+          empleado_id: empleadoSel,
         }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Error al confirmar")
       setExito(true)
     } catch (err: unknown) {
-     setErrorPago(err instanceof Error ? err.message : "Error al confirmar")
+      setErrorPago(err instanceof Error ? err.message : "Error al confirmar")
     } finally {
       setPagando(false)
     }
@@ -138,7 +150,12 @@ function AgendarContenido() {
           <p className="text-gray-500 mb-1">
             {fechaSel && format(fechaSel, "EEEE d 'de' MMMM, yyyy", { locale: es })}
           </p>
-          <p className="text-pink-600 font-bold text-xl mb-8">{horaSel}</p>
+          <p className="text-pink-600 font-bold text-xl mb-2">{horaSel}</p>
+          {empleadoSel && (
+            <p className="text-gray-500 mb-6 text-sm">
+              Con: {empleados.find(e => e.id === empleadoSel)?.nombre}
+            </p>
+          )}
           <div className="flex gap-4 justify-center">
             <Link href="/mis-cursos" className="bg-pink-600 text-white font-bold px-8 py-3 rounded-full hover:bg-pink-700 transition">
               Ver mis citas
@@ -189,7 +206,59 @@ function AgendarContenido() {
         <div className="grid lg:grid-cols-3 gap-8">
 
           {paso === 1 && (
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-6">
+
+              {/* ── Selección de empleado ── */}
+              {empleados.length > 0 && (
+                <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8">
+                  <h2 className="text-xl font-bold text-pink-600 mb-6 flex items-center gap-2">
+                    <User className="w-5 h-5" /> Elige tu especialista
+                  </h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {/* Opción sin preferencia */}
+                    <button
+                      onClick={() => setEmpleadoSel(null)}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
+                        empleadoSel === null
+                          ? "border-pink-600 bg-pink-50"
+                          : "border-gray-100 hover:border-pink-200 bg-white"
+                      }`}
+                    >
+                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                        <User className="w-6 h-6 text-gray-400" />
+                      </div>
+                      <span className="text-xs font-semibold text-gray-600 text-center">Sin preferencia</span>
+                      {empleadoSel === null && (
+                        <span className="text-xs text-pink-600 font-bold">✓ Seleccionado</span>
+                      )}
+                    </button>
+
+                    {empleados.map(emp => (
+                      <button
+                        key={emp.id}
+                        onClick={() => setEmpleadoSel(emp.id)}
+                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
+                          empleadoSel === emp.id
+                            ? "border-pink-600 bg-pink-50"
+                            : "border-gray-100 hover:border-pink-200 bg-white"
+                        }`}
+                      >
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-bold text-lg">
+                          {emp.nombre.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="text-xs font-semibold text-gray-700 text-center leading-tight">
+                          {emp.nombre.split(" ")[0]}
+                        </span>
+                        {empleadoSel === emp.id && (
+                          <span className="text-xs text-pink-600 font-bold">✓ Seleccionado</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Calendario ── */}
               <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8">
                 <h2 className="text-xl font-bold text-pink-600 mb-6 flex items-center gap-2">
                   <Calendar className="w-5 h-5" /> Selecciona fecha
@@ -389,6 +458,12 @@ function AgendarContenido() {
                     <p className="text-sm text-gray-500 mt-1">{servicio.duracion}</p>
                     <p className="text-2xl font-black text-pink-600 mt-2">${Number(servicio.precio).toLocaleString()} MXN</p>
                   </div>
+                  {empleadoSel && (
+                    <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 rounded-xl px-4 py-3">
+                      <User className="w-4 h-4 text-pink-400 flex-shrink-0" />
+                      <span>{empleados.find(e => e.id === empleadoSel)?.nombre}</span>
+                    </div>
+                  )}
                   {fechaSel && (
                     <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 rounded-xl px-4 py-3">
                       <Calendar className="w-4 h-4 text-pink-400 flex-shrink-0" />

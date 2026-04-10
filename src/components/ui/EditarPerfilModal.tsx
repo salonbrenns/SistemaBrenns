@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react"
 import { useSession } from "next-auth/react"
-import { X, Eye, EyeOff, User, Mail, Phone, Lock } from "lucide-react"
+import { X, Eye, EyeOff, User, Mail, Phone, Lock, ShieldAlert } from "lucide-react"
 
 // 1. Definimos la interfaz para extender el usuario de NextAuth
 interface CustomUser {
@@ -22,7 +22,6 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
   const { data: session, update } = useSession()
   const [tab, setTab] = useState<Tab>("datos")
 
-  // Casteo seguro para evitar el error de 'any'
   const user = session?.user as CustomUser | undefined
 
   // Estados de Datos personales
@@ -31,6 +30,7 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
   const [telefono, setTelefono] = useState(user?.telefono || "")
   const [loadingDatos, setLoadingDatos] = useState(false)
   const [errorDatos, setErrorDatos] = useState<string | null>(null)
+  const [errorRasp, setErrorRasp] = useState<string | null>(null) // ← NUEVO: error específico del RASP
   const [exitoDatos, setExitoDatos] = useState(false)
 
   // Estados de Contraseña
@@ -45,6 +45,7 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
 
   const handleGuardarDatos = async () => {
     setErrorDatos(null)
+    setErrorRasp(null) // ← NUEVO: limpiar error RASP previo
     setExitoDatos(false)
 
     if (!nombre.trim() || !correo.trim()) {
@@ -59,15 +60,22 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre, correo, telefono }),
       })
+
       const data = await res.json()
+
+      // ← NUEVO: si el RASP bloqueó la petición, mostrar error especial
+      if (res.status === 403) {
+        setErrorRasp(data.error ?? "Tu solicitud fue bloqueada por seguridad. Revisa los datos ingresados.")
+        return
+      }
+
       if (!res.ok) throw new Error(data.error || "Error al guardar")
 
-      // Actualizar sesión de NextAuth
       await update({ name: nombre, email: correo })
       setExitoDatos(true)
       onActualizado({ nombre, correo, telefono })
-
       setTimeout(() => setExitoDatos(false), 3000)
+
     } catch (err) {
       const mensaje = err instanceof Error ? err.message : "Error inesperado"
       setErrorDatos(mensaje)
@@ -161,7 +169,7 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
                   <input
                     type="text"
                     value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
+                    onChange={(e) => { setNombre(e.target.value); setErrorRasp(null) }}
                     className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all text-sm"
                   />
                 </div>
@@ -174,28 +182,49 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
                   <input
                     type="email"
                     value={correo}
-                    onChange={(e) => setCorreo(e.target.value)}
+                    onChange={(e) => { setCorreo(e.target.value); setErrorRasp(null) }}
                     className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all text-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Teléfono <span className="text-gray-400 font-normal">(opcional)</span></label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Teléfono <span className="text-gray-400 font-normal">(opcional)</span>
+                </label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="tel"
                     value={telefono}
-                    onChange={(e) => setTelefono(e.target.value)}
+                    onChange={(e) => { setTelefono(e.target.value); setErrorRasp(null) }}
                     placeholder="10 dígitos"
                     className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all text-sm"
                   />
                 </div>
               </div>
 
-              {errorDatos && <p className="text-red-600 text-sm text-center bg-red-50 p-2 rounded-lg">{errorDatos}</p>}
-              {exitoDatos && <p className="text-green-600 text-sm text-center bg-green-50 p-2 rounded-lg">✓ Datos actualizados correctamente</p>}
+              {/* ← NUEVO: Alerta de bloqueo RASP */}
+              {errorRasp && (
+                <div className="flex items-start gap-3 bg-red-50 border border-red-300 text-red-700 rounded-2xl px-4 py-3 text-sm">
+                  <ShieldAlert className="w-5 h-5 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-semibold">Solicitud bloqueada por seguridad</p>
+                    <p className="text-red-600 mt-0.5">{errorRasp}</p>
+                  </div>
+                </div>
+              )}
+
+              {errorDatos && (
+                <p className="text-red-600 text-sm text-center bg-red-50 p-2 rounded-lg">
+                  {errorDatos}
+                </p>
+              )}
+              {exitoDatos && (
+                <p className="text-green-600 text-sm text-center bg-green-50 p-2 rounded-lg">
+                  ✓ Datos actualizados correctamente
+                </p>
+              )}
 
               <button
                 onClick={handleGuardarDatos}
@@ -210,9 +239,9 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
           {tab === "password" && (
             <>
               {[
-                { id: 'pa', label: "Contraseña actual", value: passwordActual, setter: setPasswordActual, show: showActual, toggle: () => setShowActual(!showActual) },
-                { id: 'pn', label: "Nueva contraseña", value: passwordNueva, setter: setPasswordNueva, show: showNueva, toggle: () => setShowNueva(!showNueva) },
-                { id: 'pc', label: "Confirmar nueva contraseña", value: passwordConfirm, setter: setPasswordConfirm, show: showNueva, toggle: () => setShowNueva(!showNueva) },
+                { id: "pa", label: "Contraseña actual", value: passwordActual, setter: setPasswordActual, show: showActual, toggle: () => setShowActual(!showActual) },
+                { id: "pn", label: "Nueva contraseña", value: passwordNueva, setter: setPasswordNueva, show: showNueva, toggle: () => setShowNueva(!showNueva) },
+                { id: "pc", label: "Confirmar nueva contraseña", value: passwordConfirm, setter: setPasswordConfirm, show: showNueva, toggle: () => setShowNueva(!showNueva) },
               ].map(({ id, label, value, setter, show, toggle }) => (
                 <div key={id}>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">{label}</label>
@@ -232,8 +261,16 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
                 </div>
               ))}
 
-              {errorPass && <p className="text-red-600 text-sm text-center bg-red-50 p-2 rounded-lg">{errorPass}</p>}
-              {exitoPass && <p className="text-green-600 text-sm text-center bg-green-50 p-2 rounded-lg">✓ Contraseña actualizada correctamente</p>}
+              {errorPass && (
+                <p className="text-red-600 text-sm text-center bg-red-50 p-2 rounded-lg">
+                  {errorPass}
+                </p>
+              )}
+              {exitoPass && (
+                <p className="text-green-600 text-sm text-center bg-green-50 p-2 rounded-lg">
+                  ✓ Contraseña actualizada correctamente
+                </p>
+              )}
 
               <button
                 onClick={handleCambiarPassword}

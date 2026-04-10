@@ -191,18 +191,23 @@ export default function DashboardPage() {
     }
   }
 
-  const handleVerPermisos = async (u: Usuario) => {
-    setUsuarioPermisos(u)
-    setShowPermisos(true)
-    setLoadingPermisos(true)
-    try {
-      const res = await fetch(`/api/admin/permisos?usuario_id=${u.id}`)
-      const data = await res.json()
-      setPermisos(data)
-    } finally {
-      setLoadingPermisos(false)
-    }
+ const handleVerPermisos = async (u: Usuario) => {
+  setUsuarioPermisos(u)
+  setShowPermisos(true)
+  setLoadingPermisos(true)
+  try {
+    const res = await fetch(`/api/admin/permisos?usuario_id=${u.id}`)
+    if (!res.ok) { setPermisos([]); return }
+    const text = await res.text()
+    if (!text) { setPermisos([]); return }
+    const data = JSON.parse(text)
+    setPermisos(Array.isArray(data) ? data : [])
+  } catch {
+    setPermisos([])
+  } finally {
+    setLoadingPermisos(false)
   }
+}
 
   const handleTogglePermiso = async (key: string, activo: boolean) => {
     if (!usuarioPermisos) return

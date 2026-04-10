@@ -15,7 +15,7 @@ function InscribirseContent() {
   const curso = {
     id: searchParams.get("id") || "1",
     titulo: searchParams.get("titulo") || "Curso seleccionado",
-    instructora: searchParams.get("instructora") || "Brenn's",
+    instructora: searchParams.get("instructora") || "Brenn&apos;s",
     precio: Number(searchParams.get("precio")) || 2500,
     cupos: Number(searchParams.get("cupos")) || 3,
   }

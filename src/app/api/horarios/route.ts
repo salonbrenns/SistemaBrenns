@@ -1,4 +1,3 @@
-// src/app/api/horarios/route.ts
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
@@ -7,6 +6,8 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url)
     const fechaStr   = searchParams.get("fecha")
     const servicioId = searchParams.get("servicioId")
+    // 1. Agregado: Obtener empleadoId
+    const empleadoId = searchParams.get("empleadoId")
 
     if (!fechaStr) return NextResponse.json([])
 
@@ -27,9 +28,19 @@ export async function GET(req: Request) {
     const fechaInicio = new Date(fechaStr + "T00:00:00")
     const fechaFin    = new Date(fechaStr + "T23:59:59")
 
+    // 2. Reemplazo del bloque de citasExistentes
     let citasExistentes: { hora: string }[] = []
 
-    if (servicioId && servicioId !== "") {
+    if (empleadoId && empleadoId !== "") {
+      // NOTA: Esto fallará si no has agregado 'empleado_id' a tu tabla 'tblcitas'
+      citasExistentes = await prisma.$queryRaw<{ hora: string }[]>`
+        SELECT hora FROM agenda.tblcitas
+        WHERE fecha >= ${fechaInicio}
+        AND fecha <= ${fechaFin}
+        AND estado::text IN ('PENDIENTE', 'CONFIRMADA')
+        AND empleado_id = ${Number(empleadoId)}
+      `
+    } else if (servicioId && servicioId !== "") {
       citasExistentes = await prisma.$queryRaw<{ hora: string }[]>`
         SELECT hora FROM agenda.tblcitas
         WHERE fecha >= ${fechaInicio}

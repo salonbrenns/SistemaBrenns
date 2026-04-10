@@ -49,12 +49,12 @@ export const validarCoincidencia = (valor1: string, valor2: string): boolean => 
 // Validar teléfono (formato mexicano: 10 dígitos)
 export const validarTelefono = (telefono: string): boolean => {
   const regex = /^\d{10}$/
-  return regex.test(telefono.replace(/\s/g, ""))
+  return regex.test(telefono.replaceAll(" ", ""))
 }
 
 // Validar número de tarjeta (básico: 16 dígitos)
 export const validarNumeroTarjeta = (numero: string): boolean => {
-  const cleaned = numero.replace(/\s/g, "")
+  const cleaned = numero.replaceAll(" ", "")
   return /^\d{16}$/.test(cleaned)
 }
 
@@ -69,8 +69,8 @@ export const validarExpiracion = (expiracion: string): boolean => {
   if (!regex.test(expiracion)) return false
 
   const [mes, año] = expiracion.split("/")
-  const mesNum = parseInt(mes)
-  const añoNum = parseInt(año)
+  const mesNum = Number.parseInt(mes)
+  const añoNum = Number.parseInt(año)
 
   if (mesNum < 1 || mesNum > 12) return false
 
@@ -97,7 +97,7 @@ export const validarNombre = (nombre: string): boolean => {
 // Validar cantidad (número positivo)
 export const validarCantidad = (cantidad: string | number): boolean => {
   const num = typeof cantidad === "string" ? parseInt(cantidad) : cantidad
-  return !isNaN(num) && num > 0 && num <= 99
+  return !Number.isNaN(num) && num > 0 && num <= 99
 }
 
 // Validar formulario de registro completo
@@ -158,8 +158,7 @@ export const validarLogin = (data: {
 export const validarInscripcion = (data: {
   nombre: string
   apellido: string
-  correo: string
-  telefono: string
+
   nombreTarjeta: string
   numeroTarjeta: string
   expiracion: string
@@ -175,17 +174,9 @@ export const validarInscripcion = (data: {
     errores.apellido = "El apellido es requerido"
   }
 
-  if (!validarCampoVacio(data.correo)) {
-    errores.correo = "El correo es requerido"
-  } else if (!validarEmail(data.correo)) {
-    errores.correo = "El correo no es válido"
-  }
+ 
 
-  if (!validarCampoVacio(data.telefono)) {
-    errores.telefono = "El teléfono es requerido"
-  } else if (!validarTelefono(data.telefono)) {
-    errores.telefono = "El teléfono debe tener 10 dígitos"
-  }
+  
 
   if (!validarCampoVacio(data.nombreTarjeta)) {
     errores.nombreTarjeta = "El nombre en la tarjeta es requerido"

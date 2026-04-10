@@ -41,7 +41,7 @@ function PagoContenido() {
       setFieldErrors(validacion.errores)
       return
     }
-    alert("¡Cita agendada con éxito! Te esperamos en Brenn's")
+    alert("¡Cita agendada con éxito! Te esperamos en Brenn&apos;s")
     window.location.href = "/servicios"
   }
 

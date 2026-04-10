@@ -37,6 +37,7 @@ export async function POST(req: Request) {
         categoria,
         imagen:      imagen || null,
         activo:      activo ?? true,
+        updatedAt: new Date(),
       },
     })
 

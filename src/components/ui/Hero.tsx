@@ -1,55 +1,41 @@
-import { Sparkles } from "lucide-react";
-import Image from "next/image";
+// components/Hero.tsx
+"use client";
+
+import useEmblaCarousel from 'embla-carousel-react';
+import Autoplay from 'embla-carousel-autoplay';
+import { useSiteConfigStore } from "@/store/siteConfigStore";;
 
 export default function Hero() {
+  const { heroImages, heroTitle, heroSubtitle, primaryColor } = useSiteConfigStore();
+
+  const [emblaRef] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 5000 })]);
+
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div className="grid md:grid-cols-2 gap-12 items-center">
-        
-        {/* Text Content */}
-        <div className="space-y-6">
-          {/* Usamos el icono Sparkles aquí para una etiqueta decorativa */}
-          <div className="flex items-center gap-2 text-pink-600 bg-pink-50 w-fit px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider">
-            <Sparkles className="w-4 h-4" />
-            <span>Excelencia en Belleza</span>
-          </div>
-
-          <h2 className="text-5xl md:text-6xl font-bold text-gray-800 leading-tight">
-            Tu Belleza,<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-pink-700">
-              Nuestra Pasión
-            </span>
-          </h2>
-          <p className="text-lg text-gray-600 leading-relaxed">
-            Academia Brenn&apos;s tiene como objetivo principal, educar con excelencia a las Manicuristas y Pedicuristas de Huejutla y sus Alrededores. Además contamos con venta de material, a un costo accesible pero de excelente calidad. Somos tu mejor opción.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <button className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-8 py-4 rounded-full font-semibold hover:shadow-xl transition transform hover:scale-105">
-              Reservar Ahora
-            </button>
-
-            <button className="border-2 border-pink-500 text-pink-600 px-8 py-4 rounded-full font-semibold hover:bg-pink-50 transition">
-              Ver Servicios
-            </button>
-          </div>
+    <section className="relative min-h-[650px] overflow-hidden">
+      <div className="embla" ref={emblaRef}>
+        <div className="embla__container flex">
+          {heroImages.map((url, i) => (
+            <div key={i} className="embla__slide flex-none w-full relative">
+              <img 
+                src={url} 
+                alt={`Hero ${i}`} 
+                className="w-full h-[650px] object-cover" 
+              />
+              {/* Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-transparent" />
+            </div>
+          ))}
         </div>
+      </div>
 
-        {/* Image */}
-        <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-          <Image
-            src="/logo/salon.jpg"
-            alt="Foto del salón"
-            width={800}
-            height={800}
-            className="w-full h-full object-contain" 
-            priority
-          />
-
-          {/* Decoración */}
-          <div className="absolute -top-6 -right-6 w-32 h-32 bg-pink-300 rounded-full opacity-30 blur-xl"></div>
-          <div className="absolute -bottom-6 -left-6 w-40 h-40 bg-pink-400 rounded-full opacity-20 blur-xl"></div>
+      {/* Contenido del texto */}
+      <div className="absolute inset-0 flex items-center z-10">
+        <div className="max-w-4xl mx-auto px-6">
+          <h1 className="text-6xl font-bold leading-tight">
+            {heroTitle}
+          </h1>
+          <p className="mt-6 text-xl max-w-lg">{heroSubtitle}</p>
         </div>
-
       </div>
     </section>
   );

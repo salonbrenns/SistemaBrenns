@@ -31,7 +31,7 @@ export default async function ProductosPage({
   const take = 10
   const skip = (page - 1) * take
 
-  // ✅ FIX: quitar codigo del filtro
+  // FIX: quitar codigo del filtro
   const where = {
     ...(query
       ? {
@@ -45,7 +45,7 @@ export default async function ProductosPage({
   const [totalProductos, productosRaw, categorias, marcas] = await Promise.all([
     prisma.producto.count({ where }),
 
-    // ✅ FIX: usar variantes en lugar de campos eliminados
+  
     prisma.producto.findMany({
       where,
       select: {
@@ -91,7 +91,7 @@ export default async function ProductosPage({
   const variantes = p.variantes.map(v => ({
     id: v.id,
     codigo: v.codigo,
-    precio_venta: Number(v.precio_venta), // ✅ FIX
+    precio_venta: Number(v.precio_venta), 
     stock: v.stock,
   }))
 
@@ -100,7 +100,7 @@ export default async function ProductosPage({
 
   return {
     ...p,
-    variantes, // ✅ ya convertido correctamente
+    variantes, 
 
     precio_min: precios.length ? Math.min(...precios) : 0,
     precio_max: precios.length ? Math.max(...precios) : 0,

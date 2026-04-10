@@ -3,7 +3,7 @@ import React, { useState, Suspense } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { Eye, EyeOff, Loader2, ShieldAlert } from "lucide-react"
 
 function LoginContenido() {
   const router = useRouter()
@@ -13,16 +13,40 @@ function LoginContenido() {
   const [loading, setLoading] = useState(false)
   const [loadingGoogle, setLoadingGoogle] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [errorRasp, setErrorRasp] = useState<string | null>(null) // ← NUEVO
   const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    if (!email || !password) { setError("Por favor completa todos los campos"); return }
+    setErrorRasp(null) // ← NUEVO: limpiar error RASP previo
+
+    if (!email || !password) {
+      setError("Por favor completa todos los campos")
+      return
+    }
+
     setLoading(true)
     try {
+      // ← NUEVO: verificar primero si la IP ya fue bloqueada por fuerza bruta
+      const checkRasp = await fetch("/api/auth/callback/credentials", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ correo: email, password }),
+      })
+
+      if (checkRasp.status === 429) {
+        const data = await checkRasp.json()
+        setErrorRasp(data.error ?? "Demasiados intentos fallidos. Espera 60 segundos e intenta de nuevo.")
+        return
+      }
+      // ← FIN NUEVO
+
       const result = await signIn("credentials", { correo: email, password, redirect: false })
-      if (result?.error) { setError(result.error); return }
+      if (result?.error) {
+        setError("Correo o contraseña incorrectos.")
+        return
+      }
 
       const next = searchParams?.get("next")
       if (next) {
@@ -30,14 +54,10 @@ function LoginContenido() {
       } else {
         const session = await fetch("/api/auth/session").then(r => r.json())
         const role = session?.user?.role
-
-        if (role === "ADMIN") {
-          router.push("/admin/dashboard")
-        } else if (role === "DOCENTE") {
-          router.push("/docente/dashboard")
-        } else {
-          router.push("/perfil")
-        }
+        if (role === "ADMIN") router.push("/admin/dashboard")
+        else if (role === "EMPLEADO") router.push("/admin/dashboard")
+        else if (role === "DOCENTE") router.push("/docente/dashboard")
+        else router.push("/perfil")
       }
       router.refresh()
     } catch {
@@ -77,7 +97,7 @@ function LoginContenido() {
           <h2 className="text-3xl font-bold mb-2 text-center text-gray-800">Iniciar Sesión</h2>
           <p className="text-gray-500 text-center mb-8">Ingresa tus credenciales para entrar</p>
 
-          {/* ── Botón Google ── */}
+          {/* Botón Google */}
           <button
             onClick={handleGoogle}
             disabled={loadingGoogle}
@@ -96,7 +116,7 @@ function LoginContenido() {
             {loadingGoogle ? "Redirigiendo..." : "Continuar con Google"}
           </button>
 
-          {/* ── Separador ── */}
+          {/* Separador */}
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 h-px bg-gray-200"></div>
             <span className="text-sm text-gray-400">o inicia con correo</span>
@@ -106,9 +126,13 @@ function LoginContenido() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Correo Electrónico</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setErrorRasp(null) }}
                 placeholder="tucorreo@ejemplo.com"
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all" />
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all"
+              />
             </div>
 
             <div>
@@ -119,15 +143,34 @@ function LoginContenido() {
                 </Link>
               </div>
               <div className="relative">
-                <input type={showPassword ? "text" : "password"} value={password}
-                  onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-pink-600 transition-colors focus:outline-none">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); setErrorRasp(null) }}
+                  placeholder="••••••••"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-pink-600 transition-colors focus:outline-none"
+                >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
             </div>
+
+            {/* ← NUEVO: Alerta de bloqueo por fuerza bruta */}
+            {errorRasp && (
+              <div className="flex items-start gap-3 bg-red-50 border border-red-300 text-red-700 rounded-2xl px-4 py-3 text-sm">
+                <ShieldAlert className="w-5 h-5 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold">Acceso bloqueado temporalmente</p>
+                  <p className="text-red-600 mt-0.5">{errorRasp}</p>
+                </div>
+              </div>
+            )}
 
             {error && (
               <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm text-center border border-red-100">
@@ -135,8 +178,11 @@ function LoginContenido() {
               </div>
             )}
 
-            <button type="submit" disabled={loading}
-              className="w-full bg-pink-600 text-white py-3 rounded-full font-bold text-lg shadow-lg hover:bg-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            <button
+              type="submit"
+              disabled={loading || !!errorRasp}
+              className="w-full bg-pink-600 text-white py-3 rounded-full font-bold text-lg shadow-lg hover:bg-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               {loading ? "Verificando..." : "Entrar"}
             </button>
           </form>

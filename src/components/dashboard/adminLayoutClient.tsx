@@ -28,7 +28,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
     <div className="flex h-screen flex-col lg:flex-row bg-pink-50">
       {/* Header móvil */}
       <header className="flex items-center justify-between p-4 bg-pink-900 text-white lg:hidden">
-        <h1 className="font-bold text-lg">{"Brenn's Beauty"}</h1>
+        <h1 className="font-bold text-lg">{"Brenn&apos;s Beauty"}</h1>
 
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}

@@ -81,6 +81,7 @@ function ResetForm() {
           <Lock className="w-8 h-8 text-pink-500" />
         </div>
         <h1 className="text-2xl font-bold text-gray-800">Nueva contraseña</h1>
+        
         <p className="text-gray-500 mt-2 text-sm">Elige una contraseña segura para tu cuenta.</p>
       </div>
 

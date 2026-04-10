@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { withRasp } from "@/lib/withRasp"
 
+async function registerHandler(req: NextRequest) {
 const ROLES_VALIDOS = ["ADMIN", "DOCENTE", "EMPLEADO", "CLIENTE"]
 
-export async function POST(req: NextRequest) {
+
   try {
     const { name, email, password, telefono, rol } = await req.json()
 
@@ -62,3 +64,5 @@ export async function POST(req: NextRequest) {
     )
   }
 }
+
+export const POST = withRasp(registerHandler);

@@ -75,6 +75,7 @@ export default function RecuperarContrasenaPage() {
             <div className="relative">
               <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
               <input
+                id="correo"
                 type="email"
                 value={correo}
                 onChange={e => setCorreo(e.target.value)}

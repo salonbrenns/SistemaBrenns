@@ -9,28 +9,35 @@ datasource db {
 }
 
 model Cita {
-  id                                            Int          @id @default(autoincrement())
-  usuario_id                                    Int?
-  servicio_id                                   Int
-  fecha                                         DateTime
-  hora                                          String
-  notas                                         String?
-  createdAt                                     DateTime     @default(now())
-  metodo_pago                                   String?
-  nombre_contacto                               String?
-  telefono_contacto                             String?
-  empleado_id                                   Int?
-  estado                                        String       @default("PENDIENTE")
-  tblusuarios_tblcitas_empleado_idTotblusuarios Usuario?     @relation("tblcitas_empleado_idTotblusuarios", fields: [empleado_id], references: [id])
-  servicio                                      Servicio     @relation(fields: [servicio_id], references: [id])
-  usuario                                       Usuario?     @relation(fields: [usuario_id], references: [id])
-  avisos                                        AvisoAdmin[]
+  id                Int      @id @default(autoincrement())
+  usuario_id        Int?
+  servicio_id       Int
+  empleado_id       Int?
+  fecha             DateTime
+  hora              String
+  estado            String   @default("PENDIENTE")
+  notas             String?
+  createdAt         DateTime @default(now())
+  metodo_pago       String?
+  nombre_contacto   String?
+  telefono_contacto String?
+
+  // Relaciones
+  servicio Servicio @relation(fields: [servicio_id], references: [id])
+
+  // Cliente que agenda la cita
+  usuario Usuario? @relation("CitaCliente", fields: [usuario_id], references: [id])
+
+  // Empleado que realiza el servicio de manicure
+  empleado Usuario? @relation("CitaEmpleado", fields: [empleado_id], references: [id])
+
+  avisos AvisoAdmin[]
 
   @@map("tblcitas")
   @@schema("agenda")
 }
 
-model DiaBloquedo {
+model DiaBloqueado {
   id        Int      @id @default(autoincrement())
   fecha     DateTime @db.Date
   motivo    String?
@@ -39,6 +46,8 @@ model DiaBloquedo {
   @@map("tbldiasbloquedos")
   @@schema("agenda")
 }
+
+
 
 model HorarioDisponible {
   id        Int     @id @default(autoincrement())
@@ -170,20 +179,19 @@ model Favorito {
 }
 
 model Servicio {
-  id                      Int                      @id @default(autoincrement())
-  nombre                  String
-  descripcion             String?
-  precio                  Float
-  duracion                String
-  imagen                  String?
-  activo                  Boolean                  @default(true)
-  createdAt               DateTime                 @default(now())
-  updatedAt               DateTime
-  beneficios              String?
-  incluye                 String?
-  categoria_id            Int?
-  citas                   Cita[]
-  tblcategorias_servicios tblcategorias_servicios? @relation(fields: [categoria_id], references: [id])
+  id          Int      @id @default(autoincrement())
+  nombre      String
+  descripcion String?
+  precio      Float
+  duracion    String
+  categoria   String
+  beneficios  String?
+  incluye     String?
+  imagen      String?
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  citas       Cita[]
 
   @@map("tblservicios")
   @@schema("catalogos")
@@ -261,29 +269,46 @@ model TokenRecuperacion {
 }
 
 model Usuario {
-  id                                         Int                @id @default(autoincrement())
-  nombre                                     String             @db.VarChar(150)
-  correo                                     String             @unique @db.VarChar(100)
-  password                                   String             @db.VarChar(255)
-  telefono                                   String?            @db.VarChar(20)
-  rol                                        Rol                @default(CLIENTE)
-  activo                                     Boolean            @default(true)
-  intentos_fallidos                          Int                @default(0)
-  cuenta_bloqueada                           Boolean            @default(false)
-  fecha_registro                             DateTime           @default(now()) @db.Timestamp(6)
-  apmaterno                                  String?            @db.VarChar(150)
-  appaterno                                  String?            @db.VarChar(150)
-  tblcitas_tblcitas_empleado_idTotblusuarios Cita[]             @relation("tblcitas_empleado_idTotblusuarios")
-  citas                                      Cita[]
-  avisos                                     AvisoAdmin[]
-  permisos                                   PermisoUsuario[]
-  tokenRecuperacion                          TokenRecuperacion?
-  carrito                                    CarritoItem[]
-  favoritos                                  Favorito[]
-  pedidos                                    Pedido[]
+  id                Int                @id @default(autoincrement())
+  nombre            String             @db.VarChar(150)
+  appaterno         String?            @db.VarChar(150)
+  apmaterno         String?            @db.VarChar(150)
+  correo            String             @unique @db.VarChar(100)
+  password          String             @db.VarChar(255)
+  telefono          String?            @db.VarChar(20)
+  rol               Rol                @default(CLIENTE)
+  activo            Boolean            @default(true)
+  intentos_fallidos Int                @default(0)
+  cuenta_bloqueada  Boolean            @default(false)
+  fecha_registro    DateTime           @default(now()) @db.Timestamp(6)
+  
+  citasComoCliente  Cita[]             @relation("CitaCliente")
+  citasComoEmpleado Cita[]             @relation("CitaEmpleado")
+  
+  carrito           CarritoItem[]
+  favoritos         Favorito[]
+  avisos            AvisoAdmin[]
+  permisos          PermisoUsuario[]
+  pedidos           Pedido[]
+  tokenRecuperacion TokenRecuperacion?
 
   @@map("tblusuarios")
   @@schema("seguridad")
+}
+
+model Empleado {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @db.VarChar(150)
+  puesto      String   @db.VarChar(100)
+  descripcion String?  @db.Text
+  imagen      String? // URL de Cloudinary
+  orden       Int      @default(0) // Para ordenar en "Nosotros"
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("tblempleados")
+  @@schema("catalogos") 
 }
 
 model PermisoUsuario {
@@ -291,6 +316,7 @@ model PermisoUsuario {
   usuario_id Int
   permiso    String  @db.VarChar(100)
   activo     Boolean @default(false)
+
   usuario    Usuario @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
 
   @@unique([usuario_id, permiso])
@@ -344,20 +370,6 @@ model Backup {
   @@schema("seguridad")
 }
 
-model Empleado {
-  id          Int      @id @default(autoincrement())
-  nombre      String   @db.VarChar(150)
-  puesto      String   @db.VarChar(100)
-  descripcion String?
-  imagen      String?
-  orden       Int      @default(0)
-  activo      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime
-
-  @@map("tblempleados")
-  @@schema("catalogos")
-}
 
 model categorias_servicios {
   id           Int        @id @default(autoincrement())

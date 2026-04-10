@@ -1,11 +1,12 @@
 // src/app/api/usuario/perfil/route.ts
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest} from "next/server"
 import { PrismaClient } from "@prisma/client"
 import { auth } from "../../../../../auth"
+import { withRasp } from "@/lib/withRasp";
 
+async function profileHandler(req: NextRequest){
 const prisma = new PrismaClient()
 
-export async function PUT(req: Request) {
   try {
     const session = await auth()
     if (!session) {
@@ -48,3 +49,4 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Error interno" }, { status: 500 })
   }
 }
+export const PUT = withRasp(profileHandler);

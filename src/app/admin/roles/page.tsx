@@ -49,7 +49,7 @@ const ROLES = [
 ]
 
 const USUARIOS_DEMO = [
-  { nombre: "Admin Brenn's", correo: "admin@brenns.com", rol: "ADMIN" },
+  { nombre: "Admin Brenn&apos;s", correo: "admin@brenns.com", rol: "ADMIN" },
   { nombre: "Benilde López", correo: "benilde@correo.com", rol: "CLIENTE" },
   { nombre: "Ana García",    correo: "ana@correo.com",    rol: "CLIENTE" },
 ]

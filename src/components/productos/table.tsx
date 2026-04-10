@@ -14,7 +14,7 @@ interface Producto {
   marca: { nombre: string } | null
   categoria: { nombre: string } | null
 
-  // ✅ derivados de variantes
+  //derivados de variantes
   precio_min: number
   precio_max: number
   stock_total: number
@@ -37,10 +37,10 @@ const columns = [
   { label: 'Código', key: 'codigo' },
   { label: 'Nombre', key: 'nombre' },
   { label: 'Descripción', key: 'descripcion' },
-  { label: 'Precio V.', key: 'precio_min' }, // 🔥 ahora usa precio_min
+  { label: 'Precio V.', key: 'precio_min' }, //ahora usa precio_min
   { label: 'Marca', key: 'marca' },
   { label: 'Categoría', key: 'categoria' },
-  { label: 'Stock', key: 'stock_total' }, // 🔥 ahora total
+  { label: 'Stock', key: 'stock_total' }, //ahora total
 ]
 
 export default function ProductoTable({ productos, currentPage, totalPages }: Props) {
@@ -140,7 +140,7 @@ export default function ProductoTable({ productos, currentPage, totalPages }: Pr
             ) : (
               productos.map((p) => {
 
-                // ✅ imagen robusta (como tu versión original)
+                // imagen robusta
                 let foto: string | null = null
                 let totalImagenes = 0
 
