@@ -17,6 +17,7 @@ import {
   CogIcon,
   CreditCardIcon,
   QuestionMarkCircleIcon,
+  ShoppingCartIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -27,6 +28,7 @@ const links = [
   { name: 'Marcas',         href: '/admin/marcas',          icon: TagIcon            },
   { name: 'Categorías',     href: '/admin/categorias',      icon: Squares2X2Icon     },
   { name: 'Productos',      href: '/admin/productos',       icon: ShoppingBagIcon    },
+  { name: 'Pedidos',        href: '/admin/pedidos',         icon: ShoppingCartIcon   },
   { name: 'Servicios',      href: '/admin/servicios',       icon: ScissorsIcon       }, 
   { name: 'Agendar',        href: '/admin/agendar',         icon: CalendarDaysIcon   },
   { name: 'Horarios',       href: '/admin/horarios',        icon: ClockIcon          },

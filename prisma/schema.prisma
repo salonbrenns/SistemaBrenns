@@ -94,23 +94,22 @@ model Categoria {
 }
 
 model Producto {
-  id                  Int             @id @default(autoincrement())
-  nombre              String          @db.VarChar(150)
+  id                  Int        @id @default(autoincrement())
+  nombre              String     @db.VarChar(150)
   descripcion         String?
   marca_id            Int?
   categoria_id        Int?
-  activo              Boolean?        @default(true)
-  fecha_creacion      DateTime?       @default(now()) @db.Timestamp(6)
-  fecha_actualizacion DateTime?       @default(now()) @db.Timestamp(6)
+  activo              Boolean?   @default(true)
+  fecha_creacion      DateTime?  @default(now()) @db.Timestamp(6)
+  fecha_actualizacion DateTime?  @default(now()) @db.Timestamp(6)
   imagen              Json?
-  codigo              String?         @db.VarChar(50)
-  precio_costo        Decimal?        @db.Decimal(10, 2)
-  precio_venta        Decimal?        @db.Decimal(10, 2)
-  stock               Int             @default(0)
-  tbldetalle_pedidos  DetallePedido[]
+  codigo              String?    @db.VarChar(50)
+  precio_costo        Decimal?   @db.Decimal(10, 2)
+  precio_venta        Decimal?   @db.Decimal(10, 2)
+  stock               Int        @default(0)
   favoritos           Favorito[]
-  categoria           Categoria?      @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  marca               Marca?          @relation(fields: [marca_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  categoria           Categoria? @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  marca               Marca?     @relation(fields: [marca_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   variantes           Variante[]
 
   @@map("tblproductos")
@@ -118,20 +117,21 @@ model Producto {
 }
 
 model Variante {
-  id                  Int           @id @default(autoincrement())
+  id                  Int             @id @default(autoincrement())
   producto_id         Int
-  codigo              String?       @db.VarChar(50)
-  tono                String?       @db.VarChar(100)
-  presentacion        String?       @db.VarChar(50)
-  precio_costo        Decimal       @db.Decimal(10, 2)
-  precio_venta        Decimal       @db.Decimal(10, 2)
-  stock               Int           @default(0)
+  codigo              String?         @db.VarChar(50)
+  tono                String?         @db.VarChar(100)
+  presentacion        String?         @db.VarChar(50)
+  precio_costo        Decimal         @db.Decimal(10, 2)
+  precio_venta        Decimal         @db.Decimal(10, 2)
+  stock               Int             @default(0)
   imagen              Json?
-  activo              Boolean       @default(true)
-  fecha_creacion      DateTime      @default(now()) @db.Timestamp(6)
-  fecha_actualizacion DateTime      @default(now()) @db.Timestamp(6)
+  activo              Boolean         @default(true)
+  fecha_creacion      DateTime        @default(now()) @db.Timestamp(6)
+  fecha_actualizacion DateTime        @default(now()) @db.Timestamp(6)
   carrito             CarritoItem[]
-  producto            Producto      @relation(fields: [producto_id], references: [id], onDelete: Cascade, map: "fk_variante_producto")
+  detalles            DetallePedido[]
+  producto            Producto        @relation(fields: [producto_id], references: [id], onDelete: Cascade, map: "fk_variante_producto")
 
   @@index([activo], map: "idx_variantes_activo")
   @@index([producto_id], map: "idx_variantes_producto_id")
@@ -170,19 +170,20 @@ model Favorito {
 }
 
 model Servicio {
-  id          Int      @id @default(autoincrement())
-  nombre      String
-  descripcion String?
-  precio      Float
-  duracion    String
-  categoria   String
-  imagen      String?
-  activo      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime
-  beneficios  String?
-  incluye     String?
-  citas       Cita[]
+  id                      Int                      @id @default(autoincrement())
+  nombre                  String
+  descripcion             String?
+  precio                  Float
+  duracion                String
+  imagen                  String?
+  activo                  Boolean                  @default(true)
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime
+  beneficios              String?
+  incluye                 String?
+  categoria_id            Int?
+  citas                   Cita[]
+  tblcategorias_servicios tblcategorias_servicios? @relation(fields: [categoria_id], references: [id])
 
   @@map("tblservicios")
   @@schema("catalogos")
@@ -298,15 +299,16 @@ model PermisoUsuario {
 }
 
 model DetallePedido {
-  id              Int      @id @default(autoincrement())
-  pedido_id       Int
-  nombre_producto String   @db.VarChar(150)
-  precio_unitario Decimal  @db.Decimal(10, 2)
-  cantidad        Int
-  subtotal        Decimal  @db.Decimal(10, 2)
-  producto_id     Int
-  pedido          Pedido   @relation(fields: [pedido_id], references: [id])
-  tblproductos    Producto @relation(fields: [producto_id], references: [id])
+  id                   Int      @id @default(autoincrement())
+  pedido_id            Int
+  nombre_producto      String   @db.VarChar(150)
+  precio_unitario      Decimal  @db.Decimal(10, 2)
+  cantidad             Int
+  subtotal             Decimal  @db.Decimal(10, 2)
+  variante_id          Int
+  descripcion_variante String?  @db.VarChar(150)
+  variante             Variante @relation(fields: [variante_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detalle_variante")
+  pedido               Pedido   @relation(fields: [pedido_id], references: [id])
 
   @@map("tbldetalle_pedidos")
   @@schema("ventas")
@@ -342,7 +344,7 @@ model Backup {
   @@schema("seguridad")
 }
 
-model tblempleados {
+model Empleado {
   id          Int      @id @default(autoincrement())
   nombre      String   @db.VarChar(150)
   puesto      String   @db.VarChar(100)
@@ -352,6 +354,16 @@ model tblempleados {
   activo      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime
+
+  @@map("tblempleados")
+  @@schema("catalogos")
+}
+
+model tblcategorias_servicios {
+  id           Int        @id @default(autoincrement())
+  nombre       String     @unique @db.VarChar(100)
+  activo       Boolean    @default(true)
+  tblservicios Servicio[]
 
   @@schema("catalogos")
 }
