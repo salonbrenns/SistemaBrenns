@@ -62,7 +62,7 @@ export default function MisCursosPage() {
   useEffect(() => {
     fetch("/api/pedidos")
       .then(r => r.json())
-      .then(d => { setPedidos(d.pedidos || []); setLoadingPedidos(false) })
+     .then(d => { setPedidos(Array.isArray(d) ? d : []); setLoadingPedidos(false) })
       .catch(() => setLoadingPedidos(false))
 
     fetch("/api/citas")

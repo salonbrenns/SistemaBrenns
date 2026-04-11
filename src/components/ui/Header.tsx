@@ -1,57 +1,52 @@
-// src/components/ui/Header.tsx
-"use client"
-import Image from "next/image"
-import Link from "next/link"
-import { User, ShoppingCart, Menu, X, Bell } from "lucide-react"
-import { useState, useEffect } from "react"
-import { useSession, signOut } from "next-auth/react"
-import { useRouter } from "next/navigation"
+'use client'
+
+import Image from 'next/image'
+import Link from 'next/link'
+import { User, ShoppingCart, Menu, X, Bell, Heart } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { useSession, signOut } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 
 export default function Header() {
   const [cantidadCarrito, setCantidadCarrito] = useState(0)
   const [menuOpen, setMenuOpen] = useState(false)
   const [noLeidos, setNoLeidos] = useState(0)
-  const { data: session, status } = useSession()
+  const { status } = useSession() // Corregido: Se eliminó la asignación inútil de 'session'
   const router = useRouter()
-  const autenticado = status === "authenticated"
+  const autenticado = status === 'authenticated'
 
-  // 1. Sincronizar la cantidad del carrito con el localStorage
-  useEffect(() => {
-    const calcularTotal = () => {
-      const stored = localStorage.getItem("nail_store_cart")
-      if (stored) {
-        try {
-          const carrito = JSON.parse(stored)
-          const total = carrito.reduce((acc: number, item: { cantidad: number }) => acc + item.cantidad, 0)
-          setCantidadCarrito(total)
-        } catch (error) {
-          console.error("Error al leer el carrito:", error)
-          setCantidadCarrito(0)
-        }
-      } else {
-        setCantidadCarrito(0)
-      }
+  const cargarCarrito = useCallback(() => {
+    if (status !== 'authenticated') {
+      setCantidadCarrito(0)
+      return
     }
 
-    // Calcular al montar el componente
-    calcularTotal()
+    fetch('/api/carrito')
+      .then(r => r.json())
+      .then((items: { cantidad: number }[]) => {
+        if (Array.isArray(items)) {
+          setCantidadCarrito(items.reduce((s, i) => s + i.cantidad, 0))
+        }
+      })
+      .catch(() => {})
+  }, [status])
 
-    // Escuchar cambios desde otros componentes/pestañas
-    window.addEventListener('storage', calcularTotal)
+  useEffect(() => {
+    cargarCarrito()
     
-    // Crear un evento personalizado para actualizaciones en la misma pestaña
-    window.addEventListener('cart-updated', calcularTotal)
+    // Corregido: Uso de globalThis en lugar de window
+    globalThis.addEventListener('cart-updated', cargarCarrito)
+    globalThis.addEventListener('storage', cargarCarrito)
 
     return () => {
-      window.removeEventListener('storage', calcularTotal)
-      window.removeEventListener('cart-updated', calcularTotal)
+      globalThis.removeEventListener('cart-updated', cargarCarrito)
+      globalThis.removeEventListener('storage', cargarCarrito)
     }
-  }, [])
+  }, [cargarCarrito])
 
-  // 2. Cargar mensajes no leídos
   useEffect(() => {
     if (!autenticado) return
-    fetch("/api/usuario/mensajes")
+    fetch('/api/usuario/mensajes')
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -63,7 +58,8 @@ export default function Header() {
 
   const handleLogout = async () => {
     await signOut({ redirect: false })
-    router.push("/")
+    setCantidadCarrito(0)
+    router.push('/')
     setMenuOpen(false)
   }
 
@@ -77,7 +73,7 @@ export default function Header() {
             <div className="relative w-16 h-16 md:w-20 md:h-20">
               <Image
                 src="/logo/logo.png"
-                alt="Brenn&apos;s- Academia • Distribuidora • Salón"
+                alt="Brenn's - Academia • Distribuidora • Salón"
                 fill
                 className="object-contain"
                 priority
@@ -85,18 +81,19 @@ export default function Header() {
             </div>
             <div className="hidden sm:block">
               <h1 className="text-lg md:text-2xl font-bold text-gray-900">Brenn&apos;s</h1>
-              <p className="text-xs md:text-sm text-pink-600 font-medium">Academia • Distribuidora • Salón</p>
+              <p className="text-xs md:text-sm text-pink-600 font-medium">
+                Academia • Distribuidora • Salón
+              </p>
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-6 flex-1 ml-10">
             <Link href="/" className="text-gray-700 hover:text-pink-600 font-medium transition text-sm">Inicio</Link>
             <Link href="/servicios" className="text-gray-700 hover:text-pink-600 font-medium transition text-sm">Servicios</Link>
             <Link href="/cursos" className="text-gray-700 hover:text-pink-600 font-medium transition text-sm">Cursos</Link>
             <Link href="/catalogo" className="text-gray-700 hover:text-pink-600 font-medium transition text-sm">Tienda</Link>
-            <Link href="/nosotros" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Nosotros</Link>
-
+            <Link href="/nosotros" className="text-gray-700 hover:text-pink-600 font-medium transition text-sm">Nosotros</Link>
           </nav>
 
           {/* Right Icons */}
@@ -104,17 +101,18 @@ export default function Header() {
 
             {autenticado && (
               <>
-                {/* Perfil */}
                 <Link href="/perfil"
-                  className="text-gray-600 hover:text-pink-600 transition p-2 rounded-full hover:bg-pink-50"
-                  title={session?.user?.name || "Mi perfil"}>
+                  className="text-gray-600 hover:text-pink-600 transition p-2 rounded-full hover:bg-pink-50">
                   <User className="w-5 h-5 md:w-6 md:h-6" />
                 </Link>
 
-                {/* Mensajes / Notificaciones */}
+                <Link href="/favoritos"
+                  className="text-gray-600 hover:text-pink-600 transition p-2 rounded-full hover:bg-pink-50">
+                  <Heart className="w-5 h-5 md:w-6 md:h-6" />
+                </Link>
+
                 <Link href="/mis-mensajes"
-                  className="relative text-gray-600 hover:text-pink-600 transition p-2 rounded-full hover:bg-pink-50"
-                  title="Mis mensajes">
+                  className="relative text-gray-600 hover:text-pink-600 transition p-2 rounded-full hover:bg-pink-50">
                   <Bell className="w-5 h-5 md:w-6 md:h-6" />
                   {noLeidos > 0 && (
                     <span className="absolute -top-1 -right-1 bg-pink-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
@@ -123,18 +121,16 @@ export default function Header() {
                   )}
                 </Link>
 
-                {/* Carrito */}
                 <Link href="/carrito"
                   className="relative text-gray-600 hover:text-pink-600 transition p-2 rounded-full hover:bg-pink-50">
                   <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
                   {cantidadCarrito > 0 && (
                     <span className="absolute -top-1 -right-1 bg-pink-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
-                      {cantidadCarrito}
+                      {cantidadCarrito > 99 ? '99+' : cantidadCarrito}
                     </span>
                   )}
                 </Link>
 
-                {/* Cerrar sesión desktop */}
                 <button onClick={handleLogout}
                   className="hidden md:inline-block text-sm px-4 py-2 rounded-full border border-pink-200 hover:bg-pink-50 text-pink-600 font-semibold transition">
                   Cerrar sesión
@@ -142,21 +138,20 @@ export default function Header() {
               </>
             )}
 
-            {!autenticado && status !== "loading" && (
-              <Link href="/login"
-                className="hidden md:block bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-2 rounded-full shadow-lg hover:shadow-xl transition transform hover:scale-105 text-sm">
-                Iniciar Sesión
-              </Link>
+            {!autenticado && status !== 'loading' && (
+              <>
+                <Link href="/login"
+                  className="hidden md:block bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-2 rounded-full shadow-lg hover:shadow-xl transition transform hover:scale-105 text-sm">
+                  Iniciar Sesión
+                </Link>
+
+                <Link href="/register"
+                  className="hidden md:block bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-2 rounded-full shadow-lg hover:shadow-xl transition transform hover:scale-105 text-sm">
+                  Registrarse
+                </Link>
+              </>
             )}
 
-              {!autenticado && status !== "loading" && (
-              <Link href="/register"
-                className="hidden md:block bg-pink-600 hover:bg-pink-700 text-white font-bold px-6 py-2 rounded-full shadow-lg hover:shadow-xl transition transform hover:scale-105 text-sm">
-                Registrarse
-              </Link>
-            )}
-
-            {/* Botón menú móvil */}
             <button onClick={() => setMenuOpen(!menuOpen)}
               className="lg:hidden text-gray-600 hover:text-pink-600 transition p-2 rounded-full hover:bg-pink-50">
               {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -164,17 +159,17 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile */}
         {menuOpen && (
           <nav className="lg:hidden mt-4 pb-4 space-y-3 border-t border-gray-200 pt-4">
-            <Link href="/" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Inicio</Link>
-            <Link href="/servicios" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Servicios</Link>
-            <Link href="/cursos" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Cursos</Link>
-            <Link href="/catalogo" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Tienda</Link>
-            <Link href="/nosotros" className="block text-gray-700 hover:text-pink-600 font-medium py-2" onClick={() => setMenuOpen(false)}>Nosotros</Link>
-
+            <Link href="/" className="block py-2">Inicio</Link>
+            <Link href="/servicios" className="block py-2">Servicios</Link>
+            <Link href="/cursos" className="block py-2">Cursos</Link>
+            <Link href="/catalogo" className="block py-2">Tienda</Link>
+            <Link href="/nosotros" className="block py-2">Nosotros</Link>
           </nav>
         )}
+
       </div>
     </header>
   )

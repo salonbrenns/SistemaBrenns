@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Loader2, Sparkles } from 'lucide-react'
+import { Loader2, Sparkles, SearchX  } from 'lucide-react'
 import ProductoCard, { type ProductoCardType } from '@/components/ui/ProductoCard'
 import ProductosFiltros from '@/components/ui/ProductosFiltros'
 import Paginacion from '@/components/ui/paginacion'
@@ -20,8 +20,7 @@ export default function ProductosPage() {
     fetch('/api/productos')
       .then(r => r.json())
       .then(data => {
-        const activos = (Array.isArray(data) ? data : []).filter((p: ProductoCardType & { activo: boolean }) => p.activo)
-        setProductos(activos)
+        setProductos(Array.isArray(data) ? data : [])
         setCargando(false)
       })
       .catch(() => setCargando(false))
@@ -133,20 +132,30 @@ const handleBusqueda = (valor: string) => { setBusqueda(valor); setPagina(1) }
           </div>
         )}
 
-        {/* Sin resultados */}
-        {!cargando && productosFiltrados.length === 0 && (
-          <div className="text-center py-32 bg-white rounded-[3rem] shadow-inner border-2 border-dashed border-rose-100">
-            <div className="text-6xl mb-6">🔍</div>
-            <p className="text-2xl font-bold text-gray-800 mb-2">No encontramos productos</p>
-            <p className="text-gray-500 mb-8">Intenta ajustando los filtros o la búsqueda.</p>
-            <button
-              onClick={limpiarFiltros}
-              className="px-8 py-3 bg-rose-700 text-white font-bold rounded-full hover:bg-rose-800 transition shadow-xl"
-            >
-              Ver todos los productos
-            </button>
-          </div>
-        )}
+{/* Sin resultados */}
+{!cargando && productosFiltrados.length === 0 && (
+  <div className="text-center py-32 bg-white rounded-[3rem] shadow-inner border-2 border-dashed border-rose-100">
+    
+    <div className="mb-6 flex justify-center">
+      <SearchX className="w-16 h-16 text-rose-400" />
+    </div>
+
+    <p className="text-2xl font-bold text-gray-800 mb-2">
+      No encontramos productos
+    </p>
+
+    <p className="text-gray-500 mb-8">
+      Intenta ajustando los filtros o la búsqueda.
+    </p>
+
+    <button
+      onClick={limpiarFiltros}
+      className="px-8 py-3 bg-rose-700 text-white font-bold rounded-full hover:bg-rose-800 transition shadow-xl"
+    >
+      Ver todos los productos
+    </button>
+  </div>
+)}
 
         {/* Paginación */}
         <Paginacion

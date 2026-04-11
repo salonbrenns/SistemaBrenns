@@ -8,17 +8,13 @@ import clsx from 'clsx';
 import {
   HomeIcon,
   TagIcon,
-  
   CalendarDaysIcon,
-  
   AcademicCapIcon,
   BellIcon,
- 
   SparklesIcon,
-  
   CogIcon,
- 
   ChevronDownIcon,
+  
 } from '@heroicons/react/24/outline';
 
 export default function NavLinks({
@@ -32,7 +28,7 @@ export default function NavLinks({
   const { data: session } = useSession();
   const role = session?.user?.role;
 
-  const [openSections, setOpenSections] = useState<string[]>(['Principal']); // Principal abierto por defecto
+  const [openSections, setOpenSections] = useState<string[]>(['Principal']);
 
   const toggleSection = (title: string) => {
     if (openSections.includes(title)) {
@@ -42,7 +38,7 @@ export default function NavLinks({
     }
   };
 
-  // Menú para Empleado (simple, sin accordion)
+  // Menú para Empleado
   if (role === "EMPLEADO") {
     const linksEmpleado = [
       { name: 'Dashboard', href: '/admin/dashboard', icon: HomeIcon },
@@ -76,7 +72,7 @@ export default function NavLinks({
     );
   }
 
-  // Menú Accordion para Admin
+  // Menú Accordion para Admin (Con tu cambio de PEDIDOS incluido)
   const menuSections = [
     {
       title: "Principal",
@@ -116,6 +112,7 @@ export default function NavLinks({
       title: "Ventas y Marketing",
       icon: SparklesIcon,
       links: [
+        { name: 'Pedidos', href: '/admin/pedidos' }, 
         { name: 'Promociones', href: '/admin/promociones' },
         { name: 'Pagos', href: '/admin/pagos' },
         { name: 'Reportes', href: '/admin/reportes' },
@@ -145,7 +142,6 @@ export default function NavLinks({
 
         return (
           <div key={section.title} className="space-y-1">
-            {/* Título de la sección (clickeable) */}
             <button
               onClick={() => toggleSection(section.title)}
               className={clsx(
@@ -162,7 +158,6 @@ export default function NavLinks({
               />
             </button>
 
-            {/* Opciones desplegables */}
             {isOpen && (
               <div className="ml-4 space-y-1 border-l border-pink-700 pl-4">
                 {section.links.map((link) => {

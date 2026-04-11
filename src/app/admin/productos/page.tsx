@@ -3,7 +3,9 @@ import ProductoTable from '@/components/productos/table'
 import ProductoFilter from '@/components/productos/filtroProduc'
 import Search from '@/components/search'
 import { prisma } from '@/lib/prisma'
+
 export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Productos',
   description: 'Administración de productos del salón',
@@ -29,13 +31,11 @@ export default async function ProductosPage({
   const take = 10
   const skip = (page - 1) * take
 
+  // FIX: quitar codigo del filtro
   const where = {
     ...(query
       ? {
-          OR: [
-            { nombre: { contains: query, mode: 'insensitive' as const } },
-            { codigo: { contains: query, mode: 'insensitive' as const } },
-          ],
+          nombre: { contains: query, mode: 'insensitive' as const },
         }
       : {}),
     ...(categoriaId ? { categoria_id: categoriaId } : {}),
@@ -44,40 +44,69 @@ export default async function ProductosPage({
 
   const [totalProductos, productosRaw, categorias, marcas] = await Promise.all([
     prisma.producto.count({ where }),
+
+  
     prisma.producto.findMany({
       where,
       select: {
         id: true,
-        codigo: true,
         nombre: true,
         descripcion: true,
-        precio_venta: true,
-        precio_costo: true,
-        stock: true,
         imagen: true,
         activo: true,
+
         marca: { select: { nombre: true } },
         categoria: { select: { nombre: true } },
+
+        variantes: {
+          where: { activo: true },
+          select: {
+            id: true,
+            codigo: true,
+            precio_venta: true,
+            precio_costo: true,
+            stock: true,
+            tono: true,
+            presentacion: true,
+          },
+        },
       },
       orderBy: { id: 'asc' },
       take,
       skip,
     }),
+
     prisma.categoria.findMany({
       select: { id: true, nombre: true },
       orderBy: { nombre: 'asc' },
     }),
+
     prisma.marca.findMany({
       select: { id: true, nombre: true },
       orderBy: { nombre: 'asc' },
     }),
   ])
 
-  const productos = productosRaw.map((p) => ({
-    ...p,
-    precio_venta: Number(p.precio_venta),
-    precio_costo: Number(p.precio_costo),
+  const productos = productosRaw.map((p) => {
+  const variantes = p.variantes.map(v => ({
+    id: v.id,
+    codigo: v.codigo,
+    precio_venta: Number(v.precio_venta), 
+    stock: v.stock,
   }))
+
+  const precios = variantes.map(v => v.precio_venta)
+  const stocks  = variantes.map(v => v.stock)
+
+  return {
+    ...p,
+    variantes, 
+
+    precio_min: precios.length ? Math.min(...precios) : 0,
+    precio_max: precios.length ? Math.max(...precios) : 0,
+    stock_total: stocks.reduce((a, b) => a + b, 0),
+  }
+})
 
   const totalPages = Math.ceil(totalProductos / take)
 
@@ -90,7 +119,7 @@ export default async function ProductosPage({
       <ProductoFilter categorias={categorias} marcas={marcas} />
 
       <ProductoTable
-        productos={productos.map(p => ({ ...p, codigo: p.codigo ?? '' }))}
+       productos={productos}
         currentPage={page}
         totalPages={totalPages}
       />
