@@ -85,7 +85,7 @@ export default function VariantesEditor({ initialVariantes }: Props) {
             {/* ── Cabecera: fila flex — botón acordeón y botón eliminar son hermanos ── */}
             <div className="flex items-center bg-gray-50 hover:bg-rose-50 transition-colors">
 
-              {/* Botón acordeón ocupa todo el espacio disponible */}
+              {/* Botón acordeón ocupa el espacio disponible */}
               <button
                 type="button"
                 className="flex-1 flex items-center justify-between px-4 py-3 text-left"

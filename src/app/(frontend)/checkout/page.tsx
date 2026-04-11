@@ -85,8 +85,8 @@ function CheckoutContenido() {
   const totalFinal = total + envio
 
   // ── Tipo nativo del DOM en lugar de FormEvent de React (deprecado) ──
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+ const handleSubmit = async (e: React.SyntheticEvent) => {
+  e.preventDefault()
     setError(null)
 
     if (!form.nombre.trim() || !form.correo.trim()) {
