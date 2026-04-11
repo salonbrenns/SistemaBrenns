@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, FormEvent  } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
@@ -84,7 +84,8 @@ function CheckoutContenido() {
   const envio      = total >= ENVIO_GRATIS_DESDE ? 0 : COSTO_ENVIO
   const totalFinal = total + envio
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  // ── Tipo nativo del DOM en lugar de FormEvent de React (deprecado) ──
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
 

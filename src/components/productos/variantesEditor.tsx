@@ -82,38 +82,43 @@ export default function VariantesEditor({ initialVariantes }: Props) {
         {variantes.map((v, i) => (
           <div key={v.id ?? `nueva-${i}`} className="border border-gray-200 rounded-xl overflow-hidden">
 
-            {/* ── Cabecera del acordeón: div en lugar de button para evitar button>button ── */}
-            <div
-              role="button"
-              tabIndex={0}
-              className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-rose-50 transition-colors cursor-pointer"
-              onClick={() => setExpandido(expandido === i ? null : i)}
-              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setExpandido(expandido === i ? null : i) }}
-            >
-              <div className="flex items-center gap-3">
-                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${v.activo ? 'bg-green-400' : 'bg-gray-300'}`} />
-                <span className="text-sm font-semibold text-gray-700">{etiqueta(v)}</span>
-                {v.precio_venta && (
-                  <span className="text-xs text-gray-400">
-                    ${Number(v.precio_venta).toLocaleString('es-MX')} · {v.stock} uds.
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                {variantes.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={e => { e.stopPropagation(); eliminar(i) }}
-                    className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
-                {expandido === i
-                  ? <ChevronUp className="w-4 h-4 text-gray-400" />
-                  : <ChevronDown className="w-4 h-4 text-gray-400" />
-                }
-              </div>
+            {/* ── Cabecera: fila flex — botón acordeón y botón eliminar son hermanos ── */}
+            <div className="flex items-center bg-gray-50 hover:bg-rose-50 transition-colors">
+
+              {/* Botón acordeón ocupa todo el espacio disponible */}
+              <button
+                type="button"
+                className="flex-1 flex items-center justify-between px-4 py-3 text-left"
+                onClick={() => setExpandido(expandido === i ? null : i)}
+              >
+                <div className="flex items-center gap-3">
+                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${v.activo ? 'bg-green-400' : 'bg-gray-300'}`} />
+                  <span className="text-sm font-semibold text-gray-700">{etiqueta(v)}</span>
+                  {v.precio_venta && (
+                    <span className="text-xs text-gray-400">
+                      ${Number(v.precio_venta).toLocaleString('es-MX')} · {v.stock} uds.
+                    </span>
+                  )}
+                </div>
+                <span className="ml-2">
+                  {expandido === i
+                    ? <ChevronUp className="w-4 h-4 text-gray-400" />
+                    : <ChevronDown className="w-4 h-4 text-gray-400" />
+                  }
+                </span>
+              </button>
+
+              {/* Botón eliminar: hermano del acordeón, nunca anidado dentro */}
+              {variantes.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => eliminar(i)}
+                  className="p-3 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+                  aria-label="Eliminar variante"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
 
             {/* Inputs ocultos */}
