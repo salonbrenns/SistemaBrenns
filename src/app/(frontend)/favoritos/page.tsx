@@ -1,10 +1,8 @@
 'use client'
-
 import Image from 'next/image'
 import Link from 'next/link'
 import { Heart, ShoppingBag, Loader2, Trash2 } from 'lucide-react'
 import { useFavoritos } from '@/hooks/useFavoritos'
-import { useCarrito } from '@/hooks/useCarrito'
 import AuthGuard from '@/components/ui/AuthGuard'
 
 function getImagen(imagen: unknown): string | null {
@@ -23,7 +21,6 @@ export default function FavoritosPage() {
 
 function FavoritosContenido() {
   const { favoritos, cargando, toggle } = useFavoritos()
-  const { agregar } = useCarrito()
 
   if (cargando) {
     return (
@@ -40,30 +37,16 @@ function FavoritosContenido() {
         <div className="flex items-center gap-3 mb-10">
           <Heart className="w-8 h-8 text-rose-600 fill-rose-600" />
           <h1 className="text-3xl font-black text-gray-900">
-            Mis Favoritos
+            Mis Favoritos{' '}
             <span className="ml-2 text-lg font-semibold text-gray-400">({favoritos.length})</span>
           </h1>
         </div>
 
-        {favoritos.length === 0 && (
-          <div className="text-center py-32 bg-white rounded-[3rem] shadow-inner border-2 border-dashed border-rose-100">
-            <Heart className="w-20 h-20 text-rose-200 mx-auto mb-6" />
-            <p className="text-2xl font-bold text-gray-800 mb-2">Aún no tienes favoritos</p>
-            <p className="text-gray-500 mb-8">Guarda los productos que más te gusten</p>
-            <Link href="/catalogo">
-              <button className="px-8 py-3 bg-rose-700 text-white font-bold rounded-full hover:bg-rose-800 transition shadow-xl">
-                Explorar catálogo
-              </button>
-            </Link>
-          </div>
-        )}
-
-        {favoritos.length > 0 && (
+        {favoritos.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {favoritos.map(fav => {
-              const p = fav.producto
+              const p    = fav.producto
               const foto = getImagen(p.imagen)
-
               return (
                 <article key={fav.id} className="group bg-white rounded-[2rem] shadow-sm hover:shadow-xl border border-rose-50 overflow-hidden transition-all duration-300 hover:-translate-y-1">
                   <Link href={`/producto/${p.id}`} className="block">
@@ -90,7 +73,6 @@ function FavoritosContenido() {
                         <Heart className="w-4 h-4 fill-white" />
                       </button>
                     </div>
-
                     <div className="p-5">
                       {p.marca && (
                         <p className="text-[10px] uppercase tracking-widest font-black text-rose-400 mb-1">{p.marca}</p>
@@ -104,7 +86,6 @@ function FavoritosContenido() {
                       </p>
                     </div>
                   </Link>
-
                   <div className="px-5 pb-5 grid grid-cols-2 gap-2">
                     <Link href={`/producto/${p.id}`}>
                       <button
@@ -125,7 +106,19 @@ function FavoritosContenido() {
               )
             })}
           </div>
+        ) : (
+          <div className="text-center py-32 bg-white rounded-[3rem] shadow-inner border-2 border-dashed border-rose-100">
+            <Heart className="w-20 h-20 text-rose-200 mx-auto mb-6" />
+            <p className="text-2xl font-bold text-gray-800 mb-2">Aún no tienes favoritos</p>
+            <p className="text-gray-500 mb-8">Guarda los productos que más te gusten</p>
+            <Link href="/catalogo">
+              <button className="px-8 py-3 bg-rose-700 text-white font-bold rounded-full hover:bg-rose-800 transition shadow-xl">
+                Explorar catálogo
+              </button>
+            </Link>
+          </div>
         )}
+
       </div>
     </div>
   )

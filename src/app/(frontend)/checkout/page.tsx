@@ -58,9 +58,9 @@ function CheckoutContenido() {
   const router = useRouter()
   const { items, cargando, total, totalItems } = useCarrito()
 
-  const [metodoPago, setMetodoPago]   = useState('tarjeta')
-  const [procesando, setProcesando]   = useState(false)
-  const [error, setError]             = useState<string | null>(null)
+  const [metodoPago, setMetodoPago] = useState('tarjeta')
+  const [procesando, setProcesando] = useState(false)
+  const [error, setError]           = useState<string | null>(null)
 
   const [form, setForm] = useState({
     nombre:   '',
@@ -84,7 +84,7 @@ function CheckoutContenido() {
   const envio      = total >= ENVIO_GRATIS_DESDE ? 0 : COSTO_ENVIO
   const totalFinal = total + envio
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
 
@@ -110,7 +110,7 @@ function CheckoutContenido() {
       if (!res.ok) throw new Error(data.error || 'Error al procesar el pedido')
 
       // Emitir evento para que el Header actualice el contador
-      window.dispatchEvent(new Event('cart-updated'))
+      globalThis.dispatchEvent(new Event('cart-updated'))
       router.push(`/pedido/${data.pedido_id}?metodo=${metodoPago}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error inesperado')
@@ -167,28 +167,55 @@ function CheckoutContenido() {
                 <h2 className="text-lg font-black text-gray-900 mb-6">Datos de contacto</h2>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Nombre *</label>
-                    <input value={form.nombre} onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))}
+                    <label htmlFor="nombre" className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                      Nombre *
+                    </label>
+                    <input
+                      id="nombre"
+                      value={form.nombre}
+                      onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))}
                       className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 transition"
-                      placeholder="Ana Karen" required />
+                      placeholder="Ana Karen"
+                      required
+                    />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Apellido</label>
-                    <input value={form.apellido} onChange={e => setForm(f => ({ ...f, apellido: e.target.value }))}
+                    <label htmlFor="apellido" className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                      Apellido
+                    </label>
+                    <input
+                      id="apellido"
+                      value={form.apellido}
+                      onChange={e => setForm(f => ({ ...f, apellido: e.target.value }))}
                       className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 transition"
-                      placeholder="Gómez López" />
+                      placeholder="Gómez López"
+                    />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Correo *</label>
-                    <input type="email" value={form.correo} onChange={e => setForm(f => ({ ...f, correo: e.target.value }))}
+                    <label htmlFor="correo" className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                      Correo *
+                    </label>
+                    <input
+                      id="correo"
+                      type="email"
+                      value={form.correo}
+                      onChange={e => setForm(f => ({ ...f, correo: e.target.value }))}
                       className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 transition"
-                      placeholder="ana@ejemplo.com" required />
+                      placeholder="ana@ejemplo.com"
+                      required
+                    />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Teléfono</label>
-                    <input value={form.telefono} onChange={e => setForm(f => ({ ...f, telefono: e.target.value }))}
+                    <label htmlFor="telefono" className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                      Teléfono
+                    </label>
+                    <input
+                      id="telefono"
+                      value={form.telefono}
+                      onChange={e => setForm(f => ({ ...f, telefono: e.target.value }))}
                       className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 transition"
-                      placeholder="961 123 4567" />
+                      placeholder="961 123 4567"
+                    />
                   </div>
                 </div>
               </div>
@@ -198,7 +225,7 @@ function CheckoutContenido() {
                 <h2 className="text-lg font-black text-gray-900 mb-6">Método de pago</h2>
                 <div className="space-y-3">
                   {METODOS.map(m => {
-                    const Icon = m.icon
+                    const Icon   = m.icon
                     const activo = metodoPago === m.id
                     return (
                       <label key={m.id}
@@ -275,7 +302,7 @@ function CheckoutContenido() {
                 {/* Items */}
                 <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
                   {items.map((item: CartItem) => {
-                    const foto = getImagen(item.producto.imagen)
+                    const foto      = getImagen(item.producto.imagen)
                     const atributos = [item.tono, item.presentacion].filter(Boolean).join(' / ')
                     return (
                       <div key={item.id} className="flex gap-3">
