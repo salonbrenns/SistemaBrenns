@@ -1,5 +1,4 @@
 'use client'
-
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createProducto } from '@/lib/actionsproductos'
@@ -26,6 +25,7 @@ export default function CreateProductoForm({
 
   return (
     <div className="w-full max-w-5xl rounded-2xl bg-white shadow-xl border border-rose-100 overflow-hidden">
+
       {/* Header */}
       <div className="bg-gradient-to-r from-rose-800 to-pink-700 px-8 py-5">
         <h2 className="text-xl font-semibold text-white tracking-wide">Nuevo Producto</h2>
@@ -47,38 +47,40 @@ export default function CreateProductoForm({
             <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">
               Información general
             </h3>
-
             <div className="grid grid-cols-2 gap-4">
+
               <div className="col-span-2 space-y-1">
-                <label className={labelClass}>Nombre del producto *</label>
-                <input name="nombre" required placeholder="Ej. Gel UV NailPro" className={inputClass} />
+                <label htmlFor="nombre" className={labelClass}>Nombre del producto *</label>
+                <input id="nombre" name="nombre" required placeholder="Ej. Gel UV NailPro" className={inputClass} />
               </div>
 
               <div className="space-y-1">
-                <label className={labelClass}>Marca *</label>
-                <select name="marca_id" required className={inputClass}>
+                <label htmlFor="marca_id" className={labelClass}>Marca *</label>
+                <select id="marca_id" name="marca_id" required className={inputClass}>
                   <option value="">Seleccionar marca</option>
                   {marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
                 </select>
               </div>
 
               <div className="space-y-1">
-                <label className={labelClass}>Categoría *</label>
-                <select name="categoria_id" required className={inputClass}>
+                <label htmlFor="categoria_id" className={labelClass}>Categoría *</label>
+                <select id="categoria_id" name="categoria_id" required className={inputClass}>
                   <option value="">Seleccionar categoría</option>
                   {categorias.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
                 </select>
               </div>
 
               <div className="col-span-2 space-y-1">
-                <label className={labelClass}>Descripción</label>
+                <label htmlFor="descripcion" className={labelClass}>Descripción</label>
                 <textarea
+                  id="descripcion"
                   name="descripcion"
                   placeholder="Describe el producto brevemente..."
                   rows={3}
                   className={`${inputClass} resize-none`}
                 />
               </div>
+
             </div>
 
             {/* Activo */}
@@ -103,7 +105,7 @@ export default function CreateProductoForm({
           {/* ── Variantes ── */}
           <section className="space-y-3">
             <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">
-              Variantes
+              Variantes{' '}
               <span className="ml-2 normal-case font-normal text-gray-400">
                 (tono, presentación, precio y stock por variante)
               </span>
@@ -133,6 +135,7 @@ export default function CreateProductoForm({
           </button>
         </div>
       </form>
+
     </div>
   )
 }

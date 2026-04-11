@@ -1,9 +1,7 @@
 'use client'
-
 import { useState } from 'react'
 import { Plus, Trash2, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react'
 
-// Definimos la interfaz aquí para asegurar que sea consistente
 export interface VarianteForm {
   id?: number
   codigo: string
@@ -24,7 +22,6 @@ const inputClass =
   'w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition'
 const labelClass = 'text-[11px] font-semibold text-gray-500 uppercase tracking-wider'
 
-// CORRECCIÓN SONAR: Props marcadas como readonly
 interface Props {
   readonly initialVariantes?: readonly VarianteForm[];
 }
@@ -83,10 +80,8 @@ export default function VariantesEditor({ initialVariantes }: Props) {
 
       <div className="space-y-2">
         {variantes.map((v, i) => (
-          /* CORRECCIÓN SONAR: Key única (usamos ID o prefijo) */
           <div key={v.id ?? `nueva-${i}`} className="border border-gray-200 rounded-xl overflow-hidden">
 
-            {/* CORRECCIÓN SONAR: Elemento interactivo nativo (button) para el acordeón */}
             <button
               type="button"
               className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-rose-50 transition-colors"
@@ -125,14 +120,16 @@ export default function VariantesEditor({ initialVariantes }: Props) {
             <input type="hidden" name={`variante_presentacion_${i}`} value={v.presentacion} />
             <input type="hidden" name={`variante_precio_costo_${i}`} value={v.precio_costo} />
             <input type="hidden" name={`variante_precio_venta_${i}`} value={v.precio_venta} />
-            <input type="hidden" name={`variante_stock_${i}`}         value={v.stock} />
+            <input type="hidden" name={`variante_stock_${i}`}        value={v.stock} />
             <input type="hidden" name={`variante_activo_${i}`}       value={String(v.activo)} />
 
             {expandido === i && (
               <div className="p-4 grid grid-cols-2 gap-3 bg-white">
+
                 <div className="space-y-1">
-                  <label className={labelClass}>Tono / Color</label>
+                  <label htmlFor={`tono_${i}`} className={labelClass}>Tono / Color</label>
                   <input
+                    id={`tono_${i}`}
                     type="text"
                     placeholder="Ej. Rosa Nude"
                     value={v.tono}
@@ -142,8 +139,9 @@ export default function VariantesEditor({ initialVariantes }: Props) {
                 </div>
 
                 <div className="space-y-1">
-                  <label className={labelClass}>Presentación</label>
+                  <label htmlFor={`presentacion_${i}`} className={labelClass}>Presentación</label>
                   <input
+                    id={`presentacion_${i}`}
                     type="text"
                     placeholder="Ej. 15ml, 50g"
                     value={v.presentacion}
@@ -153,8 +151,9 @@ export default function VariantesEditor({ initialVariantes }: Props) {
                 </div>
 
                 <div className="space-y-1">
-                  <label className={labelClass}>Código</label>
+                  <label htmlFor={`codigo_${i}`} className={labelClass}>Código</label>
                   <input
+                    id={`codigo_${i}`}
                     type="text"
                     placeholder="Ej. GEL-NUDE-15"
                     value={v.codigo}
@@ -164,8 +163,9 @@ export default function VariantesEditor({ initialVariantes }: Props) {
                 </div>
 
                 <div className="space-y-1">
-                  <label className={labelClass}>Stock *</label>
+                  <label htmlFor={`stock_${i}`} className={labelClass}>Stock *</label>
                   <input
+                    id={`stock_${i}`}
                     type="number"
                     min="0"
                     placeholder="0"
@@ -176,10 +176,11 @@ export default function VariantesEditor({ initialVariantes }: Props) {
                 </div>
 
                 <div className="space-y-1">
-                  <label className={labelClass}>Precio Costo *</label>
+                  <label htmlFor={`precio_costo_${i}`} className={labelClass}>Precio Costo *</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
                     <input
+                      id={`precio_costo_${i}`}
                       type="number"
                       step="0.01"
                       min="0"
@@ -192,10 +193,11 @@ export default function VariantesEditor({ initialVariantes }: Props) {
                 </div>
 
                 <div className="space-y-1">
-                  <label className={labelClass}>Precio Venta *</label>
+                  <label htmlFor={`precio_venta_${i}`} className={labelClass}>Precio Venta *</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
                     <input
+                      id={`precio_venta_${i}`}
                       type="number"
                       step="0.01"
                       min="0"
@@ -222,6 +224,7 @@ export default function VariantesEditor({ initialVariantes }: Props) {
                     <span className="text-xs font-medium text-gray-600">Variante activa</span>
                   </label>
                 </div>
+
               </div>
             )}
           </div>

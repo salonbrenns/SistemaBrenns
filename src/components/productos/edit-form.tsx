@@ -1,5 +1,4 @@
 'use client'
-
 import { useTransition } from 'react'
 import { updateProducto } from '@/lib/actionsproductos'
 import { useRouter } from 'next/navigation'
@@ -9,7 +8,6 @@ import VariantesEditor, { type VarianteForm } from '@/components/productos/varia
 
 interface Marca     { id: number; nombre: string }
 interface Categoria { id: number; nombre: string }
-
 interface Producto {
   id: number
   nombre: string
@@ -39,6 +37,7 @@ export default function EditProductoForm({
 
   return (
     <div className="w-full max-w-5xl rounded-2xl bg-white shadow-xl border border-rose-100 overflow-hidden">
+
       <div className="bg-gradient-to-r from-rose-800 to-pink-700 px-8 py-5">
         <h2 className="text-xl font-semibold text-white tracking-wide">Editar Producto</h2>
         <p className="text-rose-200 text-sm mt-0.5">Modifica la información y gestiona las variantes</p>
@@ -59,11 +58,12 @@ export default function EditProductoForm({
             <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">
               Información general
             </h3>
-
             <div className="grid grid-cols-2 gap-4">
+
               <div className="col-span-2 space-y-1">
-                <label className={labelClass}>Nombre del producto *</label>
+                <label htmlFor="nombre" className={labelClass}>Nombre del producto *</label>
                 <input
+                  id="nombre"
                   name="nombre"
                   required
                   defaultValue={producto.nombre}
@@ -72,30 +72,32 @@ export default function EditProductoForm({
               </div>
 
               <div className="space-y-1">
-                <label className={labelClass}>Marca *</label>
-                <select name="marca_id" required defaultValue={producto.marca_id ?? ''} className={inputClass}>
+                <label htmlFor="marca_id" className={labelClass}>Marca *</label>
+                <select id="marca_id" name="marca_id" required defaultValue={producto.marca_id ?? ''} className={inputClass}>
                   <option value="">Seleccionar marca</option>
                   {marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
                 </select>
               </div>
 
               <div className="space-y-1">
-                <label className={labelClass}>Categoría *</label>
-                <select name="categoria_id" required defaultValue={producto.categoria_id ?? ''} className={inputClass}>
+                <label htmlFor="categoria_id" className={labelClass}>Categoría *</label>
+                <select id="categoria_id" name="categoria_id" required defaultValue={producto.categoria_id ?? ''} className={inputClass}>
                   <option value="">Seleccionar categoría</option>
                   {categorias.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
                 </select>
               </div>
 
               <div className="col-span-2 space-y-1">
-                <label className={labelClass}>Descripción</label>
+                <label htmlFor="descripcion" className={labelClass}>Descripción</label>
                 <textarea
+                  id="descripcion"
                   name="descripcion"
                   defaultValue={producto.descripcion ?? ''}
                   rows={3}
                   className={`${inputClass} resize-none`}
                 />
               </div>
+
             </div>
 
             <label className="flex items-center gap-2 cursor-pointer select-none w-fit">
@@ -124,7 +126,7 @@ export default function EditProductoForm({
           {/* ── Variantes ── */}
           <section className="space-y-3">
             <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">
-              Variantes
+              Variantes{' '}
               <span className="ml-2 normal-case font-normal text-gray-400">
                 (tono, presentación, precio y stock por variante)
               </span>
@@ -153,6 +155,7 @@ export default function EditProductoForm({
           </button>
         </div>
       </form>
+
     </div>
   )
 }

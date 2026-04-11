@@ -1,12 +1,10 @@
 'use server'
-
 import { prisma } from '@/lib/prisma'
 import cloudinary from '@/lib/cloudinary'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 // ─── Cloudinary helper ────────────────────────────────────────────────────────
-
 async function uploadToCloudinary(files: File[]): Promise<string[]> {
   if (!files.length) return []
   return Promise.all(
@@ -15,7 +13,7 @@ async function uploadToCloudinary(files: File[]): Promise<string[]> {
       return new Promise<string>((resolve, reject) => {
         cloudinary.uploader
           .upload_stream({ folder: 'Brenns-productos', resource_type: 'auto' }, (err, result) => {
-            if (err || !result) return reject(err)
+            if (err || !result) return reject(err ?? new Error('Upload fallido'))
             resolve(result.secure_url)
           })
           .end(buffer)
@@ -25,7 +23,6 @@ async function uploadToCloudinary(files: File[]): Promise<string[]> {
 }
 
 // ─── Parsers de FormData ──────────────────────────────────────────────────────
-
 function parseImagenesExistentes(formData: FormData): string[] {
   return (formData.getAll('existing_images[]') as string[]).filter(Boolean)
 }
@@ -38,9 +35,8 @@ async function resolverImagenes(formData: FormData): Promise<string[]> {
 }
 
 // Parsea todas las variantes que vienen del form
-// Cada variante lleva índice: variante_codigo_0, variante_tono_0, etc.
 interface VarianteInput {
-  id?: number           // si ya existe en BD
+  id?: number
   codigo: string
   tono: string
   presentacion: string
@@ -72,7 +68,6 @@ function parseVariantes(formData: FormData): VarianteInput[] {
 }
 
 // ─── createProducto ───────────────────────────────────────────────────────────
-
 export async function createProducto(formData: FormData) {
   try {
     const nombre       = formData.get('nombre')       as string
@@ -81,7 +76,7 @@ export async function createProducto(formData: FormData) {
     const categoria_id = formData.get('categoria_id') ? Number(formData.get('categoria_id')) : null
     const activo       = formData.get('activo') === 'on' || formData.get('activo') === 'true'
 
-    const imagenes = await resolverImagenes(formData)
+    const imagenes  = await resolverImagenes(formData)
     const variantes = parseVariantes(formData)
 
     if (variantes.length === 0) throw new Error('Debe haber al menos una variante')
@@ -111,13 +106,11 @@ export async function createProducto(formData: FormData) {
     console.error('Error en createProducto:', error)
     throw new Error('No se pudo crear el producto')
   }
-
   revalidatePath('/admin/productos')
   redirect('/admin/productos')
 }
 
 // ─── updateProducto ───────────────────────────────────────────────────────────
-
 export async function updateProducto(id: number, formData: FormData) {
   try {
     const nombre       = formData.get('nombre')       as string
@@ -129,22 +122,18 @@ export async function updateProducto(id: number, formData: FormData) {
     const imagenes  = await resolverImagenes(formData)
     const variantes = parseVariantes(formData)
 
-    // IDs que siguen existiendo en el form
     const idsEnForm = variantes.filter(v => v.id).map(v => v.id!)
 
     await prisma.$transaction(async (tx) => {
-      // 1. Actualizar producto padre
       await tx.producto.update({
         where: { id },
         data: { nombre, descripcion, marca_id, categoria_id, activo, imagen: imagenes },
       })
 
-      // 2. Eliminar variantes que el usuario borró del form
       await tx.variante.deleteMany({
         where: { producto_id: id, id: { notIn: idsEnForm } },
       })
 
-      // 3. Upsert de cada variante
       for (const v of variantes) {
         const data = {
           codigo:       v.codigo       || null,
@@ -166,13 +155,11 @@ export async function updateProducto(id: number, formData: FormData) {
     console.error('Error en updateProducto:', error)
     throw new Error('No se pudo actualizar el producto')
   }
-
   revalidatePath('/admin/productos')
   redirect('/admin/productos')
 }
 
 // ─── toggleProducto ───────────────────────────────────────────────────────────
-
 export async function toggleProducto(id: number, activo: boolean) {
   await prisma.producto.update({ where: { id }, data: { activo } })
   revalidatePath('/admin/productos')
