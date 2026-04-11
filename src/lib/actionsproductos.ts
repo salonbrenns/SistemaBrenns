@@ -13,7 +13,7 @@ async function uploadToCloudinary(files: File[]): Promise<string[]> {
       return new Promise<string>((resolve, reject) => {
         cloudinary.uploader
           .upload_stream({ folder: 'Brenns-productos', resource_type: 'auto' }, (err, result) => {
-            if (err || !result) return reject(err ?? new Error('Upload fallido'))
+            if (err || !result) return reject(new Error(err?.message ?? 'Upload fallido'))
             resolve(result.secure_url)
           })
           .end(buffer)
