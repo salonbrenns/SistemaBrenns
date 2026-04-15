@@ -35,29 +35,24 @@ const handleSubmit = async (e: React.FormEvent) => {
       redirect: false,
     })
 
-    if (result?.error) {
-      console.error("SignIn error:", result.error)
-      if (result.error === "CredentialsSignin" || result.error.includes("incorrectos")) {
-        setError("Correo o contraseña incorrectos.")
-      } else {
-        setError(result.error || "Credenciales inválidas")
-      }
-      return
-    }
-
     // Login exitoso
-    const next = searchParams?.get("next")
-    if (next) {
-      router.push(decodeURIComponent(next))
-    } else {
-      // Espera breve para que la sesión se actualice
-      await new Promise(resolve => setTimeout(resolve, 800))
+    if (result?.ok) {
+      console.log("✅ Login exitoso")
 
-      const sessionRes = await fetch("/api/auth/session", { 
+      const next = searchParams?.get("next")
+      if (next) {
+        router.push(decodeURIComponent(next))
+        return
+      }
+
+      // Espera para que la sesión se propague correctamente
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      const sessionRes = await fetch("/api/auth/session", {
         cache: "no-store",
-        credentials: "include" 
+        credentials: "include",
       })
-      
+
       const session = await sessionRes.json()
       const role = session?.user?.role
 
@@ -68,12 +63,23 @@ const handleSubmit = async (e: React.FormEvent) => {
       } else {
         router.push("/perfil")
       }
+
+      router.refresh()
+      return
     }
 
-    router.refresh()
-  } catch (err) {
-    console.error("Login catch error:", err)
-    setError("Error de conexión. Verifica tu internet o intenta más tarde.")
+    // Login falló
+    console.error("❌ SignIn result:", result)
+    if (result?.error === "CredentialsSignin" || result?.error?.includes("incorrectos")) {
+      setError("Correo o contraseña incorrectos.")
+    } else if (result?.error) {
+      setError(result.error)
+    } else {
+      setError("Credenciales inválidas. Intenta de nuevo.")
+    }
+  } catch (err: unknown) {
+    console.error("Login error:", err)
+    setError("Error de conexión con el servidor. Intenta más tarde.")
   } finally {
     setLoading(false)
   }
