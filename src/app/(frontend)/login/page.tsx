@@ -13,64 +13,78 @@ function LoginContenido() {
   const [loading, setLoading] = useState(false)
   const [loadingGoogle, setLoadingGoogle] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [errorRasp, setErrorRasp] = useState<string | null>(null) // ← NUEVO
+  const [errorRasp, setErrorRasp] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setErrorRasp(null) // ← NUEVO: limpiar error RASP previo
+  e.preventDefault()
+  setError(null)
+  setErrorRasp(null)
 
-    if (!email || !password) {
-      setError("Por favor completa todos los campos")
+  if (!email || !password) {
+    setError("Por favor completa todos los campos")
+    return
+  }
+
+  setLoading(true)
+
+  try {
+    const result = await signIn("credentials", {
+      correo: email,
+      password: password,
+      redirect: false,
+    })
+
+    if (result?.error) {
+      console.error("SignIn error:", result.error) // ← Esto ayuda a ver el error real
+      if (result.error === "CredentialsSignin" || result.error.includes("incorrectos")) {
+        setError("Correo o contraseña incorrectos.")
+      } else {
+        setError(result.error || "Credenciales inválidas")
+      }
       return
     }
 
-    setLoading(true)
-    try {
-      // ← NUEVO: verificar primero si la IP ya fue bloqueada por fuerza bruta
-      const checkRasp = await fetch("/api/auth/callback/credentials", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo: email, password }),
+    // Si llegó aquí, el login fue exitoso
+    const next = searchParams?.get("next")
+    if (next) {
+      router.push(decodeURIComponent(next))
+    } else {
+      // Pequeña espera para que la sesión se propague
+      await new Promise(resolve => setTimeout(resolve, 800))
+
+      const sessionRes = await fetch("/api/auth/session", { 
+        cache: "no-store",
+        credentials: "include" 
       })
+      const session = await sessionRes.json()
 
-      if (checkRasp.status === 429) {
-        const data = await checkRasp.json()
-        setErrorRasp(data.error ?? "Demasiados intentos fallidos. Espera 60 segundos e intenta de nuevo.")
-        return
-      }
-      // ← FIN NUEVO
+      const role = session?.user?.role
 
-      const result = await signIn("credentials", { correo: email, password, redirect: false })
-      if (result?.error) {
-        setError("Correo o contraseña incorrectos.")
-        return
-      }
-
-      const next = searchParams?.get("next")
-      if (next) {
-        router.push(decodeURIComponent(next))
+      if (role === "ADMIN" || role === "EMPLEADO") {
+        router.push("/admin/dashboard")
+      } else if (role === "DOCENTE") {
+        router.push("/docente/dashboard")
       } else {
-        const session = await fetch("/api/auth/session").then(r => r.json())
-        const role = session?.user?.role
-        if (role === "ADMIN") router.push("/admin/dashboard")
-        else if (role === "EMPLEADO") router.push("/admin/dashboard")
-        else if (role === "DOCENTE") router.push("/docente/dashboard")
-        else router.push("/perfil")
+        router.push("/perfil")
       }
-      router.refresh()
-    } catch {
-      setError("Error inesperado. Intenta de nuevo.")
-    } finally {
-      setLoading(false)
     }
+
+    router.refresh()
+  } catch (err: any) {
+    console.error("Login catch error:", err)
+    setError("Error de conexión. Verifica tu internet o intenta más tarde.")
+  } finally {
+    setLoading(false)
   }
+}
 
   const handleGoogle = async () => {
     setLoadingGoogle(true)
     const next = searchParams?.get("next")
-    await signIn("google", { callbackUrl: next ? decodeURIComponent(next) : "/perfil" })
+    await signIn("google", { 
+      callbackUrl: next ? decodeURIComponent(next) : "/perfil" 
+    })
   }
 
   return (
@@ -116,7 +130,6 @@ function LoginContenido() {
             {loadingGoogle ? "Redirigiendo..." : "Continuar con Google"}
           </button>
 
-          {/* Separador */}
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 h-px bg-gray-200"></div>
             <span className="text-sm text-gray-400">o inicia con correo</span>
@@ -129,9 +142,10 @@ function LoginContenido() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => { setEmail(e.target.value); setErrorRasp(null) }}
+                onChange={(e) => { setEmail(e.target.value); setError(null); setErrorRasp(null) }}
                 placeholder="tucorreo@ejemplo.com"
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all"
+                disabled={loading}
               />
             </div>
 
@@ -146,22 +160,21 @@ function LoginContenido() {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(e) => { setPassword(e.target.value); setErrorRasp(null) }}
+                  onChange={(e) => { setPassword(e.target.value); setError(null); setErrorRasp(null) }}
                   placeholder="••••••••"
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all"
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  tabIndex={-1}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-pink-600 transition-colors focus:outline-none"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-pink-600 transition-colors"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
             </div>
 
-            {/* ← NUEVO: Alerta de bloqueo por fuerza bruta */}
             {errorRasp && (
               <div className="flex items-start gap-3 bg-red-50 border border-red-300 text-red-700 rounded-2xl px-4 py-3 text-sm">
                 <ShieldAlert className="w-5 h-5 mt-0.5 shrink-0" />
@@ -183,7 +196,12 @@ function LoginContenido() {
               disabled={loading || !!errorRasp}
               className="w-full bg-pink-600 text-white py-3 rounded-full font-bold text-lg shadow-lg hover:bg-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Verificando..." : "Entrar"}
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin inline mr-2" />
+                  Verificando...
+                </>
+              ) : "Entrar"}
             </button>
           </form>
 
