@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { auth } from "../auth"
+import { auth } from "@/lib/auth"
 
 // ── Rate Limiter RASP ─────────────────────────────────────────
 const loginAttempts = new Map<string, { count: number; firstAttempt: number }>()

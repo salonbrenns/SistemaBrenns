@@ -1,7 +1,7 @@
 // src/app/api/usuario/perfil/route.ts
 import { NextResponse, NextRequest} from "next/server"
 import { PrismaClient } from "@prisma/client"
-import { auth } from "../../../../../auth"
+import { auth } from "@/lib/auth"
 import { withRasp } from "@/lib/withRasp";
 
 async function profileHandler(req: NextRequest){

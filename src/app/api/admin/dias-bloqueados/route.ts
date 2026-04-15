@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { auth } from "../../../../../auth"
+import { auth } from "@/lib/auth"
 
 async function isAdmin() {
   const session = await auth()

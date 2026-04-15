@@ -1,6 +1,6 @@
 // src/app/api/admin/upload-servicio/route.ts
 import { NextResponse } from "next/server"
-import { auth }         from "../../../../../auth"
+import { auth }         from"@/lib/auth"
 import { v2 as cloudinary } from "cloudinary"
 
 cloudinary.config({

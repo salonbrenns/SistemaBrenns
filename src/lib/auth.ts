@@ -1,20 +1,17 @@
+// src/lib/auth.ts
 import NextAuth from "next-auth"
+import Google from "next-auth/providers/google"
 import Credentials from "next-auth/providers/credentials"
-import { PrismaClient } from "@prisma/client"
-import bcrypt from "bcryptjs"
-
-const prisma = new PrismaClient()
-
-// Definimos una interfaz para el usuario que retorna authorize
-interface CustomUser {
-  id: string
-  name: string
-  email: string
-  role: string
-}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
+
   providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+
     Credentials({
       credentials: {
         correo: { label: "Correo", type: "email" },
@@ -25,71 +22,51 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new Error("Correo y contraseña requeridos")
         }
 
-        const usuario = await prisma.usuario.findUnique({
-          where: { correo: credentials.correo as string },
+        // Llamada a la API Route (esto corre en Node.js, no en Edge)
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+
+        const res = await fetch(`${baseUrl}/api/auth/credentials`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            correo: credentials.correo,
+            password: credentials.password,
+          }),
         })
 
-        if (!usuario) {
-          throw new Error("Correo o contraseña incorrectos")
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}))
+          throw new Error(errorData.error || "Error de autenticación")
         }
 
-        if (usuario.cuenta_bloqueada) {
-          throw new Error("Tu cuenta está bloqueada. Contacta al administrador.")
-        }
-
-        if (!usuario.activo) {
-          throw new Error("Tu cuenta está desactivada.")
-        }
-
-        const passwordValida = await bcrypt.compare(
-          credentials.password as string,
-          usuario.password
-        )
-
-        if (!passwordValida) {
-          const intentos = usuario.intentos_fallidos + 1
-          await prisma.usuario.update({
-            where: { id: usuario.id },
-            data: {
-              intentos_fallidos: intentos,
-              cuenta_bloqueada: intentos >= 5,
-            },
-          })
-          throw new Error("Correo o contraseña incorrectos")
-        }
-
-        // Resetear intentos al login exitoso
-        await prisma.usuario.update({
-          where: { id: usuario.id },
-          data: { intentos_fallidos: 0 },
-        })
-
-        // Retornamos el objeto con el tipo esperado
-        return {
-          id: String(usuario.id),
-          name: usuario.nombre,
-          email: usuario.correo,
-          role: usuario.rol,
-        } as CustomUser
+        return await res.json()
       },
     }),
   ],
 
- callbacks: {
-    async jwt({ token, user }) {
+  callbacks: {
+    async jwt({ token, user, account }) {
       if (user) {
-        const u = user as CustomUser
-        token.id = u.id
-        token.role = u.role
+        token.id = user.id
+        // Sin 'any' para evitar error de ESLint
+        if ("role" in user) token.role = user.role as string
+        if ("telefono" in user) token.telefono = user.telefono as string | null
       }
+
+      // Para usuarios de Google (se ejecuta en servidor, no en Edge)
+      if (account?.provider === "google" && token.email) {
+        // Aquí puedes llamar a otra API si quieres, pero por ahora lo dejamos simple
+        // Si necesitas lógica pesada, crea otra ruta /api/auth/google-callback
+      }
+
       return token
     },
+
     async session({ session, token }) {
       if (session.user) {
-        // Asignamos el ID
         session.user.id = token.id as string
-      
-       Object.assign(session.user, { role: token.role as string })
+        session.user.role = token.role as string
+        session.user.telefono = token.telefono as string | null
       }
       return session
     },
@@ -105,5 +82,3 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     maxAge: 24 * 60 * 60, // 24 horas
   },
 })
-
-export { auth as getSession }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { auth } from "../../../../../auth"
+import { auth } from "@/lib/auth"
 import { PERMISOS_SISTEMA } from "@/lib/permisos" 
 
 async function isAdmin() {
