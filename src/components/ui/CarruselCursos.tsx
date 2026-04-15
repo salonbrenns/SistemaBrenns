@@ -10,10 +10,9 @@ type Curso = {
   precio_total: number
   duracion_horas: number | null
   nivel: string | null
-  imagenes: any // Manejamos el JsonArray de Prisma
+  imagenes: string[] | string | null
 }
 
-// Lógica para extraer la imagen igual que en productos
 function getImagen(imagenes: Curso['imagenes']): string | null {
   if (Array.isArray(imagenes) && imagenes.length > 0) return imagenes[0]
   if (typeof imagenes === 'string' && imagenes.length > 0) return imagenes
@@ -33,8 +32,7 @@ export default function CarruselCursos({ cursos = [] }: { cursos: Curso[] }) {
   return (
     <section className="bg-pink-50/30 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Encabezado idéntico al de Productos */}
+
         <div className="flex items-end justify-between mb-10">
           <div>
             <p className="text-pink-600 text-xs font-bold uppercase tracking-widest mb-1">Aprende con nosotras</p>
@@ -56,15 +54,12 @@ export default function CarruselCursos({ cursos = [] }: { cursos: Curso[] }) {
           </div>
         </div>
 
-        {/* Grid de Cards */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {slice.map(c => {
             const foto = getImagen(c.imagenes)
             return (
               <Link key={c.id} href={`/curso/${c.id}`}
                 className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-pink-200 hover:shadow-lg transition-all">
-                
-                {/* Contenedor de Imagen */}
                 <div className="relative h-48 overflow-hidden bg-gray-50">
                   {foto ? (
                     <Image
@@ -80,14 +75,11 @@ export default function CarruselCursos({ cursos = [] }: { cursos: Curso[] }) {
                     </div>
                   )}
                 </div>
-
-                {/* Información del Curso */}
                 <div className="p-5">
                   <span className="text-xs font-semibold text-pink-500 uppercase tracking-wide">
                     {c.nivel || 'Principiante'}
                   </span>
                   <h3 className="font-bold text-gray-900 mt-1 mb-3 line-clamp-1">{c.titulo}</h3>
-                  
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-bold text-pink-600">
                       ${Number(c.precio_total).toLocaleString()} MXN
@@ -103,7 +95,6 @@ export default function CarruselCursos({ cursos = [] }: { cursos: Curso[] }) {
           })}
         </div>
 
-        {/* Indicadores (Dots) */}
         {total > 1 && (
           <div className="flex justify-center gap-2 mt-8">
             {Array.from({ length: total }).map((_, i) => (

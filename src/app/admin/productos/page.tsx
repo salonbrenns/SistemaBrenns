@@ -98,8 +98,23 @@ export default async function ProductosPage({
   const precios = variantes.map(v => v.precio_venta)
   const stocks  = variantes.map(v => v.stock)
 
+
+  let imagenProcesada: string | string[] | null = null;
+
+    if (p.imagen) {
+      if (typeof p.imagen === 'string') {
+        imagenProcesada = p.imagen;
+      } else if (Array.isArray(p.imagen)) {
+        imagenProcesada = p.imagen as string[];
+      } else {
+        // Si Prisma lo guarda como JSON array, lo convertimos
+        imagenProcesada = Array.isArray(p.imagen) ? (p.imagen as string[]) : null;
+      }
+    }
+
   return {
     ...p,
+    imagen: imagenProcesada,
     variantes, 
 
     precio_min: precios.length ? Math.min(...precios) : 0,

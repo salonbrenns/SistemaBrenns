@@ -1,4 +1,3 @@
-// src/app/api/usuario/upload-foto/route.ts
 import { NextResponse } from "next/server"
 import { auth } from "../../../../../auth"
 import { v2 as cloudinary } from "cloudinary"
@@ -28,9 +27,9 @@ export async function POST(req: Request) {
 
     const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
       cloudinary.uploader.upload_stream(
-        { 
+        {
           folder: "Brenns-Perfil",
-          transformation: [{ width: 400, height: 400, crop: "fill", gravity: "face" }] // Opcional: recorta a cara
+          transformation: [{ width: 400, height: 400, crop: "fill", gravity: "face" }]
         },
         (error, result) => {
           if (error || !result) reject(error)
@@ -39,15 +38,12 @@ export async function POST(req: Request) {
       ).end(buffer)
     })
 
-    return NextResponse.json({ 
-      success: true,
-      url: result.secure_url 
-    })
+    return NextResponse.json({ success: true, url: result.secure_url })
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Error al subir foto de perfil:", err)
-    return NextResponse.json({ 
-      error: "Error al subir la imagen a Cloudinary" 
+    return NextResponse.json({
+      error: "Error al subir la imagen a Cloudinary"
     }, { status: 500 })
   }
 }

@@ -1,6 +1,5 @@
-// components/ui/Toast.tsx
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { CheckCircle, XCircle, AlertCircle } from "lucide-react"
 
 type ToastType = "success" | "error" | "warning"
@@ -24,12 +23,8 @@ export default function Toast({ message, type, onClose }: ToastProps) {
       {type === "success" && <CheckCircle className="w-6 h-6" />}
       {type === "error" && <XCircle className="w-6 h-6" />}
       {type === "warning" && <AlertCircle className="w-6 h-6" />}
-      
       <p className="font-medium pr-4">{message}</p>
-      
-      <button onClick={onClose} className="ml-auto text-white/80 hover:text-white">
-        ✕
-      </button>
+      <button onClick={onClose} className="ml-auto text-white/80 hover:text-white">✕</button>
     </div>
   )
 }

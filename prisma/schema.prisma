@@ -441,6 +441,19 @@ model ConfigSitio {
   @@schema("seguridad")
 }
 
+model PreguntaFrecuente {
+  id        Int      @id @default(autoincrement())
+  pregunta  String   @db.VarChar(300)
+  respuesta String
+  orden     Int      @default(0)
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tblfaq")
+  @@schema("catalogos")
+}
+
 model Backup {
   id     Int       @id @default(autoincrement())
   nombre String    @db.VarChar(255)

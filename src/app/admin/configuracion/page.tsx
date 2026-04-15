@@ -6,6 +6,7 @@ import {
   ImageIcon, Users, Upload, Image as ImageIcon2,
 } from "lucide-react"
 import { SiteConfig, DEFAULTS } from "@/hooks/useSiteConfig"
+import Image from 'next/image'
 
 // ── Tipos ──────────────────────────────────────────────────────────────────
 type HeroSlide = {
@@ -138,7 +139,7 @@ const LogoUploader = ({
     <div className="flex items-center gap-4 p-3 border border-dashed border-gray-200 rounded-xl bg-gray-50/30">
       <div className="relative w-14 h-14 rounded-lg bg-white border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
         {currentLogo ? (
-          <img src={currentLogo} alt="Logo" className="w-full h-full object-contain p-1" />
+          <Image src={currentLogo} alt="Logo" className="w-full h-full object-contain p-1" fill />
         ) : (
           <ImageIcon2 className="w-5 h-5 text-gray-300" />
         )}
@@ -197,7 +198,7 @@ const SlideEditor = ({
 
       <div className="relative h-32 rounded-xl overflow-hidden bg-gray-200 group shadow-inner">
         {slide.imagen ? (
-          <img src={slide.imagen} alt="" className="w-full h-full object-cover" />
+          <Image src={slide.imagen} alt="" className="w-full h-full object-cover" fill />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400">
             <ImageIcon2 className="w-8 h-8" />

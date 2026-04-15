@@ -6,7 +6,6 @@ import { useState } from 'react'
 import { Heart, ShoppingBag, Loader2, Trash2, Wrench } from 'lucide-react'
 import { useFavoritos } from '@/hooks/useFavoritos'
 import { useFavoritosServicios } from '@/hooks/useFavoritosServicios'
-import { useCarrito } from '@/hooks/useCarrito'
 import AuthGuard from '@/components/ui/AuthGuard'
 
 function getImagen(imagen: unknown): string | null {

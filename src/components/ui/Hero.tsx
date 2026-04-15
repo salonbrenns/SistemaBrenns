@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react"
-
+import Image from "next/image"
 // Tipo del slide — mismo que en la página de configuración
 type HeroSlide = {
   imagen:       string
@@ -105,11 +105,14 @@ export default function Hero() {
 
       {/* Fondo con imagen + overlay */}
       <div className={`absolute inset-0 transition-opacity duration-500 ${animating ? "opacity-0" : "opacity-100"}`}>
-        <img
-          src={slide.imagen}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
+        <Image
+  src={slide.imagen}
+  alt=""
+  fill
+  priority
+  className="object-cover object-center"
+  sizes="100vw"
+/>
         <div className={`absolute inset-0 bg-gradient-to-r ${overlay}`} />
         <div className="absolute inset-0 bg-black/30" />
       </div>

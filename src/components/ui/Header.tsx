@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useSiteConfig } from '@/hooks/useSiteConfig'
+import Image from 'next/image'
 
 export default function Header() {
   const config = useSiteConfig()
@@ -31,15 +32,29 @@ export default function Header() {
       .catch(() => {})
   }, [status])
 
-  useEffect(() => {
-    cargarCarrito()
-    window.addEventListener('cart-updated', cargarCarrito)
-    window.addEventListener('storage', cargarCarrito)
+useEffect(() => {
+    let mounted = true;
+
+    const executeLoad = async () => {
+      if (status === 'loading' || !mounted) return;
+      await cargarCarrito();   // Si es async, mejor
+    };
+
+    executeLoad();
+
+    const handleCartUpdate = () => {
+      if (mounted) cargarCarrito();
+    };
+
+    window.addEventListener('cart-updated', handleCartUpdate);
+    window.addEventListener('storage', handleCartUpdate);
+
     return () => {
-      window.removeEventListener('cart-updated', cargarCarrito)
-      window.removeEventListener('storage', cargarCarrito)
-    }
-  }, [cargarCarrito])
+      mounted = false;
+      window.removeEventListener('cart-updated', handleCartUpdate);
+      window.removeEventListener('storage', handleCartUpdate);
+    };
+  }, [cargarCarrito, status]);
 
   useEffect(() => {
     if (!autenticado) return
@@ -68,13 +83,16 @@ export default function Header() {
           {/* Logo Dinámico */}
           <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition flex-shrink-0">
             <div className="relative w-16 h-16 md:w-20 md:h-20">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                key={config.logo_src}
-                src={config.logo_src}
-                alt={config.nombre}
-                className="w-full h-full object-contain"
-              />
+          
+             <Image
+            key={config.logo_src}
+            src={config.logo_src}
+            alt={config.nombre}
+            fill
+            className="object-contain"
+            sizes="80px"
+            priority
+          />
             </div>
             <div className="hidden sm:block">
               <h1 className="text-lg md:text-2xl font-bold text-gray-900 leading-tight">

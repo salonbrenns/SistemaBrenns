@@ -63,10 +63,11 @@ function HorasEmpleado({
     setCargando(false)
   }, [empId])
 
-  useEffect(() => {
+useEffect(() => {
     cargar()
-  }, [cargar])
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  
   const excDia   = excepciones.filter(e => e.dia_semana === diaId)
   const quitadas = new Set(excDia.filter(e => e.tipo === "QUITAR").map(e => e.hora))
   const agregadas = excDia.filter(e => e.tipo === "AGREGAR").map(e => e.hora)

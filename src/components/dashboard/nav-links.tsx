@@ -127,7 +127,7 @@ export default function NavLinks({
         { name: 'Configuración',   href: '/admin/configuracion'  },
         { name: 'Notificaciones',  href: '/admin/notificaciones' },
         { name: 'Roles',           href: '/admin/roles'          },
-        { name: 'FAQ y Políticas', href: '/admin/politicas'      },
+        { name: 'FAQs', href: '/admin/faq'      },
       ],
     },
   ]

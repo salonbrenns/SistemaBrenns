@@ -2,7 +2,7 @@
 // src/app/(frontend)/aviso-privacidad/page.tsx
 
 import Link from "next/link"
-import { ShieldCheck, ArrowLeft, ChevronRight, Mail, ExternalLink } from "lucide-react"
+import { ShieldCheck, ArrowLeft, ChevronRight, Mail } from "lucide-react"
 import { useSiteConfig } from "@/hooks/useSiteConfig"
 
 const secciones = [
@@ -268,24 +268,7 @@ export default function AvisoPrivacidadPage() {
               </section>
             ))}
 
-            {/* FOOTER */}
-            <div className="bg-gray-900 rounded-[3rem] p-12 text-center relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-500" />
-              <p className="text-pink-400 font-bold mb-4 flex items-center justify-center gap-2">
-                <ShieldCheck className="w-5 h-5" /> Brenn&apos;s Legal Compliance
-              </p>
-              <p className="text-gray-400 text-sm max-w-2xl mx-auto leading-relaxed mb-10">
-                Este aviso de privacidad es un documento vinculante que protege tus derechos según la legislación mexicana (LFPDPPP).
-              </p>
-              <div className="flex flex-wrap justify-center gap-6 md:gap-12">
-                <Link href="/terminos" className="text-[11px] font-black uppercase tracking-widest text-white hover:text-pink-400 transition-colors flex items-center gap-2">
-                  Términos de Uso <ExternalLink className="w-3 h-3" />
-                </Link>
-                <Link href="/politicas" className="text-[11px] font-black uppercase tracking-widest text-white hover:text-pink-400 transition-colors flex items-center gap-2">
-                  Políticas del Salón <ExternalLink className="w-3 h-3" />
-                </Link>
-              </div>
-            </div>
+           
           </div>
         </div>
       </div>

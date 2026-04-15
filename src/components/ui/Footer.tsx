@@ -13,8 +13,6 @@ export default function Footer() {
 
   return (
     <footer className="bg-[#0a0a0a] text-white border-t border-white/5">
-      
-    
 
       {/* ── SECCIÓN B: GRID PRINCIPAL DE CONTENIDO ── */}
       <div className="max-w-7xl mx-auto px-6 py-16">
@@ -30,7 +28,7 @@ export default function Footer() {
               </p>
             </div>
             
-            {/* Badges de Confianza (Esto llena espacio y da seriedad) */}
+            {/* Badges de Confianza */}
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 border border-white/10 rounded-xl px-3 py-2">
                 <ShieldCheck className="w-3.5 h-3.5 text-pink-500" /> Citas Seguras
@@ -52,6 +50,12 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+              {/* ── FAQ ── */}
+              <li>
+                <Link href="/faq" className="text-sm text-gray-400 hover:text-white transition-colors font-medium">
+                  Preguntas Frecuentes
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -86,19 +90,17 @@ export default function Footer() {
                     <span className="text-[10px] text-gray-600 uppercase font-black">{config.ubicacion_detalle}</span>
                   </span>
                 </a>
-               {/* Reemplaza la sección del email con esto */}
-<a href="mailto:salonbrenns11@gmail.com" 
-   className="flex items-center gap-4 group text-gray-400 hover:text-white transition-colors">
-  <Mail className="w-5 h-5 text-pink-600 shrink-0" />
-  <span className="text-sm">salonbrenns11@gmail.com</span>
-</a>
+                <a href="mailto:salonbrenns11@gmail.com"
+                  className="flex items-center gap-4 group text-gray-400 hover:text-white transition-colors">
+                  <Mail className="w-5 h-5 text-pink-600 shrink-0" />
+                  <span className="text-sm">salonbrenns11@gmail.com</span>
+                </a>
               </div>
             </div>
 
             <div className="pt-6 border-t border-white/5">
               <p className="text-[10px] font-black uppercase tracking-widest text-gray-600 mb-4">Síguenos en redes</p>
               <div className="flex gap-3">
-                {/* Aquí irían tus botones de RRSS anteriores, pero con un estilo más grande */}
                 <Link href={config.red_facebook || "#"} className="w-10 h-10 bg-white/5 hover:bg-[#1877F2] rounded-full flex items-center justify-center border border-white/5 transition-all">
                   <span className="sr-only">Facebook</span>
                   <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>

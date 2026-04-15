@@ -192,19 +192,7 @@ export default function PoliticasPage() {
               )
             })}
 
-            <footer className="bg-white rounded-[3rem] p-12 border border-pink-50 text-center shadow-sm">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-6">Documentación Legal Relacionada</p>
-              <div className="flex flex-wrap justify-center gap-10">
-                <Link href="/aviso-privacidad" className="text-sm font-bold text-pink-600 hover:scale-105 transition-transform">Aviso de Privacidad</Link>
-                <Link href="/terminos" className="text-sm font-bold text-pink-600 hover:scale-105 transition-transform">Términos y Condiciones</Link>
-              </div>
-              <div className="mt-12 pt-8 border-t border-gray-50">
-                <p className="text-[10px] text-gray-400 leading-relaxed">
-                  Distribuidora, Academia y Salón Brenn&apos;s<br />
-                  Huejutla de Reyes, Hidalgo · salonbrenns11@gmail.com
-                </p>
-              </div>
-            </footer>
+          
           </div>
         </div>
       </div>

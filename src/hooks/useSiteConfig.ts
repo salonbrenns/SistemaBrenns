@@ -25,6 +25,10 @@ export interface SiteConfig {
   legal_privacidad_version: string
   legal_privacidad_fecha:   string
   terminos_condiciones: string
+  legal_politicas_version?: string;
+  legal_politicas_fecha?: string;
+  legal_terminos_version?: string;
+  legal_terminos_fecha?: string;
 }
 
 export const DEFAULTS: SiteConfig = {

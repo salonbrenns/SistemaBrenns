@@ -198,21 +198,7 @@ export default function TerminosPage() {
               </section>
             ))}
 
-            {/* FOOTER */}
-            <div className="bg-gray-900 rounded-[3.5rem] p-12 md:p-20 text-center relative overflow-hidden">
-              <div className="relative z-10">
-                <p className="text-pink-500 font-black uppercase tracking-[0.3em] text-[10px] mb-6">Fin del Documento</p>
-                <h3 className="text-white text-3xl font-black mb-6">Validez Jurídica</h3>
-                <p className="text-gray-400 text-sm max-w-xl mx-auto leading-relaxed mb-12">
-                  Al utilizar los servicios de Brenn&apos;s, el usuario declara ser mayor de edad y contar con la capacidad legal para obligarse bajo los términos aquí expuestos.
-                </p>
-                <div className="flex flex-wrap justify-center gap-6 md:gap-12 pt-12 border-t border-white/5">
-                  <Link href="/aviso-privacidad" className="text-[10px] font-black uppercase tracking-widest text-pink-300 hover:text-white transition-colors">Aviso de Privacidad</Link>
-                  <Link href="/politicas" className="text-[10px] font-black uppercase tracking-widest text-pink-300 hover:text-white transition-colors">Reglas del Salón</Link>
-                </div>
-              </div>
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500" />
-            </div>
+            
           </div>
         </div>
       </div>

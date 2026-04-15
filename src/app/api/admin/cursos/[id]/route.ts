@@ -1,15 +1,16 @@
-import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }   // ← Cambiado a Promise
 ) {
   try {
-    const data = await req.json()
+    const { id } = await params;                     // ← Await obligatorio
+    const data = await req.json();
 
     const curso = await prisma.curso.update({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       data: {
         codigo: data.codigo,
         titulo: data.titulo,
@@ -38,38 +39,39 @@ export async function PUT(
           ? data.imagenes
           : [],
       },
-    })
+    });
 
-    return NextResponse.json(curso)
+    return NextResponse.json(curso);
 
   } catch (error) {
-    console.error("ERROR UPDATE CURSO:", error)
+    console.error("ERROR UPDATE CURSO:", error);
     return NextResponse.json(
       { error: "Error al actualizar curso" },
       { status: 500 }
-    )
+    );
   }
 }
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }   // ← Cambiado a Promise
 ) {
   try {
-    const { activo } = await req.json()
+    const { id } = await params;                     // ← Await obligatorio
+    const { activo } = await req.json();
 
     const curso = await prisma.curso.update({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       data: { activo: Boolean(activo) },
-    })
+    });
 
-    return NextResponse.json(curso)
+    return NextResponse.json(curso);
 
   } catch (error) {
-    console.error("ERROR PATCH CURSO:", error)
+    console.error("ERROR PATCH CURSO:", error);
     return NextResponse.json(
       { error: "Error al cambiar estado" },
       { status: 500 }
-    )
+    );
   }
 }

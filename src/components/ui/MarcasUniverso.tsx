@@ -1,6 +1,6 @@
 "use client"
 // src/components/ui/MarcasUniverso.tsx
-
+import Image from 'next/image'
 interface Marca {
   nombre: string
   img: string
@@ -37,13 +37,13 @@ export default function MarcasUniverso({ marcas }: Props) {
               key={marca.nombre}
               className="group bg-white flex items-center justify-center p-5 aspect-square hover:bg-pink-50 transition-colors duration-200"
             >
-              <img
-                src={`/marcas/${marca.img}`}
-                alt={marca.nombre}
-                title={marca.nombre}
-                className="w-full h-full object-contain mix-blend-multiply grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
-                style={{ maxWidth: 72, maxHeight: 72 }}
-              />
+             <Image 
+  src={`/marcas/${marca.img}`}
+  alt={marca.nombre}
+  fill
+  className="object-contain mix-blend-multiply grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
+  sizes="72px"
+/>
             </div>
           ))}
         </div>

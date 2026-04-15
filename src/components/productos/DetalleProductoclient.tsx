@@ -51,7 +51,7 @@ export default function DetalleProductoClient({
   const [agregando,       setAgregando]       = useState(false)
   const [toastMsg,        setToastMsg]        = useState<string | null>(null)
 
-  // ✅ varianteActiva es computed (useMemo), elimina el useEffect con setState
+  
   const varianteActiva = useMemo(() => {
     return producto.variantes.find(v => {
       const okTono = !hayTonos          || v.tono         === tonoSel
@@ -60,12 +60,15 @@ export default function DetalleProductoClient({
     }) ?? producto.variantes[0]
   }, [tonoSel, presentacionSel, producto.variantes, hayTonos, hayPresentaciones])
 
-  // ✅ Resetear imagen y cantidad cuando cambia la variante
-  useEffect(() => {
-    setImagenActivaIdx(0)
-    setCantidad(1)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [varianteActiva.id])
+ 
+useEffect(() => {
+    const timeout = setTimeout(() => {
+      setImagenActivaIdx(0);
+      setCantidad(1);
+    }, 10); // pequeño delay para evitar cascada
+
+    return () => clearTimeout(timeout);
+  }, [varianteActiva.id]);
 
   const imagenes           = varianteActiva.imagenes.length > 0 ? varianteActiva.imagenes : producto.imagenesPadre
   const imagenPrincipal    = imagenes[imagenActivaIdx] ?? null
