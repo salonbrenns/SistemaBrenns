@@ -82,3 +82,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     maxAge: 24 * 60 * 60, // 24 horas
   },
 })
+
+export const runtime = "nodejs"
