@@ -16,7 +16,7 @@ function LoginContenido() {
   const [errorRasp, setErrorRasp] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault()
   setError(null)
   setErrorRasp(null)
@@ -36,7 +36,7 @@ function LoginContenido() {
     })
 
     if (result?.error) {
-      console.error("SignIn error:", result.error) // ← Esto ayuda a ver el error real
+      console.error("SignIn error:", result.error)
       if (result.error === "CredentialsSignin" || result.error.includes("incorrectos")) {
         setError("Correo o contraseña incorrectos.")
       } else {
@@ -45,20 +45,20 @@ function LoginContenido() {
       return
     }
 
-    // Si llegó aquí, el login fue exitoso
+    // Login exitoso
     const next = searchParams?.get("next")
     if (next) {
       router.push(decodeURIComponent(next))
     } else {
-      // Pequeña espera para que la sesión se propague
+      // Espera breve para que la sesión se actualice
       await new Promise(resolve => setTimeout(resolve, 800))
 
       const sessionRes = await fetch("/api/auth/session", { 
         cache: "no-store",
         credentials: "include" 
       })
+      
       const session = await sessionRes.json()
-
       const role = session?.user?.role
 
       if (role === "ADMIN" || role === "EMPLEADO") {
@@ -71,7 +71,7 @@ function LoginContenido() {
     }
 
     router.refresh()
-  } catch (err: any) {
+  } catch (err) {
     console.error("Login catch error:", err)
     setError("Error de conexión. Verifica tu internet o intenta más tarde.")
   } finally {
