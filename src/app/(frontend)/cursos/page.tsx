@@ -36,7 +36,7 @@ export default function CursosPage() {
 
   const nivelesDisponibles = useMemo(() =>
     Array.from(new Set(cursos.map(c => c.nivel).filter(Boolean))) as string[]
-  , [cursos])
+    , [cursos])
 
   const toggleNivel = (nivel: string) => {
     setNivelesSeleccionados(prev =>
@@ -55,12 +55,19 @@ export default function CursosPage() {
     cursos
       .filter(c => c.titulo.toLowerCase().includes(busqueda.toLowerCase()))
       .filter(c => nivelesSeleccionados.length === 0 || (c.nivel && nivelesSeleccionados.includes(c.nivel)))
-  , [cursos, busqueda, nivelesSeleccionados])
+    , [cursos, busqueda, nivelesSeleccionados])
 
   const totalPaginas = Math.ceil(cursosFiltrados.length / POR_PAGINA)
   const cursosPagina = cursosFiltrados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
 
   const handleBusqueda = (valor: string) => { setBusqueda(valor); setPagina(1) }
+
+  // Función para validar que la imagen sea un string con contenido
+  const obtenerImagenSegura = (imagenes: string[] | null): string | null => {
+    if (!imagenes || !Array.isArray(imagenes) || imagenes.length === 0) return null;
+    const primera = imagenes[0];
+    return (typeof primera === 'string' && primera.trim().length > 0) ? primera : null;
+  }
 
   return (
     <main className="min-h-screen bg-[#fffafa]">
@@ -84,14 +91,15 @@ export default function CursosPage() {
 
       <div className="max-w-[1400px] mx-auto px-6 py-10">
 
-      <FiltroServicios
-  busqueda={busqueda}
-  setBusqueda={handleBusqueda}
-  categoriasDisponibles={nivelesDisponibles}
-  categoriasSeleccionadas={nivelesSeleccionados}
-  toggleCategoria={toggleNivel}
-  limpiarFiltros={limpiarFiltros}
-/>
+        <FiltroServicios
+          busqueda={busqueda}
+          setBusqueda={handleBusqueda}
+          categoriasDisponibles={nivelesDisponibles}
+          categoriasSeleccionadas={nivelesSeleccionados}
+          toggleCategoria={toggleNivel}
+          limpiarFiltros={limpiarFiltros}
+        />
+
         {!cargando && (
           <p className="text-sm text-gray-400 mb-6">
             {cursosFiltrados.length === cursos.length
@@ -114,7 +122,8 @@ export default function CursosPage() {
         {!cargando && cursosPagina.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {cursosPagina.map((curso) => {
-              const imagen = curso.imagenes?.[0] || null
+              const imagenSrc = obtenerImagenSegura(curso.imagenes)
+
               return (
                 <article
                   key={curso.id}
@@ -122,28 +131,33 @@ export default function CursosPage() {
                 >
                   <Link href={`/curso/${curso.id}`}>
                     <div className="relative h-64 bg-pink-50 overflow-hidden">
-                      {imagen ? (
+                      {imagenSrc ? (
                         <Image
-                          src={imagen}
+                          src={imagenSrc}
                           alt={curso.titulo}
                           fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                           className="object-cover group-hover:scale-110 transition-transform duration-1000"
+                          priority={false}
                         />
                       ) : (
-                        <div className="flex items-center justify-center h-full text-6xl">🎓</div>
+                        <div className="flex items-center justify-center h-full text-6xl bg-pink-100">🎓</div>
                       )}
+                      
                       {curso.nivel && (
                         <div className="absolute bottom-4 left-4 bg-white/90 px-4 py-1.5 rounded-full text-xs font-bold border">
                           {curso.nivel}
                         </div>
                       )}
+                      
                       <button
                         onClick={(e) => { e.preventDefault(); e.stopPropagation() }}
-                        className="absolute top-4 right-4 bg-white p-2 rounded-full shadow hover:bg-pink-600 hover:text-white"
+                        className="absolute top-4 right-4 bg-white p-2 rounded-full shadow hover:bg-pink-600 hover:text-white transition-colors"
                       >
                         <Heart className="w-5 h-5" />
                       </button>
                     </div>
+
                     <div className="p-6">
                       <h3 className="text-xl font-bold mb-3 line-clamp-1">{curso.titulo}</h3>
                       <div className="flex items-baseline gap-1">
@@ -154,6 +168,7 @@ export default function CursosPage() {
                       </div>
                     </div>
                   </Link>
+
                   <div className="px-6 pb-6">
                     <Link href={`/curso/${curso.id}`}>
                       <button className="w-full bg-gray-900 hover:bg-pink-600 text-white font-bold py-3.5 rounded-2xl transition">
@@ -184,7 +199,10 @@ export default function CursosPage() {
         <Paginacion
           paginaActual={pagina}
           totalPaginas={totalPaginas}
-          onChange={(p) => { setPagina(p); window.scrollTo({ top: 0, behavior: "smooth" }) }}
+          onChange={(p) => { 
+            setPagina(p); 
+            window.scrollTo({ top: 0, behavior: "smooth" }) 
+          }}
         />
 
         <footer className="text-center mt-20 pt-10 border-t border-rose-100">

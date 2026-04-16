@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+
 import { Loader2, Info } from 'lucide-react'
 import UploadCursoImages from './UploadCursoImages'
 import Link from 'next/link'
+import { createCurso, updateCurso } from '@/lib/actionscursos'
 
 interface Curso {
   id?: number
@@ -25,9 +26,7 @@ const inputClass = 'w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-
 const labelClass = 'text-xs font-semibold text-gray-500 uppercase tracking-wider'
 
 export default function CursoForm({ curso }: { curso?: Curso }) {
-  const router = useRouter()
   const [isPending, startTransition] = useTransition()
-
   const [form, setForm] = useState<Curso>(
     curso || {
       codigo: '', titulo: '', descripcion: '', precio_total: 0, cupo_maximo: 0,
@@ -43,27 +42,28 @@ export default function CursoForm({ curso }: { curso?: Curso }) {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    
+    // El checkbox no se añade automáticamente si es custom, lo forzamos:
+    formData.set('activo', String(form.activo))
+
     startTransition(async () => {
-      const method = curso ? 'PUT' : 'POST'
-      const url = curso ? `/api/admin/cursos/${curso.id}` : '/api/admin/cursos'
-
-      await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      })
-
-      router.push('/admin/cursos')
-      router.refresh()
+      try {
+        if (curso?.id) {
+          await updateCurso(curso.id, formData)
+        } else {
+          await createCurso(formData)
+        }
+      } catch (error) {
+        alert("Error al guardar el curso")
+      }
     })
   }
 
   return (
     <div className="w-full max-w-5xl mx-auto rounded-3xl bg-white shadow-2xl border border-pink-100 overflow-hidden">
-
-      {/* HEADER */}
       <div className="bg-gradient-to-r from-pink-700 to-pink-600 px-10 py-6">
         <h2 className="text-2xl font-semibold text-white tracking-wide">
           {curso ? 'Editar Curso' : 'Nuevo Curso'}
@@ -71,37 +71,28 @@ export default function CursoForm({ curso }: { curso?: Curso }) {
         <p className="text-pink-100 text-sm mt-1">Completa la información del curso</p>
       </div>
 
-      <form onSubmit={handleSubmit}>
-        <div className="flex gap-0">
-
+      <form onSubmit={handleSubmit} encType="multipart/form-data">
+        <div className="flex gap-0 flex-col md:flex-row">
           {/* COLUMNA IZQUIERDA */}
           <div className="flex-1 p-10 space-y-8">
-
             <section className="space-y-6">
               <h3 className={labelClass}>Información General</h3>
-
               <div className="space-y-1">
                 <label className={labelClass}>Código *</label>
-                <input name="codigo" value={form.codigo} onChange={handleChange} placeholder="Ej. CURSO-001" required className={inputClass} />
+                <input name="codigo" value={form.codigo} onChange={handleChange} required className={inputClass} />
               </div>
-
               <div className="space-y-1">
                 <label className={labelClass}>Título del curso *</label>
-                <input name="titulo" value={form.titulo} onChange={handleChange} placeholder="Nombre del curso" required className={inputClass} />
+                <input name="titulo" value={form.titulo} onChange={handleChange} required className={inputClass} />
               </div>
-
               <div className="space-y-1">
                 <label className={labelClass}>Descripción</label>
-                <textarea name="descripcion" value={form.descripcion} onChange={handleChange} rows={4} placeholder="Describe el contenido y objetivo del curso..." className={`${inputClass} resize-none`} />
+                <textarea name="descripcion" value={form.descripcion} onChange={handleChange} rows={4} className={`${inputClass} resize-none`} />
               </div>
-
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-1">
                   <label className={labelClass}>Precio (MXN) *</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
-                    <input type="number" name="precio_total" value={form.precio_total} onChange={handleChange} required className={`${inputClass} pl-8`} />
-                  </div>
+                  <input type="number" name="precio_total" value={form.precio_total} onChange={handleChange} required className={inputClass} />
                 </div>
                 <div className="space-y-1">
                   <label className={labelClass}>Cupo máximo *</label>
@@ -111,8 +102,7 @@ export default function CursoForm({ curso }: { curso?: Curso }) {
             </section>
 
             <section className="space-y-6">
-              <h3 className={labelClass}>Detalles del Curso</h3>
-
+              <h3 className={labelClass}>Detalles</h3>
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-1">
                   <label className={labelClass}>Duración (horas)</label>
@@ -128,72 +118,43 @@ export default function CursoForm({ curso }: { curso?: Curso }) {
                   </select>
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-1">
                   <label className={labelClass}>Fecha Inicio</label>
-                  <input type="date" name="fecha_inicio" value={form.fecha_inicio || ''} onChange={handleChange} className={inputClass} />
+                  <input type="date" name="fecha_inicio" value={form.fecha_inicio} onChange={handleChange} className={inputClass} />
                 </div>
                 <div className="space-y-1">
                   <label className={labelClass}>Fecha Fin</label>
-                  <input type="date" name="fecha_fin" value={form.fecha_fin || ''} onChange={handleChange} className={inputClass} />
+                  <input type="date" name="fecha_fin" value={form.fecha_fin} onChange={handleChange} className={inputClass} />
                 </div>
               </div>
             </section>
 
-            {/* Activo */}
-            <label className="flex items-center gap-3 cursor-pointer select-none">
-              <div className="relative">
-                <input 
-                  type="checkbox" 
-                  checked={form.activo}
-                  onChange={() => setForm(prev => ({ ...prev, activo: !prev.activo }))}
-                  className="sr-only peer" 
-                />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer-checked:bg-pink-600 transition-colors" />
-                <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition peer-checked:translate-x-6" />
-              </div>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" checked={form.activo} onChange={() => setForm(prev => ({ ...prev, activo: !prev.activo }))} className="sr-only peer" />
+              <div className="w-11 h-6 bg-gray-200 rounded-full peer-checked:bg-pink-600 transition-colors" />
               <span className="text-sm font-medium text-gray-700">Curso activo</span>
             </label>
           </div>
 
-          {/* DIVISOR */}
-          <div className="w-px bg-pink-100 my-10" />
-
           {/* COLUMNA DERECHA - IMÁGENES */}
-          <div className="w-96 flex-shrink-0 p-10">
-            
-            
-            <UploadCursoImages
-              value={form.imagenes}
-              onChange={(imgs) => setForm(prev => ({ ...prev, imagenes: imgs }))}
-            />
-
+          <div className="w-full md:w-96 p-10 bg-gray-50/50">
+            <UploadCursoImages value={form.imagenes} />
             <div className="mt-8 rounded-2xl bg-amber-50 border border-amber-100 p-5">
               <p className="text-xs text-amber-700 flex gap-2">
                 <Info className="w-4 h-4 mt-0.5" />
-                Puedes subir hasta <strong>4 imágenes</strong> para el curso.
+                Máximo 4 imágenes. La primera será la principal.
               </p>
             </div>
           </div>
         </div>
 
-        {/* FOOTER */}
         <div className="flex justify-end gap-4 px-10 py-6 bg-gray-50 border-t">
-          <Link
-            href="/admin/cursos"
-            className="px-6 py-3 rounded-xl border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-100 transition"
-          >
+          <Link href="/admin/cursos" className="px-6 py-3 rounded-xl border text-sm font-medium hover:bg-gray-100 transition">
             Cancelar
           </Link>
-          <button
-            type="submit"
-            disabled={isPending}
-            className="px-8 py-3 rounded-xl bg-pink-700 text-white font-semibold hover:bg-pink-800 disabled:opacity-60 transition flex items-center gap-2"
-          >
-            {isPending ? (
-              <><Loader2 className="animate-spin w-4 h-4" /> Guardando...</>
-            ) : curso ? 'Actualizar Curso' : 'Crear Curso'}
+          <button type="submit" disabled={isPending} className="px-8 py-3 rounded-xl bg-pink-700 text-white font-semibold hover:bg-pink-800 disabled:opacity-60 transition flex items-center gap-2">
+            {isPending ? <Loader2 className="animate-spin w-4 h-4" /> : curso ? 'Actualizar Curso' : 'Crear Curso'}
           </button>
         </div>
       </form>

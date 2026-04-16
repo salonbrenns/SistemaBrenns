@@ -44,6 +44,16 @@ export default function CursoTable({
   const formatDate = (date: Date | null) =>
     date ? new Date(date).toISOString().slice(0, 10) : '—'
 
+  /**
+   * Valida si el string proporcionado es una URL apta para el componente Image de Next.js
+   * Se cambió 'any' por 'string | null | undefined' para evitar errores de ESLint
+   */
+  const isValidUrl = (url: string | null | undefined): boolean => {
+    if (!url || typeof url !== 'string') return false;
+    const trimmed = url.trim();
+    return trimmed.startsWith('http') || trimmed.startsWith('/') || trimmed.startsWith('data:');
+  }
+
   return (
     <div className="mt-6 space-y-4">
       
@@ -92,67 +102,69 @@ export default function CursoTable({
                 </td>
               </tr>
             ) : (
-              cursos.map((curso) => (
-                <tr key={curso.id} className="hover:bg-pink-50/50 transition-colors">
-                  {/* Imagen */}
-                  <td className="px-6 py-4">
-                    {curso.imagenes?.[0] ? (
-                      <div className="relative h-12 w-12 rounded-xl overflow-hidden border border-pink-100">
-                        <Image
-                          src={curso.imagenes[0]}
-                          alt={curso.titulo}
-                          fill
-                          className="object-cover"
-                        />
+              cursos.map((curso) => {
+                const firstImage = curso.imagenes?.[0];
+                const hasValidImage = isValidUrl(firstImage);
+
+                return (
+                  <tr key={curso.id} className="hover:bg-pink-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      {hasValidImage ? (
+                        <div className="relative h-12 w-12 rounded-xl overflow-hidden border border-pink-100">
+                          <Image
+                            src={firstImage as string}
+                            alt={curso.titulo}
+                            fill
+                            sizes="48px"
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="h-12 w-12 rounded-xl border border-pink-200 bg-pink-50 flex items-center justify-center">
+                          <span className="text-[10px] text-pink-400 font-medium">IMG</span>
+                        </div>
+                      )}
+                    </td>
+
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">{curso.codigo}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{curso.titulo}</td>
+                    <td className="px-6 py-4 text-sm font-semibold text-pink-600">
+                      ${Number(curso.precio_total).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{curso.cupo_maximo}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {curso.duracion_horas ? `${curso.duracion_horas} hrs` : '—'}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700 uppercase">{curso.nivel || '—'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{formatDate(curso.fecha_inicio)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{formatDate(curso.fecha_fin)}</td>
+
+                    <td className="px-6 py-4">
+                      <ToggleCurso
+                        id={curso.id}
+                        nombre={curso.titulo}
+                        activo={curso.activo}
+                      />
+                    </td>
+
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-3">
+                        <Link
+                          href={`/admin/cursos/editar/${curso.id}`}
+                          className="text-gray-500 hover:text-pink-600 transition-colors"
+                        >
+                          <PencilIcon className="w-5 h-5" />
+                        </Link>
                       </div>
-                    ) : (
-                      <div className="h-12 w-12 rounded-xl border border-pink-200 bg-pink-50 flex items-center justify-center">
-                        <span className="text-[10px] text-pink-400 font-medium">IMG</span>
-                      </div>
-                    )}
-                  </td>
-
-                  <td className="px-6 py-4 text-sm text-gray-700 font-medium">{curso.codigo}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{curso.titulo}</td>
-                  <td className="px-6 py-4 text-sm font-semibold text-pink-600">
-                    ${curso.precio_total}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{curso.cupo_maximo}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
-                    {curso.duracion_horas ? `${curso.duracion_horas} hrs` : '—'}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700 uppercase">{curso.nivel || '—'}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{formatDate(curso.fecha_inicio)}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{formatDate(curso.fecha_fin)}</td>
-
-                  {/* Estado */}
-                  <td className="px-6 py-4">
-                    <ToggleCurso
-                      id={curso.id}
-                      nombre={curso.titulo}
-                      activo={curso.activo}
-                    />
-                  </td>
-
-                  {/* Acciones */}
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-3">
-                      <Link
-                        href={`/admin/cursos/editar/${curso.id}`}
-                        className="text-gray-500 hover:text-pink-600 transition-colors"
-                      >
-                        <PencilIcon className="w-5 h-5" />
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                    </td>
+                  </tr>
+                )
+              })
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Paginación simple (puedes mejorarla después) */}
       <div className="flex justify-center items-center gap-3 mt-8">
         <Link
           href={`?page=${currentPage - 1}`}
