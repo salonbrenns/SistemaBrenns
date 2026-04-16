@@ -20,7 +20,7 @@ export default function UploadCursoImages({ value = [] }: Props) {
     (Array.isArray(value) ? value : [])
       .filter((u) => typeof u === 'string' && u.startsWith('http'))
       .slice(0, MAX)
-      .map((url) => ({ type: 'existing' as const, url }))
+      .map((url) => ({ type: 'existing', url }))
   )
 
   const filesRef = useRef<(File | null)[]>([])
