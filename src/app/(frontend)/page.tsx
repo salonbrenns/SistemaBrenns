@@ -1,5 +1,5 @@
 // src/app/(frontend)/page.tsx
-
+export const revalidate = 0
 import PromoBanner from "@/components/ui/PromoBanner"
 import Hero from "@/components/ui/Hero"
 import CarruselServicios from "@/components/ui/CarruselServicios"
