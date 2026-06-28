@@ -7,6 +7,12 @@ async function isAdmin() {
   return session?.user?.role === "ADMIN"
 }
 
+async function isAdminOrEmpleado() {
+  const session = await auth()
+  const role = session?.user?.role
+  return role === "ADMIN" || role === "EMPLEADO"
+}
+
 type UsuarioRaw = {
   id: number
   nombre: string
@@ -18,7 +24,7 @@ type UsuarioRaw = {
 }
 
 export async function GET(req: Request) {
-  if (!await isAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  if (!await isAdminOrEmpleado()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 
   const { searchParams } = new URL(req.url)
   const q = searchParams.get("q") || ""
@@ -87,6 +93,6 @@ export async function DELETE(req: Request) {
     await prisma.usuario.delete({ where: { id } })
     return NextResponse.json({ ok: true })
   } catch {
-    return NextResponse.json({ error: "No se puede eliminar este usuario" }, { status: 400 })
+    return NextResponse.json({ error: "Error al eliminar" }, { status: 500 })
   }
 }

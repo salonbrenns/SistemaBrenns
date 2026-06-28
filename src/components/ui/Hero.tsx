@@ -19,7 +19,7 @@ type HeroSlide = {
 // Slides por defecto (se usan mientras carga la config o si no hay datos en BD)
 const SLIDES_DEFAULT: HeroSlide[] = [
   {
-    imagen:       "/hero/salon.jpg",
+    imagen:       "/catalogo/salon.jpg",
     etiqueta:     "Salón de Belleza",
     titulo:       "Tu Belleza,",
     tituloAcento: "Nuestra Pasión",
@@ -28,7 +28,7 @@ const SLIDES_DEFAULT: HeroSlide[] = [
     ctaHref:      "/servicios",
   },
   {
-    imagen:       "/hero/academia.jpg",
+    imagen:       "/cursos/curso-nail.jpg",
     etiqueta:     "Academia Brenn's",
     titulo:       "Aprende el Arte",
     tituloAcento: "de las Uñas",
@@ -37,7 +37,7 @@ const SLIDES_DEFAULT: HeroSlide[] = [
     ctaHref:      "/cursos",
   },
   {
-    imagen:       "/hero/distribuidora.jpg",
+    imagen:       "/catalogo/KIT.jpg",
     etiqueta:     "Distribuidora",
     titulo:       "Insumos",
     tituloAcento: "Profesionales",

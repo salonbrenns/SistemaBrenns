@@ -29,7 +29,7 @@ export default function Search({ placeholder }: { placeholder: string }) {
       <input
         id="search"
         type="search"
-        className="peer w-full rounded-lg border border-[#f3a6c6] bg-white py-2 pl-10 pr-4 text-sm text-[#1e343b] placeholder:text-gray-400 focus:border-[#e75480] focus:outline-none focus:ring-2 focus:ring-[#f3a6c6]/40 transition-all"
+        className="peer w-full rounded-lg border border-[#f3a6c6] dark:border-gray-600 bg-white dark:bg-gray-800 py-2 pl-10 pr-4 text-sm text-[#1e343b] dark:text-white placeholder:text-gray-400 focus:border-[#e75480] focus:outline-none focus:ring-2 focus:ring-[#f3a6c6]/40 transition-all"
         placeholder={placeholder}
         onChange={(e) => handleSearch(e.target.value)}
         defaultValue={searchParams.get('query')?.toString()}

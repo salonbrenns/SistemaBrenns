@@ -111,10 +111,10 @@ export default function PromocionesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-pink-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300 flex items-center gap-2">
             <Tag className="w-6 h-6 text-pink-500" /> Promociones
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Gestiona descuentos por producto</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Gestiona descuentos por producto</p>
         </div>
         {tab === "lista" && (
           <button onClick={() => setTab("nueva")}
@@ -145,9 +145,9 @@ export default function PromocionesPage() {
               { label: "Inactivas", count: promos.filter(p => !p.activo).length, color: "bg-gray-400" },
               { label: "Total",     count: promos.length,                         color: "bg-pink-500" },
             ].map(({ label, count, color }) => (
-              <div key={label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
+              <div key={label} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
                 <div className={`w-10 h-10 ${color} rounded-xl flex items-center justify-center text-white font-bold`}>{count}</div>
-                <p className="text-sm font-semibold text-gray-600">{label}</p>
+                <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">{label}</p>
               </div>
             ))}
           </div>
@@ -160,19 +160,19 @@ export default function PromocionesPage() {
               <p>No hay promociones registradas</p>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <table className="w-full text-sm">
-                <thead className="bg-pink-50 border-b border-pink-100">
+                <thead className="bg-pink-50 dark:bg-gray-900 border-b border-pink-100 dark:border-gray-700">
                   <tr>
                     {["Nombre","Tipo","Descuento","Código","Productos","Vigencia","Estado","Acciones"].map(h => (
-                      <th key={h} className="text-left text-pink-600 font-semibold px-4 py-3 text-xs">{h}</th>
+                      <th key={h} className="text-left text-pink-600 dark:text-pink-400 font-semibold px-4 py-3 text-xs">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {promos.map((p, i) => (
-                    <tr key={p.id} className={`border-b border-gray-50 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}>
-                      <td className="px-4 py-3 font-semibold text-gray-800">{p.nombre}</td>
+                    <tr key={p.id} className={`border-b border-gray-50 ${i % 2 === 0 ? "bg-white dark:bg-gray-800" : "bg-gray-50 dark:bg-gray-900/50"}`}>
+                      <td className="px-4 py-3 font-semibold text-gray-800 dark:text-white">{p.nombre}</td>
                       <td className="px-4 py-3">
                         <span className={`text-xs font-bold px-2 py-1 rounded-full ${
                           p.tipo === "PRODUCTO" ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"
@@ -183,9 +183,9 @@ export default function PromocionesPage() {
                           <Percent className="w-3 h-3" />{p.descuento}%
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-500">{p.codigo || "—"}</td>
+                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{p.codigo || "—"}</td>
                       <td className="px-4 py-3">
-                        <span className="flex items-center gap-1 text-xs text-gray-500">
+                        <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                           <Package className="w-3 h-3" />
                           {p.productos.length === 0
                             ? <span className="text-amber-500">Sin asignar</span>
@@ -193,7 +193,7 @@ export default function PromocionesPage() {
                           }
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-xs text-gray-500">
+                      <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           {p.fecha_inicio.split("T")[0]} → {p.fecha_fin.split("T")[0]}
@@ -234,7 +234,7 @@ export default function PromocionesPage() {
         <div className="grid lg:grid-cols-2 gap-6">
 
           {/* Datos de la promoción */}
-          <div className="bg-white rounded-2xl border border-pink-100 shadow-sm p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-100 shadow-sm p-6">
             <h2 className="font-bold text-gray-800 mb-5">
               {editando ? "Editar promoción" : "Nueva promoción"}
             </h2>
@@ -243,53 +243,53 @@ export default function PromocionesPage() {
             )}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nombre <span className="text-pink-500">*</span></label>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Nombre <span className="text-pink-500">*</span></label>
                 <input value={form.nombre}
                   onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))}
                   placeholder="Ej. Descuento de Verano"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400" />
+                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Tipo <span className="text-pink-500">*</span></label>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Tipo <span className="text-pink-500">*</span></label>
                   <select value={form.tipo}
                     onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400">
+                    className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400">
                     {TIPOS.map(t => <option key={t}>{t}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Descuento (%) <span className="text-pink-500">*</span></label>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Descuento (%) <span className="text-pink-500">*</span></label>
                   <input type="number" value={form.descuento}
                     onChange={e => setForm(f => ({ ...f, descuento: e.target.value }))}
                     placeholder="10" min={1} max={100}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400" />
+                    className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Código <span className="text-gray-400 font-normal">(opcional)</span></label>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Código <span className="text-gray-400 font-normal">(opcional)</span></label>
                 <input value={form.codigo}
                   onChange={e => setForm(f => ({ ...f, codigo: e.target.value.toUpperCase() }))}
                   placeholder="Ej. VERANO2026"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400 uppercase" />
+                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400 uppercase" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Fecha inicio <span className="text-pink-500">*</span></label>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Fecha inicio <span className="text-pink-500">*</span></label>
                   <input type="date" value={form.fecha_inicio}
                     onChange={e => setForm(f => ({ ...f, fecha_inicio: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400" />
+                    className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Fecha fin <span className="text-pink-500">*</span></label>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Fecha fin <span className="text-pink-500">*</span></label>
                   <input type="date" value={form.fecha_fin}
                     onChange={e => setForm(f => ({ ...f, fecha_fin: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400" />
+                    className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400" />
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={handleCancelar}
-                  className="flex-1 flex items-center justify-center gap-2 border border-gray-200 text-gray-600 font-semibold py-3 rounded-full hover:bg-gray-50 transition text-sm">
+                  className="flex-1 flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 font-semibold py-3 rounded-full hover:bg-gray-50 dark:bg-gray-900 transition text-sm">
                   <X className="w-4 h-4" /> Cancelar
                 </button>
                 <button onClick={handleGuardar} disabled={guardando}
@@ -304,9 +304,9 @@ export default function PromocionesPage() {
           </div>
 
           {/* Selector de productos */}
-          <div className="bg-white rounded-2xl border border-pink-100 shadow-sm p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-100 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-gray-800">Productos incluidos</h2>
+              <h2 className="font-bold text-gray-800 dark:text-white">Productos incluidos</h2>
               {idsSeleccionados.length > 0 && (
                 <span className="bg-pink-100 text-pink-700 text-xs font-bold px-2.5 py-1 rounded-full">
                   {idsSeleccionados.length} seleccionados
@@ -321,7 +321,7 @@ export default function PromocionesPage() {
                 value={busquedaProducto}
                 onChange={e => setBusquedaProducto(e.target.value)}
                 placeholder="Buscar producto..."
-                className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:border-pink-400"
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:border-pink-400"
               />
             </div>
 
@@ -335,8 +335,8 @@ export default function PromocionesPage() {
                   <button key={p.id} onClick={() => toggleProducto(p.id)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all text-sm ${
                       seleccionado
-                        ? "bg-pink-50 border border-pink-200 text-pink-800"
-                        : "bg-gray-50 border border-transparent hover:border-gray-200 text-gray-700"
+                        ? "bg-pink-50 dark:bg-pink-950/30 border border-pink-200 dark:border-pink-800 text-pink-800 dark:text-pink-300"
+                        : "bg-gray-50 dark:bg-gray-900 border border-transparent hover:border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
                     }`}>
                     <div className={`w-4 h-4 rounded flex-shrink-0 border-2 flex items-center justify-center transition-all ${
                       seleccionado ? "bg-pink-600 border-pink-600" : "border-gray-300"

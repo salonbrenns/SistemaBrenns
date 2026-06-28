@@ -3,13 +3,14 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 
-async function isAdmin() {
+async function isAdminOrEmpleado() {
   const session = await auth()
-  return session?.user?.role === "ADMIN"
+  const role = session?.user?.role
+  return role === "ADMIN" || role === "EMPLEADO"
 }
 
 export async function GET() {
-  if (!await isAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  if (!await isAdminOrEmpleado()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 
   const hoy    = new Date()
   const inicio = new Date(hoy); inicio.setHours(0, 0, 0, 0)

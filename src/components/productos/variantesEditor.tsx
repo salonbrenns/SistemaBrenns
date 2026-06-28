@@ -132,7 +132,7 @@ export default function VariantesEditor({ initialVariantes }: Props) {
             <input type="hidden" name={`variante_activo_${i}`}       value={String(v.activo)} />
 
             {expandido === i && (
-              <div className="p-4 grid grid-cols-2 gap-3 bg-white">
+              <div className="p-4 grid grid-cols-2 gap-3 bg-white dark:bg-gray-800">
 
                 <div className="space-y-1">
                   <label htmlFor={`tono_${i}`} className={labelClass}>Tono / Color</label>

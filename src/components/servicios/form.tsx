@@ -67,7 +67,7 @@ export default function ServicioForm({ categorias, servicio }: Props) {
   }
 
   return (
-    <div className="w-full max-w-4xl rounded-2xl bg-white shadow-xl border border-pink-100 overflow-hidden">
+    <div className="w-full max-w-4xl rounded-2xl bg-white dark:bg-gray-800 shadow-xl border border-pink-100 dark:border-gray-700 overflow-hidden">
 
       {/* Header */}
       <div className="bg-gradient-to-r from-pink-900 to-pink-700 px-8 py-5">

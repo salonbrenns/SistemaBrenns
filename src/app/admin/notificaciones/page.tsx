@@ -109,13 +109,13 @@ export default function NotificacionesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-pink-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300 flex items-center gap-2">
             <Bell className="w-6 h-6 text-pink-500" /> Notificaciones
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Recordatorios de citas próximas</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Recordatorios de citas próximas</p>
         </div>
         <button onClick={cargarCitas}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-pink-200 text-pink-600 rounded-xl hover:bg-pink-50 transition text-sm font-semibold">
+          className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-pink-200 dark:border-pink-800 text-pink-600 dark:text-pink-400 rounded-xl hover:bg-pink-50 dark:hover:bg-pink-950/30 transition text-sm font-semibold">
           <RefreshCw className="w-4 h-4" /> Actualizar
         </button>
       </div>
@@ -127,11 +127,11 @@ export default function NotificacionesPage() {
           { label: "Citas mañana", count: grupos[1].citas.length, color: "bg-orange-400" },
           { label: "Esta semana",  count: grupos[2].citas.length, color: "bg-blue-400"   },
         ].map(({ label, count, color }) => (
-          <div key={label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+          <div key={label} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
             <div className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center text-white font-bold text-xl`}>
               {count}
             </div>
-            <p className="text-sm font-semibold text-gray-600">{label}</p>
+            <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">{label}</p>
           </div>
         ))}
       </div>
@@ -151,7 +151,7 @@ export default function NotificacionesPage() {
       ) : (
         grupos.map(grupo => (
           <div key={grupo.label}>
-            <h2 className="font-bold text-gray-700 mb-3 text-sm uppercase tracking-wide">{grupo.label}</h2>
+            <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-3 text-sm uppercase tracking-wide">{grupo.label}</h2>
             {grupo.citas.length === 0 ? (
               <div className={`border-l-4 ${grupo.color} rounded-xl p-4 text-sm text-gray-400`}>
                 Sin citas programadas
@@ -165,19 +165,19 @@ export default function NotificacionesPage() {
                       <div className="flex-1 space-y-2">
                         {/* Servicio y estado */}
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-bold text-gray-800">{cita.servicio.nombre}</span>
-                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${ESTADO_COLORS[cita.estado] || "bg-gray-100 text-gray-600"}`}>
+                          <span className="font-bold text-gray-800 dark:text-white">{cita.servicio.nombre}</span>
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${ESTADO_COLORS[cita.estado] || "bg-gray-100 text-gray-600 dark:text-gray-400"}`}>
                             {cita.estado}
                           </span>
                           {cita.metodo_pago && (
-                            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                            <span className="text-xs bg-gray-100 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">
                               {cita.metodo_pago}
                             </span>
                           )}
                         </div>
 
                         {/* Fecha y hora */}
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3.5 h-3.5" />
                             {format(parseISO(cita.fecha), "EEEE d 'de' MMMM", { locale: es })}
@@ -189,7 +189,7 @@ export default function NotificacionesPage() {
                         </div>
 
                         {/* Cliente */}
-                        <div className="flex items-center gap-3 text-sm text-gray-600">
+                        <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
                           <span className="flex items-center gap-1">
                             <User className="w-3.5 h-3.5 text-pink-400" />
                             {nombreCliente(cita)}
@@ -210,7 +210,7 @@ export default function NotificacionesPage() {
                       {/* Botón mensaje */}
                       <button
                         onClick={() => { setCitaSel(cita); setMensaje(""); setError("") }}
-                        className="flex items-center gap-1.5 px-3 py-2 bg-white border border-pink-200 text-pink-600 rounded-xl hover:bg-pink-50 transition text-xs font-semibold whitespace-nowrap shadow-sm">
+                        className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-gray-800 border border-pink-200 dark:border-pink-800 text-pink-600 dark:text-pink-400 rounded-xl hover:bg-pink-50 dark:hover:bg-pink-950/30 transition text-xs font-semibold whitespace-nowrap shadow-sm">
                         <MessageSquare className="w-3.5 h-3.5" />
                         Enviar aviso
                       </button>
@@ -226,17 +226,17 @@ export default function NotificacionesPage() {
       {/* Modal enviar mensaje */}
       {citaSel && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
             <div>
               <h3 className="font-bold text-gray-800 text-lg">Enviar aviso al cliente</h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Para: <strong>{nombreCliente(citaSel)}</strong> — {citaSel.servicio.nombre} a las {citaSel.hora}
               </p>
             </div>
 
             {/* Mensajes rápidos */}
             <div>
-              <p className="text-xs font-semibold text-gray-500 mb-2">Mensajes rápidos:</p>
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">Mensajes rápidos:</p>
               <div className="flex flex-wrap gap-2">
                 {[
                   "Tu cita ha sido confirmada ✅",
@@ -255,7 +255,7 @@ export default function NotificacionesPage() {
 
             <textarea value={mensaje} onChange={e => setMensaje(e.target.value)} rows={3}
               placeholder="Escribe el mensaje para el cliente..."
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-400 resize-none" />
+              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-400 resize-none" />
 
             {error && (
               <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-700">
@@ -271,7 +271,7 @@ export default function NotificacionesPage() {
 
             <div className="flex gap-3">
               <button onClick={() => setCitaSel(null)}
-                className="flex-1 border-2 border-gray-200 text-gray-600 font-bold py-2.5 rounded-full hover:bg-gray-50 transition text-sm">
+                className="flex-1 border-2 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 font-bold py-2.5 rounded-full hover:bg-gray-50 dark:bg-gray-900 transition text-sm">
                 Cancelar
               </button>
               <button onClick={handleEnviarMensaje} disabled={!mensaje.trim() || enviando}

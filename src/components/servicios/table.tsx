@@ -140,7 +140,7 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
             </tr>
           </thead>
 
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {servicios.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-6 py-6 text-center text-sm text-gray-500">
@@ -152,7 +152,7 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
                 <tr
                   key={s.id}
                   className={`transition-colors ${
-                    !s.activo ? 'bg-gray-50 opacity-60' : 'hover:bg-pink-50'
+                    !s.activo ? 'bg-gray-50 dark:bg-gray-900 opacity-60' : 'hover:bg-pink-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   {/* Foto */}
@@ -177,7 +177,7 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
                   </td>
 
                   {/* Nombre */}
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
                     {s.nombre}
                   </td>
 
@@ -191,12 +191,12 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
                   </td>
 
                   {/* Duración */}
-                  <td className="px-6 py-4 text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
                     {s.duracion}
                   </td>
 
                   {/* Precio */}
-                  <td className="px-6 py-4 text-sm text-gray-900">
+                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
                     ${Number(s.precio).toFixed(2)} MXN
                   </td>
 

@@ -62,11 +62,18 @@ export async function GET(req: NextRequest) {
     orderBy: { hora: "asc" },
   })
 
-  const horarios = horariosBase.map(h => ({
-    id:         h.id,
-    hora:       h.hora,
-    disponible: !horasOcupadas.has(h.hora),
-  }))
+  // Si la fecha es hoy, filtrar horas que ya pasaron (con 30 min de margen)
+  const ahora      = new Date()
+  const esHoy      = fechaDate.toDateString() === ahora.toDateString()
+  const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes()
 
-  return NextResponse.json({ sinAtencion: false, horarios })
+  // Devolver TODOS los horarios del día con flag disponible (el cliente los muestra todos)
+  const resultado = horariosBase.map(h => {
+    const [hh, mm] = h.hora.split(':').map(Number)
+    const pasado   = esHoy && (hh * 60 + mm <= minutosAhora + 30)
+    const disponible = !horasOcupadas.has(h.hora) && !pasado
+    return { id: h.id, hora: h.hora, disponible }
+  })
+
+  return NextResponse.json({ sinAtencion: false, horarios: resultado })
 }

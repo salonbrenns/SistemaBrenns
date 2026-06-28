@@ -36,7 +36,7 @@ export default function ProductoCard({ producto, descuentoProducto = 0, precioCo
   const tieneDescuento = !!precioFinal && precioFinal < precioOriginal
 
   return (
-    <article className={`group bg-white rounded-[2rem] shadow-sm hover:shadow-2xl border border-rose-50 overflow-hidden transition-all duration-500 hover:-translate-y-2 ${sinStock ? 'opacity-60' : ''}`}>
+    <article className={`group bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm hover:shadow-2xl border border-rose-50 dark:border-gray-700 overflow-hidden transition-all duration-500 hover:-translate-y-2 ${sinStock ? 'opacity-60' : ''}`}>
       <Link href={`/producto/${producto.id}`} className="block">
 
         {/* Imagen */}
@@ -100,7 +100,7 @@ export default function ProductoCard({ producto, descuentoProducto = 0, precioCo
             )}
           </div>
 
-          <h3 className="text-base font-bold text-gray-800 mb-2 group-hover:text-rose-600 transition-colors line-clamp-2 leading-snug">
+          <h3 className="text-base font-bold text-gray-800 dark:text-white mb-2 group-hover:text-rose-600 transition-colors line-clamp-2 leading-snug">
             {producto.nombre}
           </h3>
 
@@ -126,7 +126,7 @@ export default function ProductoCard({ producto, descuentoProducto = 0, precioCo
                     <span className="text-[10px] text-gray-400 font-medium">desde</span>
                   )}
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-black text-gray-900">
+                    <span className="text-2xl font-black text-gray-900 dark:text-white">
                       ${precioFinal!.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter">MXN</span>
@@ -142,7 +142,7 @@ export default function ProductoCard({ producto, descuentoProducto = 0, precioCo
                   <span className="text-xs text-gray-400 font-medium">desde</span>
                 )}
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-black text-gray-900">
+                  <span className="text-2xl font-black text-gray-900 dark:text-white">
                     ${precioOriginal.toLocaleString('es-MX')}
                   </span>
                   <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter">MXN</span>
@@ -158,7 +158,7 @@ export default function ProductoCard({ producto, descuentoProducto = 0, precioCo
         <Link href={`/producto/${producto.id}`}>
           <button
             disabled={sinStock}
-            className="w-full bg-gray-900 hover:bg-rose-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-3 rounded-xl transition-all shadow-md active:scale-95 text-sm"
+            className="w-full bg-gray-900 dark:bg-gray-700 hover:bg-rose-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-3 rounded-xl transition-all shadow-md active:scale-95 text-sm"
           >
             {sinStock ? 'Sin disponibilidad' : 'Ver producto'}
           </button>

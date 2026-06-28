@@ -84,8 +84,8 @@ export default function CategoriasClient() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-pink-900">Categorías</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300">Categorías</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Gestiona las categorías de productos y servicios para Brenn’s
         </p>
       </div>
@@ -97,7 +97,7 @@ export default function CategoriasClient() {
           className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-t-xl border-b-2 transition-all ${
             tab === 'productos'
               ? 'border-pink-600 text-pink-600 bg-pink-50'
-              : 'border-transparent text-gray-500 hover:text-pink-500'
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-pink-500'
           }`}
         >
           <TagIcon className="w-4 h-4" />
@@ -108,7 +108,7 @@ export default function CategoriasClient() {
           className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-t-xl border-b-2 transition-all ${
             tab === 'servicios'
               ? 'border-pink-600 text-pink-600 bg-pink-50'
-              : 'border-transparent text-gray-500 hover:text-pink-500'
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-pink-500'
           }`}
         >
           <SparklesIcon className="w-4 h-4" />
@@ -133,7 +133,7 @@ export default function CategoriasClient() {
           params.set('tab', tab);
           router.replace(`${pathname}?${params.toString()}`);
         }}
-        className="w-full max-w-sm border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-pink-400"
+        className="w-full max-w-sm border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-pink-400"
       />
 
       {/* Contenido pestaña productos */}

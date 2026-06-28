@@ -3,13 +3,14 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 
-async function isAdmin() {
+async function canAccess() {
   const session = await auth()
-  return session?.user?.role === "ADMIN"
+  const role = session?.user?.role
+  return role === "ADMIN" || role === "EMPLEADO"
 }
 
 export async function POST(req: Request) {
-  if (!await isAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  if (!await canAccess()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 
   const body = await req.json()
   const { servicio_id, fecha, hora, usuario_id, nombre_contacto,

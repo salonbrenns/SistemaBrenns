@@ -1,104 +1,177 @@
 // src/app/admin/pagos/page.tsx
-"use client"
+import { prisma } from "@/lib/prisma"
+import { CreditCard, Banknote, ArrowRight, CheckCircle, Clock, XCircle } from "lucide-react"
+import { Metadata } from "next"
 
-import { CreditCard, Banknote, ArrowRight, CheckCircle, Clock, XCircle, Search } from "lucide-react"
+export const dynamic = "force-dynamic"
+export const metadata: Metadata = { title: "Pagos — Servicios" }
 
-const PAGOS_DEMO = [
-  { id: 1, cliente: "Ana García",    servicio: "Manicure",    monto: 250,  metodo: "EFECTIVO",      estado: "PAGADO",    fecha: "2026-03-10" },
-  { id: 2, cliente: "Benilde López", servicio: "Pedicure",    monto: 180,  metodo: "TRANSFERENCIA", estado: "PAGADO",    fecha: "2026-03-10" },
-  { id: 3, cliente: "María Ruiz",    servicio: "Uñas gel",    monto: 350,  metodo: "TARJETA",       estado: "PENDIENTE", fecha: "2026-03-11" },
-  { id: 4, cliente: "Lucía Morales", servicio: "Extensiones", monto: 600,  metodo: "EFECTIVO",      estado: "PAGADO",    fecha: "2026-03-09" },
-  { id: 5, cliente: "Sofia Torres",  servicio: "Manicure",    monto: 250,  metodo: "TRANSFERENCIA", estado: "CANCELADO", fecha: "2026-03-08" },
-]
+// Extrae el monto cobrado de las notas (anticipo o completo)
+function parsearMonto(notas: string | null, precioServicio: number): { monto: number; tipo: string } {
+  if (!notas) return { monto: precioServicio, tipo: "COMPLETO" }
 
-const METODO_ICON: Record<string, React.ReactNode> = {
-  EFECTIVO:      <Banknote className="w-4 h-4 text-green-500" />,
-  TRANSFERENCIA: <ArrowRight className="w-4 h-4 text-blue-500" />,
-  TARJETA:       <CreditCard className="w-4 h-4 text-purple-500" />,
+  const matchAnticipo = notas.match(/\[ANTICIPO 50%:\s*\$([0-9,]+)/)
+  if (matchAnticipo) {
+    const monto = Number(matchAnticipo[1].replace(/,/g, ""))
+    return { monto: isNaN(monto) ? precioServicio * 0.5 : monto, tipo: "ANTICIPO" }
+  }
+
+  const matchCompleto = notas.match(/\[PAGO COMPLETO:\s*\$([0-9,]+)/)
+  if (matchCompleto) {
+    const monto = Number(matchCompleto[1].replace(/,/g, ""))
+    return { monto: isNaN(monto) ? precioServicio : monto, tipo: "COMPLETO" }
+  }
+
+  return { monto: precioServicio, tipo: "COMPLETO" }
 }
 
-const ESTADO_STYLE: Record<string, string> = {
-  PAGADO:    "bg-green-100 text-green-700",
-  PENDIENTE: "bg-yellow-100 text-yellow-700",
-  CANCELADO: "bg-red-100 text-red-700",
+const METODO_LABEL: Record<string, string> = {
+  EFECTIVO:      "Efectivo",
+  TRANSFERENCIA: "Transferencia",
+  TARJETA:       "Tarjeta / PayPal",
 }
 
-const ESTADO_ICON: Record<string, React.ReactNode> = {
-  PAGADO:    <CheckCircle className="w-3.5 h-3.5" />,
-  PENDIENTE: <Clock className="w-3.5 h-3.5" />,
-  CANCELADO: <XCircle className="w-3.5 h-3.5" />,
-}
+export default async function PagosPage() {
+  const citasRaw = await prisma.cita.findMany({
+    where: {
+      estado: { not: "CANCELADA" },
+    },
+    include: {
+      servicio: { select: { nombre: true, precio: true } },
+      usuario:  { select: { nombre: true, telefono: true } },
+    },
+    orderBy: { fecha: "desc" },
+    take: 200,
+  })
 
-export default function PagosPage() {
-  const total = PAGOS_DEMO.filter(p => p.estado === "PAGADO").reduce((a, p) => a + p.monto, 0)
+  const pagos = citasRaw.map(c => {
+    const precio = Number(c.servicio.precio)
+    const { monto, tipo } = parsearMonto(c.notas, precio)
+    const estadoPago = c.estado === "PENDIENTE" ? "POR_VERIFICAR"
+                     : c.estado === "CANCELADA"  ? "CANCELADO"
+                     : "COBRADO"
+    return {
+      id:          c.id,
+      cliente:     c.usuario?.nombre || c.nombre_contacto || "Sin nombre",
+      telefono:    c.usuario?.telefono || c.telefono_contacto || null,
+      servicio:    c.servicio.nombre,
+      monto,
+      tipo,        // ANTICIPO | COMPLETO
+      metodo:      c.metodo_pago || "EFECTIVO",
+      estadoPago,
+      estadoCita:  c.estado,
+      fecha:       c.fecha.toISOString().slice(0, 10),
+      notas:       c.notas,
+    }
+  })
+
+  const totalCobrado  = pagos.filter(p => p.estadoPago === "COBRADO").reduce((s, p) => s + p.monto, 0)
+  const porVerificar  = pagos.filter(p => p.estadoPago === "POR_VERIFICAR").length
+  const anticipos     = pagos.filter(p => p.tipo === "ANTICIPO" && p.estadoPago === "COBRADO").length
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6 max-w-6xl">
       <div>
-        <h1 className="text-2xl font-bold text-pink-900 flex items-center gap-2">
-          <CreditCard className="w-6 h-6 text-pink-500" /> Pagos
+        <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300 flex items-center gap-2">
+          <CreditCard className="w-6 h-6 text-pink-500" /> Pagos — Servicios
         </h1>
-        <p className="text-sm text-gray-500 mt-1">Historial de pagos de citas y servicios</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Registro de cobros de citas del salón</p>
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: "Cobrado hoy",    value: `$${total.toLocaleString()}`, color: "bg-green-500"  },
-          { label: "Pendientes",     value: PAGOS_DEMO.filter(p => p.estado === "PENDIENTE").length, color: "bg-yellow-400" },
-          { label: "Cancelados",     value: PAGOS_DEMO.filter(p => p.estado === "CANCELADO").length, color: "bg-red-400"   },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
-            <div className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center text-white font-bold text-lg`}>
-              {value}
-            </div>
-            <p className="text-sm font-semibold text-gray-600">{label}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+          <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
+            <CheckCircle className="w-6 h-6 text-white" />
           </div>
-        ))}
-      </div>
-
-      {/* Buscador */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-        <input placeholder="Buscar cliente..." className="w-full pl-9 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400" />
+          <div>
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Total cobrado</p>
+            <p className="text-xl font-black text-green-600">${totalCobrado.toLocaleString()} MXN</p>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+          <div className="w-12 h-12 bg-amber-400 rounded-xl flex items-center justify-center">
+            <Clock className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Por verificar</p>
+            <p className="text-xl font-black text-amber-600">{porVerificar} transferencia{porVerificar !== 1 ? "s" : ""}</p>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+          <div className="w-12 h-12 bg-blue-400 rounded-xl flex items-center justify-center">
+            <CreditCard className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Anticipos cobrados</p>
+            <p className="text-xl font-black text-blue-600">{anticipos}</p>
+          </div>
+        </div>
       </div>
 
       {/* Tabla */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-pink-50 border-b border-pink-100">
-            <tr>
-              {["Cliente","Servicio","Monto","Método","Estado","Fecha"].map(h => (
-                <th key={h} className="text-left text-pink-600 font-semibold px-4 py-3 text-xs">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {PAGOS_DEMO.map((p, i) => (
-              <tr key={p.id} className={`border-b border-gray-50 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}>
-                <td className="px-4 py-3 font-semibold text-gray-800">{p.cliente}</td>
-                <td className="px-4 py-3 text-gray-600">{p.servicio}</td>
-                <td className="px-4 py-3 font-bold text-pink-600">${p.monto.toLocaleString()}</td>
-                <td className="px-4 py-3">
-                  <span className="flex items-center gap-1.5 text-gray-600">
-                    {METODO_ICON[p.metodo]} {p.metodo}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full w-fit ${ESTADO_STYLE[p.estado]}`}>
-                    {ESTADO_ICON[p.estado]} {p.estado}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-gray-400 text-xs">{p.fecha}</td>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-pink-900 text-white">
+              <tr>
+                {["Cliente", "Servicio", "Monto cobrado", "Tipo", "Método", "Estado", "Fecha"].map(h => (
+                  <th key={h} className="text-left font-semibold px-4 py-3 text-xs uppercase tracking-wider">{h}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {pagos.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-12 text-gray-400 text-sm">
+                    No hay pagos registrados aún
+                  </td>
+                </tr>
+              ) : (
+                pagos.map(p => (
+                  <tr key={p.id} className="hover:bg-gray-50 dark:bg-gray-900 transition-colors">
+                    <td className="px-4 py-3">
+                      <p className="font-semibold text-gray-800 dark:text-white">{p.cliente}</p>
+                      {p.telefono && <p className="text-xs text-gray-400">{p.telefono}</p>}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{p.servicio}</td>
+                    <td className="px-4 py-3 font-bold text-gray-900 dark:text-white">${p.monto.toLocaleString()} MXN</td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs font-bold px-2 py-1 rounded-full ${p.tipo === "ANTICIPO" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700 dark:text-gray-300"}`}>
+                        {p.tipo === "ANTICIPO" ? "Anticipo 50%" : "Pago completo"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                        {p.metodo === "TRANSFERENCIA" ? <ArrowRight className="w-3.5 h-3.5 text-blue-400" /> : <Banknote className="w-3.5 h-3.5 text-green-500" />}
+                        {METODO_LABEL[p.metodo] || p.metodo}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      {p.estadoPago === "COBRADO" && (
+                        <span className="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded-full w-fit">
+                          <CheckCircle className="w-3 h-3" /> Cobrado
+                        </span>
+                      )}
+                      {p.estadoPago === "POR_VERIFICAR" && (
+                        <span className="flex items-center gap-1 text-xs font-bold text-amber-700 bg-amber-100 px-2 py-1 rounded-full w-fit">
+                          <Clock className="w-3 h-3" /> Por verificar
+                        </span>
+                      )}
+                      {p.estadoPago === "CANCELADO" && (
+                        <span className="flex items-center gap-1 text-xs font-bold text-red-700 bg-red-100 px-2 py-1 rounded-full w-fit">
+                          <XCircle className="w-3 h-3" /> Cancelado
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">{p.fecha}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-
-      <p className="text-xs text-orange-500 bg-orange-50 border border-orange-100 rounded-xl px-4 py-3">
-        ⚠️ Esta sección muestra datos de ejemplo. Se conectará a la base de datos próximamente.
-      </p>
     </div>
   )
 }

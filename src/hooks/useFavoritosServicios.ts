@@ -1,11 +1,9 @@
 // src/hooks/useFavoritosServicios.ts
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 
-// ─── Tipos ────────────────────────────────────────────────────────────────────
-// Espeja exactamente la forma que devuelve GET /api/favoritos-servicios
 export interface FavoritoServicioItem {
   id:          number
   servicio_id: number
@@ -19,27 +17,70 @@ export interface FavoritoServicioItem {
   }
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
-export function useFavoritosServicios() {
-  const { status } = useSession()
-  const [favoritos, setFavoritos] = useState<FavoritoServicioItem[]>([])
-  const [cargando, setCargando]   = useState(false)
+let cache: FavoritoServicioItem[] | null = null
+let fetchPromise: Promise<void> | null   = null
+const listeners = new Set<() => void>()
 
-  // Carga la lista desde la API (idéntico a useFavoritos, distinto endpoint)
-  const cargar = useCallback(async () => {
-    if (status !== 'authenticated') return
-    setCargando(true)
+function notifyListeners() {
+  listeners.forEach(fn => fn())
+}
+
+async function fetchFavoritos() {
+  if (fetchPromise) return fetchPromise
+  fetchPromise = (async () => {
     try {
       const res = await fetch('/api/favoritos-servicios')
-      if (res.ok) setFavoritos(await res.json())
+      if (res.ok) {
+        cache = await res.json()
+        notifyListeners()
+      }
     } finally {
-      setCargando(false)
+      fetchPromise = null
     }
+  })()
+  return fetchPromise
+}
+
+function invalidateCache() {
+  cache = null
+}
+
+export function useFavoritosServicios() {
+  const { status } = useSession()
+  const [favoritos, setFavoritos] = useState<FavoritoServicioItem[]>(cache ?? [])
+  const [cargando, setCargando]   = useState(false)
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
+
+  useEffect(() => {
+    const update = () => {
+      if (mountedRef.current && cache) setFavoritos([...cache])
+    }
+    listeners.add(update)
+    return () => { listeners.delete(update) }
+  }, [])
+
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    if (cache) { const cached = cache; setTimeout(() => { if (mountedRef.current) setFavoritos([...cached]) }, 0); return }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCargando(true)
+    fetchFavoritos().finally(() => {
+      if (mountedRef.current) setCargando(false)
+    })
   }, [status])
 
-  useEffect(() => { cargar() }, [cargar])
+  const cargar = useCallback(async () => {
+    invalidateCache()
+    setCargando(true)
+    await fetchFavoritos()
+    if (mountedRef.current) setCargando(false)
+  }, [])
 
-  // Toggle: agrega si no está, elimina si ya está
   const toggle = useCallback(async (servicio_id: number) => {
     const res = await fetch('/api/favoritos-servicios', {
       method: 'POST',
@@ -55,5 +96,5 @@ export function useFavoritosServicios() {
     [favoritos]
   )
 
-  return { favoritos, cargando, toggle, esFavorito }
+  return { favoritos, cargando, cargar, toggle, esFavorito }
 }

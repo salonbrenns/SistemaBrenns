@@ -37,11 +37,11 @@ export default function NavLinks({
   // ── Menú EMPLEADO ──────────────────────────────────────────────────────────
   if (role === "EMPLEADO") {
     const linksEmpleado = [
-      { name: 'Dashboard',      href: '/admin/dashboard',      icon: HomeIcon        },
-      { name: 'Agendar',        href: '/admin/agendar',        icon: CalendarDaysIcon },
-      { name: 'Citas',          href: '/admin/citas',          icon: CalendarDaysIcon },
-      { name: 'Mi horario',     href: '/admin/mi-horario',     icon: ClockIcon       },
-      { name: 'Notificaciones', href: '/admin/notificaciones', icon: BellIcon        },
+      { name: 'Dashboard',      href: '/empleado/dashboard',      icon: HomeIcon        },
+      { name: 'Agendar',        href: '/empleado/agendar',        icon: CalendarDaysIcon },
+      { name: 'Citas',          href: '/empleado/citas',          icon: CalendarDaysIcon },
+      { name: 'Mi horario',     href: '/empleado/mi-horario',     icon: ClockIcon       },
+      { name: 'Notificaciones', href: '/empleado/notificaciones', icon: BellIcon        },
     ]
 
     return (
@@ -99,6 +99,7 @@ export default function NavLinks({
         { name: 'Horarios',        href: '/admin/horarios'        },
         { name: 'Días Bloqueados', href: '/admin/dias-bloqueados' },
         { name: 'Mi horario',      href: '/admin/mi-horario'      },
+        { name: 'Empleadas',       href: '/admin/empleadas'       },
       ],
     },
     {
@@ -112,12 +113,11 @@ export default function NavLinks({
       title: "Ventas y Marketing",
       icon: SparklesIcon,
       links: [
-        { name: 'Pedidos',       href: '/admin/pedidos'      },
-        { name: 'Proyección',  href: '/admin/proyeccion' },
-        { name: 'Promociones',   href: '/admin/promociones'  },
-        { name: 'Pagos',         href: '/admin/pagos'        },
-        { name: 'Reportes',      href: '/admin/reportes'     },
-        { name: 'Estadísticas',  href: '/admin/estadisticas' },
+        { name: 'Pedidos',      href: '/admin/pedidos'    },
+        { name: 'Proyección',  href: '/admin/proyeccion'  },
+        { name: 'Promociones', href: '/admin/promociones' },
+        { name: 'Pagos',       href: '/admin/pagos'       },
+        { name: 'Reportes',    href: '/admin/reportes'    },
       ],
     },
     {
@@ -127,7 +127,8 @@ export default function NavLinks({
         { name: 'Configuración',   href: '/admin/configuracion'  },
         { name: 'Notificaciones',  href: '/admin/notificaciones' },
         { name: 'Roles',           href: '/admin/roles'          },
-        { name: 'FAQs', href: '/admin/faq'      },
+        { name: 'Políticas',  href: '/admin/politicas'  },
+        { name: 'FAQs',       href: '/admin/faq'        },
       ],
     },
   ]

@@ -25,7 +25,7 @@ export default function ServicioCard({ servicio }: Props) {
   const noDisponible = !disponible
 
   return (
-    <article className={`group bg-white rounded-[2rem] shadow-sm hover:shadow-2xl border border-rose-50 overflow-hidden transition-all duration-500 hover:-translate-y-2 ${noDisponible ? 'opacity-60' : ''}`}>
+    <article className={`group bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm hover:shadow-2xl border border-rose-50 dark:border-gray-700 overflow-hidden transition-all duration-500 hover:-translate-y-2 ${noDisponible ? 'opacity-60' : ''}`}>
       <Link href={`/servicio/${id}`} className="block">
 
         {/* Imagen */}
@@ -53,7 +53,7 @@ export default function ServicioCard({ servicio }: Props) {
 
           {noDisponible && (
             <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-              <span className="bg-white text-gray-800 text-xs font-black px-4 py-2 rounded-full shadow-lg uppercase tracking-widest">
+              <span className="bg-white dark:bg-gray-900 text-gray-800 dark:text-white text-xs font-black px-4 py-2 rounded-full shadow-lg uppercase tracking-widest">
                 No disponible
               </span>
             </div>
@@ -63,7 +63,7 @@ export default function ServicioCard({ servicio }: Props) {
           <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
             <FavoritoServicioBoton
               servicioId={id}
-              className="bg-white/80 backdrop-blur-md p-2 rounded-full shadow-md hover:bg-rose-600 hover:text-white transition-all"
+              className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-2 rounded-full shadow-md hover:bg-rose-600 hover:text-white dark:text-gray-300 transition-all"
             />
           </div>
         </div>
@@ -81,7 +81,7 @@ export default function ServicioCard({ servicio }: Props) {
             )}
           </div>
 
-          <h3 className="text-base font-bold text-gray-800 mb-2 group-hover:text-rose-600 transition-colors line-clamp-2 leading-snug">
+          <h3 className="text-base font-bold text-gray-800 dark:text-white mb-2 group-hover:text-rose-600 transition-colors line-clamp-2 leading-snug">
             {nombre}
           </h3>
 
@@ -90,7 +90,7 @@ export default function ServicioCard({ servicio }: Props) {
             <div className="flex flex-col">
               <span className="text-xs text-gray-400 font-medium">desde</span>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-black text-gray-900">
+                <span className="text-2xl font-black text-gray-900 dark:text-white">
                   ${(precio_min ?? 0).toLocaleString('es-MX')}
                 </span>
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter">MXN</span>

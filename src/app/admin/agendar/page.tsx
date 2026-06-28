@@ -79,7 +79,7 @@ export default function AdminAgendarPage() {
   useEffect(() => {
     if (paso !== 2) return
     setCargandoEmpleados(true)
-    fetch("/api/admin/empleados")
+    fetch("/api/admin/empleados/lista")
       .then(r => r.json())
       .then(data => { setEmpleados(Array.isArray(data) ? data : []); setCargandoEmpleados(false) })
       .catch(() => setCargandoEmpleados(false))
@@ -99,7 +99,7 @@ export default function AdminAgendarPage() {
 
     fetch(`/api/horarios?${params}`)
       .then(r => r.json())
-      .then(data => { setHorarios(data); setCargandoHor(false) })
+      .then(data => { setHorarios(Array.isArray(data) ? data : (data.horarios ?? [])); setCargandoHor(false) })
       .catch(() => setCargandoHor(false))
   }, [fechaSel, servicioSel, empleadoSel])
 
@@ -169,14 +169,14 @@ export default function AdminAgendarPage() {
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-12 h-12 text-green-500" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">¡Cita agendada!</h2>
-          <p className="text-gray-500 mb-1"><strong>{servicioSel?.nombre}</strong></p>
-          <p className="text-gray-500 mb-1">{fechaSel && format(fechaSel, "EEEE d 'de' MMMM", { locale: es })}</p>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">¡Cita agendada!</h2>
+          <p className="text-gray-500 dark:text-gray-400 mb-1"><strong>{servicioSel?.nombre}</strong></p>
+          <p className="text-gray-500 dark:text-gray-400 mb-1">{fechaSel && format(fechaSel, "EEEE d 'de' MMMM", { locale: es })}</p>
           <p className="text-pink-600 font-bold text-lg mb-2">{horaSel}</p>
           {empleadoSel && (
-            <p className="text-gray-500 mb-1">Empleado: <strong>{empleadoSel.nombre}</strong></p>
+            <p className="text-gray-500 dark:text-gray-400 mb-1">Empleado: <strong>{empleadoSel.nombre}</strong></p>
           )}
-          <p className="text-gray-500 mb-6">Cliente: <strong>{usuarioSel?.nombre || nombreContacto}</strong></p>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">Cliente: <strong>{usuarioSel?.nombre || nombreContacto}</strong></p>
           <p className="text-sm text-gray-400 mb-6">Pago: {metodoPago}</p>
           <button onClick={resetear}
             className="bg-pink-600 text-white font-bold px-8 py-3 rounded-full hover:bg-pink-700 transition">
@@ -197,8 +197,8 @@ export default function AdminAgendarPage() {
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
-        <h1 className="text-2xl font-bold text-pink-900">Agendar cita</h1>
-        <p className="text-sm text-gray-500 mt-1">Crea una cita para un cliente</p>
+        <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300">Agendar cita</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Crea una cita para un cliente</p>
       </div>
 
       {/* Indicador de pasos */}
@@ -206,7 +206,7 @@ export default function AdminAgendarPage() {
         {PASOS.map(({ n, label }) => (
           <div key={n} className="flex items-center gap-2">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition ${
-              paso > n ? "bg-green-500 text-white" : paso === n ? "bg-pink-600 text-white" : "bg-gray-200 text-gray-500"
+              paso > n ? "bg-green-500 text-white" : paso === n ? "bg-pink-600 text-white" : "bg-gray-200 text-gray-500 dark:text-gray-400"
             }`}>
               {paso > n ? "✓" : n}
             </div>
@@ -221,8 +221,8 @@ export default function AdminAgendarPage() {
 
           {/* ── PASO 1: Servicio ─────────────────────────────── */}
           {paso === 1 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-6">
-              <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-100 p-6">
+              <h2 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-pink-500" /> Selecciona el servicio
               </h2>
               <div className="grid sm:grid-cols-2 gap-3">
@@ -230,11 +230,11 @@ export default function AdminAgendarPage() {
                   <button key={s.id} onClick={() => setServicioSel(s)}
                     className={`p-4 rounded-xl border-2 text-left transition-all ${
                       servicioSel?.id === s.id
-                        ? "border-pink-600 bg-pink-50"
-                        : "border-gray-100 hover:border-pink-200"
+                        ? "border-pink-600 bg-pink-50 dark:bg-pink-900/20"
+                        : "border-gray-200 dark:border-gray-600 hover:border-pink-300 dark:hover:border-pink-500 dark:bg-gray-700/50"
                     }`}>
-                    <p className="font-bold text-gray-800">{s.nombre}</p>
-                    <p className="text-sm text-gray-500 mt-1">{s.duracion}</p>
+                    <p className="font-bold text-gray-800 dark:text-white">{s.nombre}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{s.duracion}</p>
                     <p className="text-pink-600 font-bold mt-1">${Number(s.precio).toLocaleString()} MXN</p>
                   </button>
                 ))}
@@ -248,8 +248,8 @@ export default function AdminAgendarPage() {
 
           {/* ── PASO 2: Empleado ─────────────────────────────── */}
           {paso === 2 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-6">
-              <h2 className="font-bold text-gray-800 mb-1 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-100 p-6">
+              <h2 className="font-bold text-gray-800 dark:text-white mb-1 flex items-center gap-2">
                 <Users className="w-5 h-5 text-pink-500" /> Selecciona un empleado
               </h2>
               <p className="text-xs text-gray-400 mb-5">
@@ -267,14 +267,14 @@ export default function AdminAgendarPage() {
                     onClick={() => { setEmpleadoSel(null); setSinEmpleado(true) }}
                     className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${
                       sinEmpleado && !empleadoSel
-                        ? "border-pink-600 bg-pink-50"
-                        : "border-gray-100 hover:border-pink-200"
+                        ? "border-pink-600 bg-pink-50 dark:bg-pink-900/20"
+                        : "border-gray-200 dark:border-gray-600 hover:border-pink-300 dark:hover:border-pink-500 dark:bg-gray-700/50"
                     }`}>
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                      <Users className="w-5 h-5 text-gray-400" />
+                    <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-600 flex items-center justify-center flex-shrink-0">
+                      <Users className="w-5 h-5 text-gray-400 dark:text-gray-300" />
                     </div>
                     <div>
-                      <p className="font-bold text-gray-700">Sin preferencia</p>
+                      <p className="font-bold text-gray-700 dark:text-gray-300">Sin preferencia</p>
                       <p className="text-xs text-gray-400">Cualquier empleado disponible</p>
                     </div>
                     {sinEmpleado && !empleadoSel && (
@@ -288,8 +288,8 @@ export default function AdminAgendarPage() {
                       onClick={() => { setEmpleadoSel(emp); setSinEmpleado(false) }}
                       className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${
                         empleadoSel?.id === emp.id
-                          ? "border-pink-600 bg-pink-50"
-                          : "border-gray-100 hover:border-pink-200"
+                          ? "border-pink-600 bg-pink-50 dark:bg-pink-900/20"
+                          : "border-gray-200 dark:border-gray-600 hover:border-pink-300 dark:hover:border-pink-500 dark:bg-gray-700/50"
                       }`}>
                       <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
                         <span className="text-pink-600 font-bold text-sm">
@@ -297,7 +297,7 @@ export default function AdminAgendarPage() {
                         </span>
                       </div>
                       <div>
-                        <p className="font-bold text-gray-800">{emp.nombre}</p>
+                        <p className="font-bold text-gray-800 dark:text-white">{emp.nombre}</p>
                         <p className="text-xs text-gray-400">{emp.correo}</p>
                       </div>
                       {empleadoSel?.id === emp.id && (
@@ -331,8 +331,8 @@ export default function AdminAgendarPage() {
 
           {/* ── PASO 3: Fecha y hora ──────────────────────────── */}
           {paso === 3 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-6">
-              <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-100 p-6">
+              <h2 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-pink-500" /> Fecha y hora
               </h2>
 
@@ -342,7 +342,7 @@ export default function AdminAgendarPage() {
                   <div className="w-7 h-7 rounded-full bg-pink-200 flex items-center justify-center flex-shrink-0">
                     <span className="text-pink-700 font-bold text-xs">{empleadoSel.nombre.charAt(0)}</span>
                   </div>
-                  <span className="text-gray-600">Viendo disponibilidad de <strong className="text-pink-700">{empleadoSel.nombre}</strong></span>
+                  <span className="text-gray-600 dark:text-gray-400">Viendo disponibilidad de <strong className="text-pink-700">{empleadoSel.nombre}</strong></span>
                 </div>
               )}
 
@@ -354,11 +354,11 @@ export default function AdminAgendarPage() {
                   </h3>
                   <div className="flex gap-2">
                     <button onClick={() => setMesActual(subMonths(mesActual, 1))}
-                      className="p-1.5 bg-white rounded-lg border border-pink-100 hover:bg-pink-100 transition">
+                      className="p-1.5 bg-white dark:bg-gray-800 rounded-lg border border-pink-100 hover:bg-pink-100 transition">
                       ‹
                     </button>
                     <button onClick={() => setMesActual(addMonths(mesActual, 1))}
-                      className="p-1.5 bg-white rounded-lg border border-pink-100 hover:bg-pink-100 transition">
+                      className="p-1.5 bg-white dark:bg-gray-800 rounded-lg border border-pink-100 hover:bg-pink-100 transition">
                       ›
                     </button>
                   </div>
@@ -383,7 +383,7 @@ export default function AdminAgendarPage() {
                           : bloqueado ? "bg-orange-50 text-orange-300 cursor-not-allowed"
                           : disabled  ? "text-gray-300 cursor-not-allowed"
                           : isToday(dia) ? "bg-pink-100 text-pink-600 border-2 border-pink-300"
-                          : "bg-white hover:bg-pink-100 text-gray-700"
+                          : "bg-white dark:bg-gray-700 hover:bg-pink-100 dark:hover:bg-pink-900/20 text-gray-700 dark:text-gray-200"
                         }`}>
                         {format(dia, "d")}
                       </button>
@@ -395,7 +395,7 @@ export default function AdminAgendarPage() {
               {/* Horarios */}
               {fechaSel && (
                 <div className="mt-5">
-                  <p className="font-semibold text-gray-700 mb-3 text-sm">
+                  <p className="font-semibold text-gray-700 dark:text-gray-300 mb-3 text-sm">
                     Horarios — {format(fechaSel, "EEEE d 'de' MMMM", { locale: es })}
                   </p>
                   {cargandoHor ? (
@@ -409,9 +409,9 @@ export default function AdminAgendarPage() {
                       {horarios.map(h => (
                         <button key={h.id} disabled={!h.disponible} onClick={() => setHoraSel(h.hora)}
                           className={`py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${
-                            !h.disponible ? "bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed line-through"
+                            !h.disponible ? "bg-gray-50 dark:bg-gray-900 border-gray-100 text-gray-300 cursor-not-allowed line-through"
                             : horaSel === h.hora ? "bg-pink-600 text-white border-pink-600 shadow-md"
-                            : "bg-white border-pink-100 hover:border-pink-400 text-gray-700"
+                            : "bg-white dark:bg-gray-700 border-pink-100 dark:border-gray-600 hover:border-pink-400 text-gray-700 dark:text-gray-200"
                           }`}>
                           {h.hora}
                         </button>
@@ -436,8 +436,8 @@ export default function AdminAgendarPage() {
 
           {/* ── PASO 4: Cliente y pago ────────────────────────── */}
           {paso === 4 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-6 space-y-5">
-              <h2 className="font-bold text-gray-800 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-100 p-6 space-y-5">
+              <h2 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
                 <User className="w-5 h-5 text-pink-500" /> Cliente y pago
               </h2>
 
@@ -455,28 +455,28 @@ export default function AdminAgendarPage() {
                     }
                   }}
                   className={`w-10 h-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-pink-400 ${sinUsuario ? "bg-pink-600" : "bg-gray-200"}`}>
-                  <div className={`w-5 h-5 bg-white rounded-full shadow mt-0.5 transition-transform ${sinUsuario ? "translate-x-4" : "translate-x-0.5"}`} />
+                  <div className={`w-5 h-5 bg-white dark:bg-gray-800 rounded-full shadow mt-0.5 transition-transform ${sinUsuario ? "translate-x-4" : "translate-x-0.5"}`} />
                 </div>
-                <span className="text-sm font-medium text-gray-700">Cliente sin cuenta (walk-in / teléfono)</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Cliente sin cuenta (walk-in / teléfono)</span>
               </label>
 
               {/* Buscar usuario registrado */}
               {!sinUsuario && (
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Buscar cliente</label>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Buscar cliente</label>
                   <div className="relative">
                     <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                     <input value={busqueda} onChange={e => { setBusqueda(e.target.value); setUsuarioSel(null) }}
                       placeholder="Nombre o correo..."
-                      className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-pink-400" />
+                      className="w-full pl-9 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:border-pink-400" />
                     {buscando && <Loader2 className="absolute right-3 top-2.5 w-4 h-4 text-pink-400 animate-spin" />}
                   </div>
                   {resultados.length > 0 && !usuarioSel && (
-                    <div className="mt-1 border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                    <div className="mt-1 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
                       {resultados.map(u => (
                         <button key={u.id} onClick={() => { setUsuarioSel(u); setBusqueda(u.nombre); setResultados([]) }}
                           className="w-full text-left px-4 py-3 hover:bg-pink-50 transition border-b border-gray-100 last:border-0">
-                          <p className="font-semibold text-gray-800 text-sm">{u.nombre}</p>
+                          <p className="font-semibold text-gray-800 dark:text-white text-sm">{u.nombre}</p>
                           <p className="text-xs text-gray-400">{u.correo}</p>
                         </button>
                       ))}
@@ -486,8 +486,8 @@ export default function AdminAgendarPage() {
                     <div className="mt-2 flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-2.5">
                       <CheckCircle className="w-4 h-4 text-green-500" />
                       <div>
-                        <p className="text-sm font-bold text-gray-800">{usuarioSel.nombre}</p>
-                        <p className="text-xs text-gray-500">{usuarioSel.correo}</p>
+                        <p className="text-sm font-bold text-gray-800 dark:text-white">{usuarioSel.nombre}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{usuarioSel.correo}</p>
                       </div>
                       <button onClick={() => { setUsuarioSel(null); setBusqueda("") }} className="ml-auto text-xs text-red-400 hover:text-red-600">✕</button>
                     </div>
@@ -499,18 +499,18 @@ export default function AdminAgendarPage() {
               {sinUsuario && (
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Nombre del cliente</label>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nombre del cliente</label>
                     <input value={nombreContacto} onChange={e => setNombreContacto(e.target.value)}
                       placeholder="Ej. Ana García"
-                      className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400" />
+                      className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400" />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Teléfono (opcional)</label>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Teléfono (opcional)</label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                       <input value={telefonoContacto} onChange={e => setTelefonoContacto(e.target.value)}
                         placeholder="961 000 0000"
-                        className="w-full pl-9 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400" />
+                        className="w-full pl-9 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400" />
                     </div>
                   </div>
                 </div>
@@ -518,7 +518,7 @@ export default function AdminAgendarPage() {
 
               {/* Método de pago */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Método de pago</label>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Método de pago</label>
                 <div className="grid grid-cols-3 gap-3">
                   {METODOS_PAGO.map(({ id, label, icon: Icon }) => (
                     <button key={id} onClick={() => setMetodoPago(id)}
@@ -526,7 +526,7 @@ export default function AdminAgendarPage() {
                         metodoPago === id ? "border-pink-600 bg-pink-50" : "border-gray-100 hover:border-pink-200"
                       }`}>
                       <Icon className={`w-5 h-5 ${metodoPago === id ? "text-pink-600" : "text-gray-400"}`} />
-                      <span className={`text-xs font-bold ${metodoPago === id ? "text-pink-700" : "text-gray-500"}`}>{label}</span>
+                      <span className={`text-xs font-bold ${metodoPago === id ? "text-pink-700" : "text-gray-500 dark:text-gray-400"}`}>{label}</span>
                     </button>
                   ))}
                 </div>
@@ -534,10 +534,10 @@ export default function AdminAgendarPage() {
 
               {/* Notas */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Notas (opcional)</label>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Notas (opcional)</label>
                 <textarea value={notas} onChange={e => setNotas(e.target.value)} rows={2}
                   placeholder="Observaciones sobre la cita..."
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-400 resize-none" />
+                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-400 resize-none" />
               </div>
 
               {error && (
@@ -562,13 +562,13 @@ export default function AdminAgendarPage() {
 
         {/* ── Resumen lateral ───────────────────────────────── */}
         <aside className="lg:col-span-1">
-          <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-5 sticky top-6">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-100 p-5 sticky top-6">
             <h3 className="font-bold text-pink-600 mb-4">Resumen</h3>
             <div className="space-y-3 text-sm">
               {servicioSel ? (
                 <div className="bg-pink-50 rounded-xl p-3 border border-pink-100">
-                  <p className="font-bold text-gray-800">{servicioSel.nombre}</p>
-                  <p className="text-gray-500 text-xs mt-0.5">{servicioSel.duracion}</p>
+                  <p className="font-bold text-gray-800 dark:text-white">{servicioSel.nombre}</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">{servicioSel.duracion}</p>
                   <p className="text-pink-600 font-bold mt-1">${Number(servicioSel.precio).toLocaleString()} MXN</p>
                 </div>
               ) : (
@@ -577,32 +577,32 @@ export default function AdminAgendarPage() {
 
               {/* Empleado en resumen */}
               {(empleadoSel || sinEmpleado) && (
-                <div className="flex items-center gap-2 text-gray-600 bg-gray-50 rounded-xl px-3 py-2">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 rounded-xl px-3 py-2">
                   <Users className="w-4 h-4 text-pink-400" />
                   <span>{empleadoSel ? empleadoSel.nombre : "Sin preferencia"}</span>
                 </div>
               )}
 
               {fechaSel && (
-                <div className="flex items-center gap-2 text-gray-600 bg-gray-50 rounded-xl px-3 py-2">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 rounded-xl px-3 py-2">
                   <Calendar className="w-4 h-4 text-pink-400" />
                   <span>{format(fechaSel, "d 'de' MMMM", { locale: es })}</span>
                 </div>
               )}
               {horaSel && (
-                <div className="flex items-center gap-2 text-gray-600 bg-gray-50 rounded-xl px-3 py-2">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 rounded-xl px-3 py-2">
                   <Clock className="w-4 h-4 text-pink-400" />
                   <span className="font-bold">{horaSel}</span>
                 </div>
               )}
               {(usuarioSel || (sinUsuario && nombreContacto)) && (
-                <div className="flex items-center gap-2 text-gray-600 bg-gray-50 rounded-xl px-3 py-2">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 rounded-xl px-3 py-2">
                   <User className="w-4 h-4 text-pink-400" />
                   <span>{usuarioSel?.nombre || nombreContacto}</span>
                 </div>
               )}
               {metodoPago && paso === 4 && (
-                <div className="flex items-center gap-2 text-gray-600 bg-gray-50 rounded-xl px-3 py-2">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 rounded-xl px-3 py-2">
                   <CreditCard className="w-4 h-4 text-pink-400" />
                   <span>{metodoPago}</span>
                 </div>

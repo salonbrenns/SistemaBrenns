@@ -76,7 +76,7 @@ export default function CursoTable({
       </div>
 
       {/* Tabla */}
-      <div className="w-full overflow-x-auto rounded-2xl border border-gray-200 shadow-sm bg-white">
+      <div className="w-full overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm bg-white dark:bg-gray-800">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-[#9F1239] text-white">
             <tr>
@@ -94,7 +94,7 @@ export default function CursoTable({
             </tr>
           </thead>
 
-          <tbody className="bg-white divide-y divide-gray-100">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
             {cursos.length === 0 ? (
               <tr>
                 <td colSpan={11} className="px-6 py-12 text-center text-gray-500">
@@ -127,7 +127,7 @@ export default function CursoTable({
                     </td>
 
                     <td className="px-6 py-4 text-sm text-gray-700 font-medium">{curso.codigo}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{curso.titulo}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{curso.titulo}</td>
                     <td className="px-6 py-4 text-sm font-semibold text-pink-600">
                       ${Number(curso.precio_total).toLocaleString()}
                     </td>
@@ -168,7 +168,7 @@ export default function CursoTable({
       <div className="flex justify-center items-center gap-3 mt-8">
         <Link
           href={`?page=${currentPage - 1}`}
-          className={`px-5 py-2 rounded-xl border text-sm ${currentPage <= 1 ? 'opacity-50 pointer-events-none' : 'hover:bg-gray-50'}`}
+          className={`px-5 py-2 rounded-xl border text-sm ${currentPage <= 1 ? 'opacity-50 pointer-events-none' : 'hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300'}`}
         >
           Anterior
         </Link>
@@ -177,7 +177,7 @@ export default function CursoTable({
         </span>
         <Link
           href={`?page=${currentPage + 1}`}
-          className={`px-5 py-2 rounded-xl border text-sm ${currentPage >= totalPages ? 'opacity-50 pointer-events-none' : 'hover:bg-gray-50'}`}
+          className={`px-5 py-2 rounded-xl border text-sm ${currentPage >= totalPages ? 'opacity-50 pointer-events-none' : 'hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300'}`}
         >
           Siguiente
         </Link>

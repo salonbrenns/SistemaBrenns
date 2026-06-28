@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-async function isAdmin() {
+
+async function isAdminOrEmpleado() {
   const session = await auth()
-  return session?.user?.role === "ADMIN"
+  const role = session?.user?.role
+  return role === "ADMIN" || role === "EMPLEADO"
 }
 
 export async function GET() {
-  // Lista de perfiles de empleados para el panel admin
   const empleados = await prisma.empleado.findMany({
     where: { activo: true },
     orderBy: { orden: "asc" },
@@ -20,15 +21,16 @@ export async function GET() {
       orden:       true,
     },
   })
-
   return NextResponse.json(empleados)
 }
 
 export async function POST(req: NextRequest) {
-  if (!await isAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  if (!await isAdminOrEmpleado())
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 
   const { nombre, puesto, descripcion, imagen, orden } = await req.json()
-  if (!nombre || !puesto) return NextResponse.json({ error: "Nombre y puesto son requeridos" }, { status: 400 })
+  if (!nombre || !puesto)
+    return NextResponse.json({ error: "Nombre y puesto son requeridos" }, { status: 400 })
 
   const empleado = await prisma.empleado.create({
     data: {
@@ -38,9 +40,8 @@ export async function POST(req: NextRequest) {
       imagen,
       orden:     orden ?? 0,
       updatedAt: new Date(),
-      // ← ya no se crean días aquí, se asignan después desde [id]/dias
+      // Los días de atención se asignan después desde /api/admin/empleados/[id]/dias
     },
   })
-
   return NextResponse.json(empleado, { status: 201 })
 }

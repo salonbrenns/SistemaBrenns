@@ -44,7 +44,7 @@ const CATEGORIA_COLOR: Record<string, string> = {
   Productos:  "bg-green-100 text-green-700",
   Clientes:   "bg-red-100 text-red-700",
   Agenda:     "bg-purple-100 text-purple-700",
-  Otros:      "bg-gray-100 text-gray-600",
+  Otros:      "bg-gray-100 text-gray-600 dark:text-gray-400",
 }
 
 function AccionesMenu({ usuario, onReset, onEliminar, onPermisos }: {
@@ -58,22 +58,22 @@ function AccionesMenu({ usuario, onReset, onEliminar, onPermisos }: {
     <div className="relative">
       <button onClick={() => setOpen(!open)}
         className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-        <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+        <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
           <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
         </svg>
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 mt-1 w-52 bg-white rounded-xl shadow-lg border border-gray-100 z-20 overflow-hidden">
+          <div className="absolute right-0 mt-1 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 z-20 overflow-hidden">
             <button onClick={() => { setOpen(false); onPermisos(usuario) }}
-              className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+              className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-900 transition-colors">
               <Shield className="w-4 h-4 text-purple-500" />
               Ver/editar permisos
             </button>
             <div className="border-t border-gray-100" />
             <button onClick={() => { setOpen(false); onReset(usuario) }}
-              className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+              className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-900 transition-colors">
               <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
               </svg>
@@ -269,10 +269,10 @@ export default function DashboardPage() {
     <div className="space-y-8 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-800">
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
           Bienvenid@, <span className="text-pink-600">{session?.user?.name?.split(" ")[0]}</span> 👋
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="text-gray-500 dark:text-gray-400 mt-1">
           {new Date().toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
         </p>
       </div>
@@ -300,20 +300,20 @@ export default function DashboardPage() {
       {/* ✅ Resumen por rol — ahora incluye CLIENTE */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {Object.entries(ROL_CONFIG).map(([rol, cfg]) => (
-          <div key={rol} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
+          <div key={rol} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
             <div className={`p-2 rounded-lg ${cfg.color}`}>{cfg.icon}</div>
             <div>
-              <p className="text-xs text-gray-500">{cfg.label}s</p>
-              <p className="text-2xl font-bold text-gray-800">{contarPorRol(rol)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{cfg.label}s</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-white">{contarPorRol(rol)}</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* Tabla usuarios */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100">
         <div className="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
             <Users className="w-5 h-5 text-pink-500" /> Usuarios del sistema
           </h2>
           <div className="flex items-center gap-3 flex-wrap">
@@ -322,7 +322,7 @@ export default function DashboardPage() {
               {["TODOS", "ADMIN", "DOCENTE", "EMPLEADO", "CLIENTE"].map(rol => (
                 <button key={rol} onClick={() => setFiltroRol(rol)}
                   className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                    filtroRol === rol ? "bg-pink-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    filtroRol === rol ? "bg-pink-600 text-white" : "bg-gray-100 text-gray-600 dark:text-gray-400 hover:bg-gray-200"
                   }`}>
                   {rol === "TODOS" ? "Todos" : ROL_CONFIG[rol]?.label}
                   {rol !== "TODOS" && ` (${contarPorRol(rol)})`}
@@ -346,7 +346,7 @@ export default function DashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-gray-50 text-xs text-gray-500 uppercase">
+                <tr className="bg-gray-50 dark:bg-gray-900 text-xs text-gray-500 dark:text-gray-400 uppercase">
                   <th className="px-5 py-3 text-left">Usuario</th>
                   <th className="px-5 py-3 text-left">Teléfono</th>
                   <th className="px-5 py-3 text-left">Rol</th>
@@ -366,12 +366,12 @@ export default function DashboardPage() {
                             {u.nombre.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className="font-medium text-gray-800 text-sm">{u.nombre}</p>
+                            <p className="font-medium text-gray-800 dark:text-white text-sm">{u.nombre}</p>
                             <p className="text-xs text-gray-400">{u.correo}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-sm text-gray-600">{u.telefono || "—"}</td>
+                      <td className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400">{u.telefono || "—"}</td>
                       <td className="px-5 py-4">
                         <div className="relative inline-block">
                           {/* ✅ Selector de rol — ahora incluye CLIENTE */}
@@ -396,7 +396,7 @@ export default function DashboardPage() {
                               u.activo ? "translate-x-6" : "translate-x-1"
                             }`} />
                           </button>
-                          <span className="text-xs text-gray-500">{u.activo ? "Activo" : "Inactivo"}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">{u.activo ? "Activo" : "Inactivo"}</span>
                         </div>
                       </td>
                       <td className="px-5 py-4 text-xs text-gray-400">
@@ -418,26 +418,26 @@ export default function DashboardPage() {
       {/* Modal Permisos */}
       {showPermisos && usuarioPermisos && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-bold">
                   {usuarioPermisos.nombre.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-800">{usuarioPermisos.nombre}</h3>
+                  <h3 className="text-lg font-bold text-gray-800 dark:text-white">{usuarioPermisos.nombre}</h3>
                   <p className="text-xs text-gray-400">{usuarioPermisos.correo}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 {!loadingPermisos && (
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
                     <span className="font-bold text-pink-600">{permisosActivos}</span> / {permisos.length} activos
                   </span>
                 )}
                 <button onClick={() => setShowPermisos(false)}
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                  <X className="w-5 h-5 text-gray-500" />
+                  <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                 </button>
               </div>
             </div>
@@ -455,8 +455,8 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <table className="w-full">
-                  <thead className="sticky top-0 bg-white">
-                    <tr className="bg-gray-50 text-xs text-gray-500 uppercase">
+                  <thead className="sticky top-0 bg-white dark:bg-gray-800">
+                    <tr className="bg-gray-50 dark:bg-gray-900 text-xs text-gray-500 dark:text-gray-400 uppercase">
                       <th className="px-5 py-3 text-left w-8">#</th>
                       <th className="px-5 py-3 text-left">Permiso</th>
                       <th className="px-5 py-3 text-left">Categoría</th>
@@ -467,7 +467,7 @@ export default function DashboardPage() {
                     {categorias.map(categoria => (
                       <>
                         <tr key={`cat-${categoria}`}>
-                          <td colSpan={4} className="px-5 py-2 bg-gray-50">
+                          <td colSpan={4} className="px-5 py-2 bg-gray-50 dark:bg-gray-900">
                             <span className={`text-xs font-semibold px-2 py-1 rounded-md ${CATEGORIA_COLOR[categoria]}`}>
                               {categoria}
                             </span>
@@ -476,7 +476,7 @@ export default function DashboardPage() {
                         {permisos.filter(p => p.categoria === categoria).map((p, i) => (
                           <tr key={p.key} className="hover:bg-pink-50/30 transition-colors border-t border-gray-50">
                             <td className="px-5 py-3 text-xs text-gray-400">{i + 1}</td>
-                            <td className="px-5 py-3 text-sm text-gray-700 font-medium">{p.label}</td>
+                            <td className="px-5 py-3 text-sm text-gray-700 dark:text-gray-300 font-medium">{p.label}</td>
                             <td className="px-5 py-3">
                               <span className={`text-xs font-medium px-2 py-1 rounded-md ${CATEGORIA_COLOR[p.categoria]}`}>
                                 {p.categoria}
@@ -499,8 +499,8 @@ export default function DashboardPage() {
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr className="bg-gray-50 border-t border-gray-200">
-                      <td colSpan={3} className="px-5 py-3 text-sm font-semibold text-gray-700">
+                    <tr className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+                      <td colSpan={3} className="px-5 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
                         Total permisos activos
                       </td>
                       <td className="px-5 py-3 text-center text-sm font-bold text-pink-600">
@@ -525,36 +525,36 @@ export default function DashboardPage() {
       {/* Modal nuevo usuario */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <h3 className="text-lg font-bold text-gray-800">Nuevo usuario</h3>
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white">Nuevo usuario</h3>
               <button onClick={() => setShowModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre completo</label>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Nombre completo</label>
                 <input type="text" value={nuevoNombre} onChange={e => setNuevoNombre(e.target.value)}
                   placeholder="Ej. Ana García López"
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Correo electrónico</label>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Correo electrónico</label>
                 <input type="email" value={nuevoCorreo} onChange={e => setNuevoCorreo(e.target.value)}
                   placeholder="correo@ejemplo.com"
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Teléfono</label>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Teléfono</label>
                 <input type="text" value={nuevoTelefono}
                   onChange={e => setNuevoTelefono(e.target.value.replace(/\D/g, "").slice(0, 10))}
                   placeholder="10 dígitos" maxLength={10} inputMode="numeric"
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Contraseña</label>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Contraseña</label>
                 <div className="relative">
                   <input type={showPass ? "text" : "password"} value={nuevoPassword}
                     onChange={e => setNuevoPassword(e.target.value)} placeholder="Mínimo 6 caracteres"
@@ -566,7 +566,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Rol</label>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Rol</label>
                 {/* ✅ Selector en modal — ahora incluye CLIENTE */}
                 <select value={nuevoRol} onChange={e => setNuevoRol(e.target.value)}
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all text-sm">
@@ -586,7 +586,7 @@ export default function DashboardPage() {
             </div>
             <div className="p-6 pt-0 flex gap-3">
               <button onClick={() => setShowModal(false)}
-                className="flex-1 px-4 py-2 rounded-full border border-gray-300 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-all">
+                className="flex-1 px-4 py-2 rounded-full border border-gray-300 text-gray-600 dark:text-gray-400 text-sm font-semibold hover:bg-gray-50 dark:bg-gray-900 transition-all">
                 Cancelar
               </button>
               <button onClick={handleAgregarUsuario} disabled={guardando}

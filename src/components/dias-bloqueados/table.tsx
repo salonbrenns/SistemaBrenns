@@ -126,13 +126,13 @@ export default function DiasBloqueadosTable({ dias, horas }: Props) {
               <div>
                 <label className="block text-xs text-gray-600 mb-1">Fecha</label>
                 <input type="date" value={fecha} onChange={e => { setFecha(e.target.value); setError('') }}
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:border-pink-400" />
+                  className="rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:border-pink-400" />
               </div>
               <div className="flex-1 min-w-[200px]">
                 <label className="block text-xs text-gray-600 mb-1">Motivo (opcional)</label>
                 <input value={motivo} onChange={e => setMotivo(e.target.value)}
                   placeholder="Ej: Día festivo, vacaciones..."
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:border-pink-400" />
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:border-pink-400" />
               </div>
               <button onClick={agregarDia} disabled={agregando}
                 className="inline-flex items-center gap-2 rounded-lg bg-pink-700 px-4 py-2 text-sm font-medium text-white hover:bg-pink-800 transition disabled:opacity-50">
@@ -152,7 +152,7 @@ export default function DiasBloqueadosTable({ dias, horas }: Props) {
                   <th className="px-6 py-3 text-right text-xs font-semibold text-white uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {dias.length === 0 ? (
                   <tr><td colSpan={3} className="px-6 py-10 text-center text-sm text-gray-500">No hay fechas bloqueadas</td></tr>
                 ) : dias.map(d => (
@@ -190,18 +190,18 @@ export default function DiasBloqueadosTable({ dias, horas }: Props) {
               <div>
                 <label className="block text-xs text-gray-600 mb-1">Fecha</label>
                 <input type="date" value={fechaHora} onChange={e => { setFechaHora(e.target.value); setErrorHora('') }}
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:border-pink-400" />
+                  className="rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:border-pink-400" />
               </div>
               <div>
                 <label className="block text-xs text-gray-600 mb-1">Hora</label>
                 <input type="time" value={hora} onChange={e => { setHora(e.target.value); setErrorHora('') }}
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:border-pink-400" />
+                  className="rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:border-pink-400" />
               </div>
               <div className="flex-1 min-w-[180px]">
                 <label className="block text-xs text-gray-600 mb-1">Motivo (opcional)</label>
                 <input value={motivoHora} onChange={e => setMotivoHora(e.target.value)}
                   placeholder="Ej: Cita personal, descanso..."
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:border-pink-400" />
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:border-pink-400" />
               </div>
               <button onClick={agregarHora} disabled={agregandoHora}
                 className="inline-flex items-center gap-2 rounded-lg bg-pink-700 px-4 py-2 text-sm font-medium text-white hover:bg-pink-800 transition disabled:opacity-50">
@@ -222,7 +222,7 @@ export default function DiasBloqueadosTable({ dias, horas }: Props) {
                   <th className="px-6 py-3 text-right text-xs font-semibold text-white uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {horas.length === 0 ? (
                   <tr><td colSpan={4} className="px-6 py-10 text-center text-sm text-gray-500">No hay horas bloqueadas</td></tr>
                 ) : horas.map(h => (

@@ -12,7 +12,7 @@ interface Props {
 
 export default function MarcasUniverso({ marcas }: Props) {
   return (
-    <section className="bg-white py-20 overflow-hidden">
+    <section className="bg-white dark:bg-gray-900 py-20 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Encabezado */}
@@ -20,7 +20,7 @@ export default function MarcasUniverso({ marcas }: Props) {
           <p className="text-pink-500 text-xs font-black uppercase tracking-[0.25em] mb-3">
             Distribuidora oficial
           </p>
-          <h2 className="text-3xl font-bold text-gray-900">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
             Conoce nuestro{" "}
             <span className="text-[#FF5BA8]">universo</span>{" "}
             de marcas
@@ -31,20 +31,20 @@ export default function MarcasUniverso({ marcas }: Props) {
         </div>
 
         {/* Grid de logos */}
-        <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-px bg-gray-100 border border-gray-100 rounded-3xl overflow-hidden">
+        <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-px bg-gray-100 dark:bg-gray-700 border border-gray-100 dark:border-gray-700 rounded-3xl overflow-hidden">
           {marcas.map((marca) => (
             <div
-  key={marca.nombre}
-  className="group bg-white flex items-center justify-center p-5 aspect-square hover:bg-pink-50 transition-colors duration-200 relative" // 👈 agrega "relative"
->
-  <Image 
-    src={`/marcas/${marca.img}`}
-    alt={marca.nombre}
-    fill
-    className="object-contain mix-blend-multiply grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
-    sizes="72px"
-  />
-</div>
+              key={marca.nombre}
+              className="group bg-white dark:bg-gray-200 flex items-center justify-center p-5 aspect-square hover:bg-pink-50 dark:hover:bg-white transition-colors duration-200 relative"
+            >
+              <Image
+                src={`/marcas/${marca.img}`}
+                alt={marca.nombre}
+                fill
+                className="object-contain mix-blend-multiply grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-300"
+                sizes="72px"
+              />
+            </div>
           ))}
         </div>
 

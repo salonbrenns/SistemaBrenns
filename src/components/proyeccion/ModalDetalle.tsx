@@ -143,7 +143,7 @@ export default function ModalDetalle({ producto, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
 
         {/* header */}
         <div className="flex items-start justify-between p-6 border-b border-gray-100">
@@ -200,7 +200,7 @@ export default function ModalDetalle({ producto, onClose }: Props) {
               <select
                 value={periodoIdx}
                 onChange={e => setPeriodoIdx(Number(e.target.value))}
-                className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-pink-400"
+                className="flex-1 text-xs border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1.5 text-gray-700 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-pink-400"
               >
                 {periodosDisponibles.map((p, i) => (
                   <option key={p.key} value={i}>{p.label}</option>

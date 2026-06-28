@@ -61,7 +61,7 @@ useEffect(() => {
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Predicción de Ventas</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Predicción de Ventas</h1>
       </div>
 
       <FiltrosProyeccion
@@ -80,7 +80,7 @@ useEffect(() => {
         <div className="space-y-3">
           <button
             onClick={() => setVerTop(v => !v)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-gray-700"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:bg-gray-900 transition-colors text-gray-700 dark:text-gray-300"
           >
             <span>🏆</span>
             <span>{verTop ? 'Ocultar' : 'Ver'} productos más vendidos</span>

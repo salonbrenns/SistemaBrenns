@@ -24,7 +24,7 @@ export default function CreateProductoForm({
   const [isPending, startTransition] = useTransition()
 
   return (
-    <div className="w-full max-w-5xl rounded-2xl bg-white shadow-xl border border-rose-100 overflow-hidden">
+    <div className="w-full max-w-5xl rounded-2xl bg-white dark:bg-gray-800 shadow-xl border border-rose-100 dark:border-gray-700 overflow-hidden">
 
       {/* Header */}
       <div className="bg-gradient-to-r from-rose-800 to-pink-700 px-8 py-5">

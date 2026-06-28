@@ -61,7 +61,7 @@ const where = query
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-pink-900">Servicios</h1>
+      <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300">Servicios</h1>
 
       <Search placeholder="Buscar servicios..." />
 

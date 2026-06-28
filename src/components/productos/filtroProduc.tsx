@@ -50,7 +50,7 @@ function FilterDropdown({
           ${
             activeId
               ? 'bg-pink-600 text-white border-pink-600 shadow-sm'
-              : 'bg-white text-gray-700 border-gray-200 hover:border-pink-300 hover:bg-pink-50'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 hover:border-pink-300 hover:bg-pink-50 dark:hover:bg-gray-700'
           }`}
       >
         <span>{activeLabel ? `${label}: ${activeLabel}` : label}</span>
@@ -74,7 +74,7 @@ function FilterDropdown({
       </button>
 
       {open && (
-        <div className="absolute z-20 mt-2 w-52 rounded-xl border border-gray-100 bg-white shadow-lg ring-1 ring-black/5 overflow-hidden">
+        <div className="absolute z-20 mt-2 w-52 rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 overflow-hidden">
           <div className="py-1">
             {/* Opción "Todos" */}
             <button

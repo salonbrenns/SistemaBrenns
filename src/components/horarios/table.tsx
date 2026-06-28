@@ -77,7 +77,7 @@ export default function HorariosTable({ horarios }: Props) {
           <select
             value={nuevaHora}
             onChange={e => { setNuevaHora(e.target.value); setError("") }}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm bg-white focus:outline-none focus:border-pink-500"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:border-pink-500"
           >
             <option value="">— Selecciona una hora —</option>
             {HORAS_SUGERIDAS.map(h => (
@@ -106,7 +106,7 @@ export default function HorariosTable({ horarios }: Props) {
               <th className="px-6 py-3 text-right text-xs font-semibold text-white uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {horarios.length === 0 ? (
               <tr>
                 <td colSpan={3} className="px-6 py-8 text-center text-sm text-gray-500">
@@ -116,7 +116,7 @@ export default function HorariosTable({ horarios }: Props) {
             ) : (
               horarios.map(h => (
                 <tr key={h.id} className="hover:bg-pink-50 transition-colors">
-                  <td className="px-6 py-4 text-sm font-bold text-gray-900">{h.hora}</td>
+                  <td className="px-6 py-4 text-sm font-bold text-gray-900 dark:text-white">{h.hora}</td>
                   <td className="px-6 py-4">
                     <button
                       onClick={() => toggleActivo(h.id, h.activo)}

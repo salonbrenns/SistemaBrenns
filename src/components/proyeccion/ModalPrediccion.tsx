@@ -69,7 +69,7 @@ export default function ModalPrediccion({ producto, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h2 className="font-bold text-gray-900 text-lg">Predicción de Ventas</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl font-bold">✕</button>
@@ -85,7 +85,7 @@ export default function ModalPrediccion({ producto, onClose }: Props) {
                   className="rounded-xl object-cover h-16 w-16 flex-shrink-0" />
               )}
               <div>
-                <p className="font-semibold text-gray-800">{producto.nombre}</p>
+                <p className="font-semibold text-gray-800 dark:text-white">{producto.nombre}</p>
                 {producto.precio_min && (
                   <p className="text-sm text-gray-500">Precio desde: ${producto.precio_min}</p>
                 )}

@@ -154,7 +154,7 @@ useEffect(() => {
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                     quitada
                       ? "border-red-200 bg-red-50 text-red-400 line-through opacity-70"
-                      : "border-pink-200 bg-pink-50 text-pink-700 hover:border-red-300 hover:bg-red-50 hover:text-red-500"
+                      : "border-pink-200 dark:border-pink-800 bg-pink-50 dark:bg-pink-950/30 text-pink-700 dark:text-pink-300 hover:border-red-300 hover:bg-red-50 hover:text-red-500"
                   }`}>
                   {cargandoEsta ? <Loader2 className="w-3 h-3 animate-spin" />
                     : quitada ? <X className="w-3 h-3" /> : <Check className="w-3 h-3" />}
@@ -212,30 +212,30 @@ useEffect(() => {
         </div>
       )}
 
-      <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
-        <p className="text-xs font-bold text-gray-500 mb-2 flex items-center gap-1.5">
+      <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-3 border border-gray-100">
+        <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1.5">
           <Plus className="w-3.5 h-3.5" /> Agregar hora extra
         </p>
         <div className="flex gap-1 mb-3">
           <button onClick={() => setModoFecha(false)}
             className={`text-xs px-3 py-1.5 rounded-full border transition ${
-              !modoFecha ? "bg-pink-600 text-white border-pink-600" : "bg-white text-gray-500 border-gray-200 hover:border-pink-300"
+              !modoFecha ? "bg-pink-600 text-white border-pink-600" : "bg-white text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-pink-300"
             }`}>
             Permanente
           </button>
           <button onClick={() => setModoFecha(true)}
             className={`text-xs px-3 py-1.5 rounded-full border transition ${
-              modoFecha ? "bg-pink-600 text-white border-pink-600" : "bg-white text-gray-500 border-gray-200 hover:border-pink-300"
+              modoFecha ? "bg-pink-600 text-white border-pink-600" : "bg-white text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-pink-300"
             }`}>
             Por fecha
           </button>
         </div>
         <div className="flex gap-2 flex-wrap">
           <input type="time" value={nuevaHora} onChange={e => setNuevaHora(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-pink-400" />
+            className="border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-pink-400" />
           {modoFecha && (
             <input type="date" value={nuevaFecha} onChange={e => setNuevaFecha(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-pink-400" />
+              className="border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-pink-400" />
           )}
           <button onClick={agregarHoraExtra}
             disabled={!nuevaHora || (modoFecha && !nuevaFecha) || guardando === "nueva"}
@@ -278,7 +278,7 @@ function EmpleadoCard({ emp, horasGlobales }: { emp: Empleado; horasGlobales: Ho
   const cambios = JSON.stringify(diasSel.sort()) !== JSON.stringify([...emp.dias].sort())
 
   return (
-    <div className="bg-white rounded-2xl border border-pink-50 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-50 shadow-sm overflow-hidden">
       <button onClick={() => setExpanded(e => !e)}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-pink-50/40 transition text-left">
         <div className="flex items-center gap-3">
@@ -317,7 +317,7 @@ function EmpleadoCard({ emp, horasGlobales }: { emp: Empleado; horasGlobales: Ho
                 return (
                   <button key={d.id} onClick={() => toggleDia(d.id)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 text-sm font-semibold transition-all ${
-                      activo ? "border-pink-600 bg-pink-600 text-white shadow-sm" : "border-gray-200 bg-white text-gray-600 hover:border-pink-300"
+                      activo ? "border-pink-600 bg-pink-600 text-white shadow-sm" : "border-gray-200 dark:border-gray-700 bg-white text-gray-600 dark:text-gray-400 hover:border-pink-300"
                     }`}>
                     {activo && <Check className="w-3.5 h-3.5" />}
                     {d.label}
@@ -328,12 +328,12 @@ function EmpleadoCard({ emp, horasGlobales }: { emp: Empleado; horasGlobales: Ho
             <div className="flex gap-2 mb-4 flex-wrap">
               {[{ label: "Lun–Vie", dias: [1,2,3,4,5] }, { label: "Lun–Sáb", dias: [1,2,3,4,5,6] }].map(({ label, dias }) => (
                 <button key={label} onClick={() => { setDiasSel(dias); setGuardado(false) }}
-                  className="text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:border-pink-300 hover:text-pink-600 transition">
+                  className="text-xs px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-pink-300 hover:text-pink-600 transition">
                   {label}
                 </button>
               ))}
               <button onClick={() => { setDiasSel([]); setGuardado(false) }}
-                className="text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:border-red-300 hover:text-red-500 transition">
+                className="text-xs px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-red-300 hover:text-red-500 transition">
                 Limpiar
               </button>
             </div>
@@ -364,7 +364,7 @@ function EmpleadoCard({ emp, horasGlobales }: { emp: Empleado; horasGlobales: Ho
                     return (
                       <button key={id} onClick={() => setDiaHoras(activo ? null : id)}
                         className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                          activo ? "bg-pink-600 text-white border-pink-600" : "bg-white text-gray-600 border-gray-200 hover:border-pink-300"
+                          activo ? "bg-pink-600 text-white border-pink-600" : "bg-white text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-pink-300"
                         }`}>
                         {dia?.label}
                       </button>
@@ -372,7 +372,7 @@ function EmpleadoCard({ emp, horasGlobales }: { emp: Empleado; horasGlobales: Ho
                   })}
                 </div>
                 {diaHoras !== null && (
-                  <div className="bg-pink-50/50 rounded-xl p-4 border border-pink-100">
+                  <div className="bg-pink-50/50 dark:bg-pink-950/20 rounded-xl p-4 border border-pink-100 dark:border-pink-900">
                     <HorasEmpleado empId={emp.id} diaId={diaHoras} horasGlobales={horasGlobales} />
                   </div>
                 )}
@@ -491,19 +491,19 @@ export default function HorariosPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-pink-900">Horarios</h1>
+        <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300">Horarios</h1>
       </div>
 
       <div className="flex gap-2 border-b border-gray-100 pb-0">
         <button onClick={() => setSeccion("horarios")}
           className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-t-xl border-b-2 transition-all ${
-            seccion === "horarios" ? "border-pink-600 text-pink-600 bg-pink-50" : "border-transparent text-gray-500 hover:text-pink-500"
+            seccion === "horarios" ? "border-pink-600 text-pink-600 bg-pink-50" : "border-transparent text-gray-500 dark:text-gray-400 hover:text-pink-500"
           }`}>
           <Clock className="w-4 h-4" /> Horarios generales
         </button>
         <button onClick={() => setSeccion("empleados")}
           className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-t-xl border-b-2 transition-all ${
-            seccion === "empleados" ? "border-pink-600 text-pink-600 bg-pink-50" : "border-transparent text-gray-500 hover:text-pink-500"
+            seccion === "empleados" ? "border-pink-600 text-pink-600 bg-pink-50" : "border-transparent text-gray-500 dark:text-gray-400 hover:text-pink-500"
           }`}>
           <Users className="w-4 h-4" /> Días por empleado
         </button>
@@ -517,10 +517,10 @@ export default function HorariosPage() {
               return (
                 <button key={d.id} onClick={() => setDiaActivo(d.id)}
                   className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${
-                    diaActivo === d.id ? "bg-pink-600 text-white shadow-md" : "bg-white border border-pink-200 text-pink-700 hover:bg-pink-50"
+                    diaActivo === d.id ? "bg-pink-600 text-white shadow-md" : "bg-white dark:bg-gray-800 border border-pink-200 dark:border-gray-600 text-pink-700 dark:text-pink-300 hover:bg-pink-50 dark:hover:bg-gray-700"
                   }`}>
                   {d.label}
-                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${diaActivo === d.id ? "bg-pink-500" : "bg-pink-100 text-pink-600"}`}>
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${diaActivo === d.id ? "bg-pink-500" : "bg-pink-100 dark:bg-gray-700 text-pink-600 dark:text-pink-300"}`}>
                     {count}
                   </span>
                 </button>
@@ -530,13 +530,13 @@ export default function HorariosPage() {
 
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 space-y-4">
-              <div className="bg-white rounded-2xl border border-pink-100 p-5 shadow-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-100 p-5 shadow-sm">
                 <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
                   <Clock className="w-4 h-4 text-pink-500" /> Agregar hora
                 </h3>
                 <div className="flex gap-2">
                   <input type="time" value={nuevaHora} onChange={e => setNuevaHora(e.target.value)}
-                    className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-pink-400" />
+                    className="flex-1 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-pink-400" />
                   <button onClick={() => agregarHora(nuevaHora)} disabled={!nuevaHora || guardando}
                     className="bg-pink-600 text-white px-4 py-2 rounded-xl hover:bg-pink-700 transition disabled:opacity-40">
                     {guardando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
@@ -545,7 +545,7 @@ export default function HorariosPage() {
                 {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
               </div>
 
-              <div className="bg-white rounded-2xl border border-pink-100 p-5 shadow-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-100 p-5 shadow-sm">
                 <h3 className="font-bold text-gray-800 mb-3 text-sm">Horas rápidas</h3>
                 <div className="grid grid-cols-3 gap-2">
                   {HORAS_SUGERIDAS.map(h => {
@@ -553,7 +553,7 @@ export default function HorariosPage() {
                     return (
                       <button key={h} onClick={() => !yaExiste && agregarHora(h)} disabled={!!yaExiste}
                         className={`py-1.5 rounded-lg text-xs font-semibold border transition-all flex items-center justify-center gap-1 ${
-                          yaExiste ? "bg-green-50 border-green-200 text-green-600 cursor-default" : "bg-white border-pink-100 text-gray-700 hover:border-pink-400 hover:bg-pink-50"
+                          yaExiste ? "bg-green-50 border-green-200 text-green-600 cursor-default" : "bg-white border-pink-100 text-gray-700 dark:text-gray-300 hover:border-pink-400 hover:bg-pink-50"
                         }`}>
                         {yaExiste && <Check className="w-3 h-3" />}
                         {h}
@@ -563,12 +563,12 @@ export default function HorariosPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl border border-pink-100 p-5 shadow-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-100 p-5 shadow-sm">
                 <h3 className="font-bold text-gray-800 mb-3 text-sm">Copiar horarios de otro día</h3>
                 <div className="space-y-2">
                   {DIAS.filter(d => d.id !== diaActivo).map(d => (
                     <button key={d.id} onClick={() => copiarDesdeDia(d.id)} disabled={copiando}
-                      className="w-full text-left px-4 py-2 rounded-xl border border-pink-100 text-sm text-gray-700 hover:bg-pink-50 hover:border-pink-300 transition flex items-center justify-between">
+                      className="w-full text-left px-4 py-2 rounded-xl border border-pink-100 text-sm text-gray-700 dark:text-gray-300 hover:bg-pink-50 hover:border-pink-300 transition flex items-center justify-between">
                       <span>{d.label}</span>
                       <span className="text-xs text-pink-500">{horarios.filter(h => h.diaSemana === d.id).length} horas</span>
                     </button>
@@ -583,10 +583,10 @@ export default function HorariosPage() {
             </div>
 
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl border border-pink-100 shadow-sm overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-100 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-pink-50 flex items-center justify-between">
-                  <h3 className="font-bold text-gray-800">Horarios — {DIAS.find(d => d.id === diaActivo)?.label}</h3>
-                  <span className="text-sm text-gray-500">{horariosDia.length} configurados</span>
+                  <h3 className="font-bold text-gray-800 dark:text-white">Horarios — {DIAS.find(d => d.id === diaActivo)?.label}</h3>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">{horariosDia.length} configurados</span>
                 </div>
                 {cargando ? (
                   <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 text-pink-400 animate-spin" /></div>
@@ -600,13 +600,13 @@ export default function HorariosPage() {
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 p-6">
                     {horariosDia.sort((a, b) => a.hora.localeCompare(b.hora)).map(h => (
                       <div key={h.id} className={`rounded-xl border-2 p-3 flex flex-col items-center gap-2 transition-all ${
-                        h.activo ? "border-pink-200 bg-pink-50" : "border-gray-100 bg-gray-50 opacity-60"
+                        h.activo ? "border-pink-200 dark:border-pink-800 bg-pink-50 dark:bg-pink-950/30" : "border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 opacity-60"
                       }`}>
-                        <span className={`text-lg font-bold ${h.activo ? "text-pink-700" : "text-gray-400"}`}>{h.hora}</span>
+                        <span className={`text-lg font-bold ${h.activo ? "text-pink-700 dark:text-pink-300" : "text-gray-400"}`}>{h.hora}</span>
                         <div className="flex gap-1">
                           <button onClick={() => toggleActivo(h.id, h.activo)}
                             className={`text-xs px-2 py-1 rounded-lg font-semibold transition ${
-                              h.activo ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                              h.activo ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-gray-100 text-gray-500 dark:text-gray-400 hover:bg-gray-200"
                             }`}>
                             {h.activo ? "ON" : "OFF"}
                           </button>
@@ -626,7 +626,7 @@ export default function HorariosPage() {
 
       {seccion === "empleados" && (
         <div className="space-y-3 max-w-4xl">
-          <p className="text-sm text-gray-500">Configura los días y excepciones de horario para cada especialista.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Configura los días y excepciones de horario para cada especialista.</p>
           {cargandoEmpleados ? (
             <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-pink-400 animate-spin" /></div>
           ) : empleados.length === 0 ? (

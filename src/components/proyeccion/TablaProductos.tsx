@@ -23,9 +23,9 @@ export default function TablaProductos({ productos, loading, onDetalle, onPredec
   const productosPagina = productos.slice(inicio, inicio + POR_PAGINA)
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
       <table className="w-full text-sm">
-        <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
+        <thead className="bg-gray-50 dark:bg-gray-900 text-xs text-gray-500 dark:text-gray-400 uppercase">
           <tr>
             <th className="px-4 py-3 text-left">Producto</th>
             <th className="px-4 py-3 text-left">Categoría / Marca</th>
@@ -34,7 +34,7 @@ export default function TablaProductos({ productos, loading, onDetalle, onPredec
             <th className="px-4 py-3 text-center">Operación</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
           {loading && (
             <tr>
               <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
@@ -53,7 +53,7 @@ export default function TablaProductos({ productos, loading, onDetalle, onPredec
             const img        = primeraImagen(p.imagen)
            
             return (
-              <tr key={p.id} className="hover:bg-gray-50">
+              <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                    
@@ -63,7 +63,7 @@ export default function TablaProductos({ productos, loading, onDetalle, onPredec
                         : <div className="h-full w-full flex items-center justify-center text-gray-300 text-xs">N/A</div>
                       }
                     </div>
-                    <span className="font-medium text-gray-800">{p.nombre}</span>
+                    <span className="font-medium text-gray-800 dark:text-white">{p.nombre}</span>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-gray-500 text-xs">
@@ -78,7 +78,7 @@ export default function TablaProductos({ productos, loading, onDetalle, onPredec
                     {p.stock_total}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-center font-semibold text-gray-700">
+                <td className="px-4 py-3 text-center font-semibold text-gray-700 dark:text-gray-300">
                   {p.ventas_totales}
                 </td>
                 <td className="px-4 py-3">
@@ -113,7 +113,7 @@ export default function TablaProductos({ productos, loading, onDetalle, onPredec
             <button
               onClick={() => setPagina(p => Math.max(p - 1, 1))}
               disabled={paginaReal === 1}
-              className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               ← Anterior
             </button>
@@ -135,7 +135,7 @@ export default function TablaProductos({ productos, loading, onDetalle, onPredec
                       className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
                         paginaReal === n
                           ? 'bg-pink-500 text-white border-pink-500'
-                          : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                          : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                       }`}
                     >
                       {n}
@@ -146,7 +146,7 @@ export default function TablaProductos({ productos, loading, onDetalle, onPredec
             <button
               onClick={() => setPagina(p => Math.min(p + 1, totalPaginas))}
               disabled={paginaReal === totalPaginas}
-              className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-3 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Siguiente →
             </button>

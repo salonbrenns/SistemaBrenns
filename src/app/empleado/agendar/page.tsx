@@ -1,0 +1,611 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import {
+  Calendar, Clock, User, Search, CreditCard,
+  Banknote, ArrowRight, CheckCircle, Loader2, AlertCircle, Phone, Users
+} from "lucide-react"
+import { format, addMonths, subMonths, startOfMonth, endOfMonth,
+         eachDayOfInterval, isBefore, isToday, isSameDay } from "date-fns"
+import { es } from "date-fns/locale"
+
+export const dynamic = 'force-dynamic'
+
+type Servicio  = { id: number; nombre: string; precio: number; duracion: string }
+type Horario   = { id: number; hora: string; disponible: boolean }
+type Usuario   = { id: number; nombre: string; correo: string; telefono?: string }
+type Empleado  = { id: number; nombre: string; correo: string }
+
+const METODOS_PAGO = [
+  { id: "EFECTIVO",      label: "Efectivo",      icon: Banknote   },
+  { id: "TRANSFERENCIA", label: "Transferencia", icon: ArrowRight },
+  { id: "TARJETA",       label: "Tarjeta",       icon: CreditCard },
+]
+
+export default function EmpleadoAgendarPage() {
+  const [paso, setPaso] = useState<1 | 2 | 3 | 4>(1)
+
+  const [servicios,   setServicios]   = useState<Servicio[]>([])
+  const [servicioSel, setServicioSel] = useState<Servicio | null>(null)
+
+  const [empleados,         setEmpleados]         = useState<Empleado[]>([])
+  const [empleadoSel,       setEmpleadoSel]       = useState<Empleado | null>(null)
+  const [cargandoEmpleados, setCargandoEmpleados] = useState(false)
+  const [sinEmpleado,       setSinEmpleado]       = useState(false)
+
+  const [mesActual,      setMesActual]      = useState(new Date())
+  const [fechaSel,       setFechaSel]       = useState<Date | null>(null)
+  const [horarios,       setHorarios]       = useState<Horario[]>([])
+  const [cargandoHor,    setCargandoHor]    = useState(false)
+  const [horaSel,        setHoraSel]        = useState<string | null>(null)
+  const [diasBloqueados, setDiasBloqueados] = useState<string[]>([])
+
+  const [busqueda,         setBusqueda]         = useState("")
+  const [resultados,       setResultados]       = useState<Usuario[]>([])
+  const [buscando,         setBuscando]         = useState(false)
+  const [usuarioSel,       setUsuarioSel]       = useState<Usuario | null>(null)
+  const [sinUsuario,       setSinUsuario]       = useState(false)
+  const [nombreContacto,   setNombreContacto]   = useState("")
+  const [telefonoContacto, setTelefonoContacto] = useState("")
+  const [metodoPago,       setMetodoPago]       = useState("EFECTIVO")
+  const [tipoPago,         setTipoPago]         = useState<"ANTICIPO" | "COMPLETO" | null>(null)
+  const [notas,            setNotas]            = useState("")
+
+  const [guardando, setGuardando] = useState(false)
+  const [error,     setError]     = useState("")
+  const [exito,     setExito]     = useState(false)
+
+  useEffect(() => {
+    fetch("/api/admin/servicios")
+      .then(r => r.json())
+      .then(data => setServicios(Array.isArray(data) ? data : data.servicios || []))
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    fetch("/api/dias-bloqueados")
+      .then(r => r.json())
+      .then((data: { fecha: string }[]) => setDiasBloqueados(data.map(d => d.fecha.slice(0, 10))))
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (paso !== 2) return
+    setCargandoEmpleados(true)
+    fetch("/api/admin/empleados/lista")
+      .then(r => r.json())
+      .then(data => { setEmpleados(Array.isArray(data) ? data : []); setCargandoEmpleados(false) })
+      .catch(() => setCargandoEmpleados(false))
+  }, [paso])
+
+  useEffect(() => {
+    if (!fechaSel || !servicioSel) return
+    setCargandoHor(true)
+    setHoraSel(null)
+    const fechaStr = format(fechaSel, "yyyy-MM-dd")
+    const params = new URLSearchParams({
+      fecha:      fechaStr,
+      servicioId: String(servicioSel.id),
+    })
+    if (empleadoSel) params.set("empleadoId", String(empleadoSel.id))
+
+    fetch(`/api/horarios?${params}`)
+      .then(r => r.json())
+      .then(data => { setHorarios(Array.isArray(data) ? data : (data.horarios ?? [])); setCargandoHor(false) })
+      .catch(() => setCargandoHor(false))
+  }, [fechaSel, servicioSel, empleadoSel])
+
+  useEffect(() => {
+    if (!busqueda || busqueda.length < 2) { setResultados([]); return }
+    setBuscando(true)
+    const t = setTimeout(() => {
+      fetch(`/api/admin/usuarios?q=${busqueda}`)
+        .then(r => r.json())
+        .then(data => { setResultados(data); setBuscando(false) })
+        .catch(() => setBuscando(false))
+    }, 400)
+    return () => clearTimeout(t)
+  }, [busqueda])
+
+  const hoy    = new Date()
+  const offset = startOfMonth(mesActual).getDay() === 0 ? 6 : startOfMonth(mesActual).getDay() - 1
+  const diasDelMes = eachDayOfInterval({ start: startOfMonth(mesActual), end: endOfMonth(mesActual) })
+
+  const handleGuardar = async () => {
+    setError("")
+    if (!servicioSel || !fechaSel || !horaSel) { setError("Completa servicio, fecha y hora"); return }
+    if (!sinUsuario && !usuarioSel)             { setError("Selecciona un cliente o marca 'Sin usuario'"); return }
+    if (sinUsuario && !nombreContacto)           { setError("Ingresa el nombre del cliente"); return }
+    if (!tipoPago)                               { setError("Selecciona si se cobró anticipo o pago completo"); return }
+
+    setGuardando(true)
+    try {
+      const res = await fetch("/api/admin/crear-cita", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          servicio_id:       servicioSel.id,
+          empleado_id:       empleadoSel?.id || null,
+          fecha:             format(fechaSel, "yyyy-MM-dd"),
+          hora:              horaSel,
+          usuario_id:        usuarioSel?.id || null,
+          nombre_contacto:   sinUsuario ? nombreContacto : null,
+          telefono_contacto: sinUsuario ? telefonoContacto : null,
+          metodo_pago:       metodoPago,
+          notas: [
+            tipoPago === "ANTICIPO"
+              ? `[ANTICIPO 50%: $${(Number(servicioSel.precio) * 0.5).toLocaleString()} MXN]`
+              : `[PAGO COMPLETO: $${Number(servicioSel.precio).toLocaleString()} MXN]`,
+            notas,
+          ].filter(Boolean).join(" "),
+          estado:            "CONFIRMADA",
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Error al guardar")
+      setExito(true)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Error al guardar")
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  const resetear = () => {
+    setPaso(1); setServicioSel(null); setEmpleadoSel(null); setSinEmpleado(false)
+    setFechaSel(null); setHoraSel(null); setUsuarioSel(null); setSinUsuario(false)
+    setNombreContacto(""); setTelefonoContacto(""); setMetodoPago("EFECTIVO")
+    setTipoPago(null); setNotas(""); setExito(false); setError("")
+  }
+
+  if (exito) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-12 h-12 text-green-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">¡Cita agendada!</h2>
+          <p className="text-gray-500 mb-1"><strong>{servicioSel?.nombre}</strong></p>
+          <p className="text-gray-500 mb-1">{fechaSel && format(fechaSel, "EEEE d 'de' MMMM", { locale: es })}</p>
+          <p className="text-pink-600 font-bold text-lg mb-2">{horaSel}</p>
+          {empleadoSel && (
+            <p className="text-gray-500 mb-1">Empleado: <strong>{empleadoSel.nombre}</strong></p>
+          )}
+          <p className="text-gray-500 mb-6">Cliente: <strong>{usuarioSel?.nombre || nombreContacto}</strong></p>
+          <p className="text-sm text-gray-400 mb-1">Pago: {metodoPago}</p>
+          <p className="text-sm font-semibold mb-6">
+            {tipoPago === "ANTICIPO"
+              ? `Anticipo cobrado: $${(Number(servicioSel?.precio) * 0.5).toLocaleString()} MXN`
+              : `Pago completo: $${Number(servicioSel?.precio).toLocaleString()} MXN`}
+          </p>
+          <button onClick={resetear}
+            className="bg-pink-600 text-white font-bold px-8 py-3 rounded-full hover:bg-pink-700 transition">
+            Agendar otra cita
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const PASOS = [
+    { n: 1, label: "Servicio"      },
+    { n: 2, label: "Empleado"      },
+    { n: 3, label: "Fecha y hora"  },
+    { n: 4, label: "Cliente y pago"},
+  ]
+
+  return (
+    <div className="space-y-6 max-w-5xl">
+      <div>
+        <h1 className="text-2xl font-bold text-pink-900">Agendar cita</h1>
+        <p className="text-sm text-gray-500 mt-1">Crea una cita para un cliente</p>
+      </div>
+
+      <div className="flex items-center gap-3 flex-wrap">
+        {PASOS.map(({ n, label }) => (
+          <div key={n} className="flex items-center gap-2">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition ${
+              paso > n ? "bg-green-500 text-white" : paso === n ? "bg-pink-600 text-white" : "bg-gray-200 text-gray-500"
+            }`}>
+              {paso > n ? "✓" : n}
+            </div>
+            <span className={`text-sm font-medium hidden sm:block ${paso >= n ? "text-pink-700" : "text-gray-400"}`}>{label}</span>
+            {n < 4 && <div className="w-8 h-0.5 bg-gray-200 hidden sm:block" />}
+          </div>
+        ))}
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+
+          {paso === 1 && (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-100 dark:border-gray-700 p-6">
+              <h2 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-pink-500" /> Selecciona el servicio
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {servicios.map(s => (
+                  <button key={s.id} onClick={() => setServicioSel(s)}
+                    className={`p-4 rounded-xl border-2 text-left transition-all ${
+                      servicioSel?.id === s.id ? "border-pink-600 bg-pink-50" : "border-gray-100 hover:border-pink-200"
+                    }`}>
+                    <p className="font-bold text-gray-800 dark:text-white">{s.nombre}</p>
+                    <p className="text-sm text-gray-500 mt-1">{s.duracion}</p>
+                    <p className="text-pink-600 font-bold mt-1">${Number(s.precio).toLocaleString()} MXN</p>
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setPaso(2)} disabled={!servicioSel}
+                className="mt-6 w-full bg-pink-600 text-white font-bold py-3 rounded-full hover:bg-pink-700 transition disabled:opacity-40">
+                Continuar →
+              </button>
+            </div>
+          )}
+
+          {paso === 2 && (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-100 dark:border-gray-700 p-6">
+              <h2 className="font-bold text-gray-800 dark:text-white mb-1 flex items-center gap-2">
+                <Users className="w-5 h-5 text-pink-500" /> Selecciona un empleado
+              </h2>
+              <p className="text-xs text-gray-400 mb-5">
+                Los horarios disponibles se filtrarán según la agenda del empleado elegido.
+              </p>
+              {cargandoEmpleados ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-6 h-6 text-pink-400 animate-spin" />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <button
+                    onClick={() => { setEmpleadoSel(null); setSinEmpleado(true) }}
+                    className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${
+                      sinEmpleado && !empleadoSel ? "border-pink-600 bg-pink-50" : "border-gray-100 hover:border-pink-200"
+                    }`}>
+                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      <Users className="w-5 h-5 text-gray-400" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-700">Sin preferencia</p>
+                      <p className="text-xs text-gray-400">Cualquier empleado disponible</p>
+                    </div>
+                    {sinEmpleado && !empleadoSel && <CheckCircle className="w-5 h-5 text-pink-500 ml-auto" />}
+                  </button>
+                  {empleados.map(emp => (
+                    <button key={emp.id}
+                      onClick={() => { setEmpleadoSel(emp); setSinEmpleado(false) }}
+                      className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${
+                        empleadoSel?.id === emp.id ? "border-pink-600 bg-pink-50" : "border-gray-100 hover:border-pink-200"
+                      }`}>
+                      <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
+                        <span className="text-pink-600 font-bold text-sm">{emp.nombre.charAt(0).toUpperCase()}</span>
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-800 dark:text-white">{emp.nombre}</p>
+                        <p className="text-xs text-gray-400">{emp.correo}</p>
+                      </div>
+                      {empleadoSel?.id === emp.id && <CheckCircle className="w-5 h-5 text-pink-500 ml-auto" />}
+                    </button>
+                  ))}
+                  {empleados.length === 0 && !cargandoEmpleados && (
+                    <p className="text-center text-gray-400 py-4 text-sm">No hay empleados activos registrados</p>
+                  )}
+                </div>
+              )}
+              <div className="flex gap-3 mt-6">
+                <button onClick={() => setPaso(1)}
+                  className="flex-1 border-2 border-pink-200 text-pink-600 font-bold py-3 rounded-full hover:bg-pink-50 transition">
+                  ← Atrás
+                </button>
+                <button onClick={() => setPaso(3)} disabled={!sinEmpleado && !empleadoSel}
+                  className="flex-1 bg-pink-600 text-white font-bold py-3 rounded-full hover:bg-pink-700 transition disabled:opacity-40">
+                  Continuar →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {paso === 3 && (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-100 dark:border-gray-700 p-6">
+              <h2 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-pink-500" /> Fecha y hora
+              </h2>
+              {empleadoSel && (
+                <div className="mb-4 flex items-center gap-2 bg-pink-50 border border-pink-100 rounded-xl px-4 py-2.5 text-sm">
+                  <div className="w-7 h-7 rounded-full bg-pink-200 flex items-center justify-center flex-shrink-0">
+                    <span className="text-pink-700 font-bold text-xs">{empleadoSel.nombre.charAt(0)}</span>
+                  </div>
+                  <span className="text-gray-600">Viendo disponibilidad de <strong className="text-pink-700">{empleadoSel.nombre}</strong></span>
+                </div>
+              )}
+              <div className="bg-pink-50/50 rounded-2xl p-4 border border-pink-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-pink-700 capitalize">
+                    {format(mesActual, "MMMM yyyy", { locale: es })}
+                  </h3>
+                  <div className="flex gap-2">
+                    <button onClick={() => setMesActual(subMonths(mesActual, 1))}
+                      className="p-1.5 bg-white dark:bg-gray-700 rounded-lg border border-pink-100 dark:border-gray-600 hover:bg-pink-100 transition">‹</button>
+                    <button onClick={() => setMesActual(addMonths(mesActual, 1))}
+                      className="p-1.5 bg-white dark:bg-gray-700 rounded-lg border border-pink-100 dark:border-gray-600 hover:bg-pink-100 transition">›</button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-7 gap-1 mb-2 text-center">
+                  {["Lu","Ma","Mi","Ju","Vi","Sá","Do"].map(d => (
+                    <div key={d} className="text-pink-400 text-xs font-bold">{d}</div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7 gap-1">
+                  {Array.from({ length: offset }).map((_, i) => <div key={`e-${i}`} />)}
+                  {diasDelMes.map(dia => {
+                    const pasado    = isBefore(dia, hoy) && !isToday(dia)
+                    const esDom     = dia.getDay() === 0
+                    const bloqueado = diasBloqueados.includes(format(dia, "yyyy-MM-dd"))
+                    const selected  = fechaSel && isSameDay(dia, fechaSel)
+                    const disabled  = pasado || esDom || bloqueado
+                    return (
+                      <button key={dia.toISOString()} disabled={disabled} onClick={() => setFechaSel(dia)}
+                        className={`aspect-square flex items-center justify-center rounded-lg text-sm font-bold transition-all ${
+                          selected    ? "bg-pink-600 text-white shadow-md"
+                          : bloqueado ? "bg-orange-50 text-orange-300 cursor-not-allowed"
+                          : disabled  ? "text-gray-300 cursor-not-allowed"
+                          : isToday(dia) ? "bg-pink-100 text-pink-600 border-2 border-pink-300"
+                          : "bg-white dark:bg-gray-700 hover:bg-pink-100 dark:hover:bg-pink-900/30 text-gray-700 dark:text-gray-200"
+                        }`}>
+                        {format(dia, "d")}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              {fechaSel && (
+                <div className="mt-5">
+                  <p className="font-semibold text-gray-700 mb-3 text-sm">
+                    Horarios — {format(fechaSel, "EEEE d 'de' MMMM", { locale: es })}
+                  </p>
+                  {cargandoHor ? (
+                    <div className="flex justify-center py-6">
+                      <Loader2 className="w-6 h-6 text-pink-400 animate-spin" />
+                    </div>
+                  ) : horarios.length === 0 ? (
+                    <p className="text-center text-gray-400 py-4 text-sm">Sin horarios configurados para este día</p>
+                  ) : (
+                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                      {horarios.map(h => (
+                        <button key={h.id} disabled={!h.disponible} onClick={() => setHoraSel(h.hora)}
+                          className={`py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${
+                            !h.disponible ? "bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-300 dark:text-gray-600 cursor-not-allowed line-through"
+                            : horaSel === h.hora ? "bg-pink-600 text-white border-pink-600 shadow-md"
+                            : "bg-white dark:bg-gray-700 border-pink-100 dark:border-gray-600 hover:border-pink-400 text-gray-700 dark:text-gray-200"
+                          }`}>
+                          {h.hora}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="flex gap-3 mt-6">
+                <button onClick={() => setPaso(2)}
+                  className="flex-1 border-2 border-pink-200 text-pink-600 font-bold py-3 rounded-full hover:bg-pink-50 transition">
+                  ← Atrás
+                </button>
+                <button onClick={() => setPaso(4)} disabled={!fechaSel || !horaSel}
+                  className="flex-1 bg-pink-600 text-white font-bold py-3 rounded-full hover:bg-pink-700 transition disabled:opacity-40">
+                  Continuar →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {paso === 4 && (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-100 dark:border-gray-700 p-6 space-y-5">
+              <h2 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                <User className="w-5 h-5 text-pink-500" /> Cliente y pago
+              </h2>
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div
+                  role="checkbox"
+                  aria-checked={sinUsuario}
+                  tabIndex={0}
+                  onClick={() => { setSinUsuario(!sinUsuario); setUsuarioSel(null); setBusqueda("") }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setSinUsuario(!sinUsuario); setUsuarioSel(null); setBusqueda("")
+                    }
+                  }}
+                  className={`w-10 h-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-pink-400 ${sinUsuario ? "bg-pink-600" : "bg-gray-200"}`}>
+                  <div className={`w-5 h-5 bg-white dark:bg-gray-200 rounded-full shadow mt-0.5 transition-transform ${sinUsuario ? "translate-x-4" : "translate-x-0.5"}`} />
+                </div>
+                <span className="text-sm font-medium text-gray-700">Cliente sin cuenta (walk-in / teléfono)</span>
+              </label>
+              {!sinUsuario && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Buscar cliente</label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                    <input value={busqueda} onChange={e => { setBusqueda(e.target.value); setUsuarioSel(null) }}
+                      placeholder="Nombre o correo..."
+                      className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-pink-400" />
+                    {buscando && <Loader2 className="absolute right-3 top-2.5 w-4 h-4 text-pink-400 animate-spin" />}
+                  </div>
+                  {resultados.length > 0 && !usuarioSel && (
+                    <div className="mt-1 border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                      {resultados.map(u => (
+                        <button key={u.id} onClick={() => { setUsuarioSel(u); setBusqueda(u.nombre); setResultados([]) }}
+                          className="w-full text-left px-4 py-3 hover:bg-pink-50 transition border-b border-gray-100 last:border-0">
+                          <p className="font-semibold text-gray-800 dark:text-white text-sm">{u.nombre}</p>
+                          <p className="text-xs text-gray-400">{u.correo}</p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {usuarioSel && (
+                    <div className="mt-2 flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-2.5">
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      <div>
+                        <p className="text-sm font-bold text-gray-800 dark:text-white">{usuarioSel.nombre}</p>
+                        <p className="text-xs text-gray-500">{usuarioSel.correo}</p>
+                      </div>
+                      <button onClick={() => { setUsuarioSel(null); setBusqueda("") }} className="ml-auto text-xs text-red-400 hover:text-red-600">✕</button>
+                    </div>
+                  )}
+                </div>
+              )}
+              {sinUsuario && (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Nombre del cliente</label>
+                    <input value={nombreContacto} onChange={e => setNombreContacto(e.target.value)}
+                      placeholder="Ej. Ana García"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Teléfono (opcional)</label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                      <input value={telefonoContacto} onChange={e => setTelefonoContacto(e.target.value)}
+                        placeholder="961 000 0000"
+                        className="w-full pl-9 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink-400" />
+                    </div>
+                  </div>
+                </div>
+              )}
+              {/* ── Tipo de pago (anticipo / completo) ── */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Pago recibido <span className="text-red-500">*</span>
+                </label>
+                {servicioSel && (
+                  <p className="text-xs text-gray-400 mb-3">
+                    Precio del servicio: <strong>${Number(servicioSel.precio).toLocaleString()} MXN</strong>
+                  </p>
+                )}
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    {
+                      id: "ANTICIPO" as const,
+                      label: "Anticipo 50%",
+                      monto: servicioSel ? `$${(Number(servicioSel.precio) * 0.5).toLocaleString()} MXN` : "50%",
+                      desc: "Resto al llegar",
+                    },
+                    {
+                      id: "COMPLETO" as const,
+                      label: "Pago completo",
+                      monto: servicioSel ? `$${Number(servicioSel.precio).toLocaleString()} MXN` : "100%",
+                      desc: "Liquidado",
+                    },
+                  ].map(op => (
+                    <button key={op.id} type="button" onClick={() => setTipoPago(op.id)}
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${
+                        tipoPago === op.id
+                          ? "border-pink-600 bg-pink-50"
+                          : "border-gray-100 hover:border-pink-200"
+                      }`}>
+                      <p className={`font-bold text-sm ${tipoPago === op.id ? "text-pink-700" : "text-gray-700"}`}>
+                        {op.label}
+                      </p>
+                      <p className={`text-lg font-black mt-0.5 ${tipoPago === op.id ? "text-pink-600" : "text-gray-400"}`}>
+                        {op.monto}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">{op.desc}</p>
+                    </button>
+                  ))}
+                </div>
+                {!tipoPago && (
+                  <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" /> Requerido: el cliente debe pagar anticipo o monto completo
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">Método de pago</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {METODOS_PAGO.map(({ id, label, icon: Icon }) => (
+                    <button key={id} onClick={() => setMetodoPago(id)}
+                      className={`p-3 rounded-xl border-2 flex flex-col items-center gap-1.5 transition-all ${
+                        metodoPago === id ? "border-pink-600 bg-pink-50" : "border-gray-100 hover:border-pink-200"
+                      }`}>
+                      <Icon className={`w-5 h-5 ${metodoPago === id ? "text-pink-600" : "text-gray-400"}`} />
+                      <span className={`text-xs font-bold ${metodoPago === id ? "text-pink-700" : "text-gray-500"}`}>{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Notas (opcional)</label>
+                <textarea value={notas} onChange={e => setNotas(e.target.value)} rows={2}
+                  placeholder="Observaciones sobre la cita..."
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-400 resize-none" />
+              </div>
+              {error && (
+                <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" /> {error}
+                </div>
+              )}
+              <div className="flex gap-3">
+                <button onClick={() => setPaso(3)}
+                  className="flex-1 border-2 border-pink-200 text-pink-600 font-bold py-3 rounded-full hover:bg-pink-50 transition">
+                  ← Atrás
+                </button>
+                <button onClick={handleGuardar} disabled={guardando}
+                  className="flex-1 bg-pink-600 text-white font-bold py-3 rounded-full hover:bg-pink-700 transition disabled:opacity-50 flex items-center justify-center gap-2">
+                  {guardando ? <><Loader2 className="w-4 h-4 animate-spin" /> Guardando...</> : "✓ Confirmar cita"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <aside className="lg:col-span-1">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-100 dark:border-gray-700 p-5 sticky top-6">
+            <h3 className="font-bold text-pink-600 mb-4">Resumen</h3>
+            <div className="space-y-3 text-sm">
+              {servicioSel ? (
+                <div className="bg-pink-50 rounded-xl p-3 border border-pink-100">
+                  <p className="font-bold text-gray-800 dark:text-white">{servicioSel.nombre}</p>
+                  <p className="text-gray-500 text-xs mt-0.5">{servicioSel.duracion}</p>
+                  <p className="text-pink-600 font-bold mt-1">${Number(servicioSel.precio).toLocaleString()} MXN</p>
+                </div>
+              ) : (
+                <p className="text-gray-400 text-xs">Sin servicio seleccionado</p>
+              )}
+              {(empleadoSel || sinEmpleado) && (
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 rounded-xl px-3 py-2">
+                  <Users className="w-4 h-4 text-pink-400" />
+                  <span>{empleadoSel ? empleadoSel.nombre : "Sin preferencia"}</span>
+                </div>
+              )}
+              {fechaSel && (
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 rounded-xl px-3 py-2">
+                  <Calendar className="w-4 h-4 text-pink-400" />
+                  <span>{format(fechaSel, "d 'de' MMMM", { locale: es })}</span>
+                </div>
+              )}
+              {horaSel && (
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 rounded-xl px-3 py-2">
+                  <Clock className="w-4 h-4 text-pink-400" />
+                  <span className="font-bold">{horaSel}</span>
+                </div>
+              )}
+              {(usuarioSel || (sinUsuario && nombreContacto)) && (
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 rounded-xl px-3 py-2">
+                  <User className="w-4 h-4 text-pink-400" />
+                  <span>{usuarioSel?.nombre || nombreContacto}</span>
+                </div>
+              )}
+              {metodoPago && paso === 4 && (
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 rounded-xl px-3 py-2">
+                  <CreditCard className="w-4 h-4 text-pink-400" />
+                  <span>{metodoPago}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  )
+}

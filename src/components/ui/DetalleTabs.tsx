@@ -23,19 +23,20 @@ export default function DetalleTabs({ descripcion, beneficios, incluye }: Detall
 
   return (
     <div>
-      <div className="flex border-b border-gray-200 mb-6">
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
         {[
           { id: "descripcion", label: "Descripción" },
-          { id: "beneficios", label: "Beneficios" },
-          { id: "incluye", label: "Incluye" },
+          { id: "beneficios",  label: "Beneficios"  },
+          { id: "incluye",     label: "Incluye"     },
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as "descripcion" | "beneficios" | "incluye")}
-            className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
-              activeTab === tab.id 
-                ? "border-pink-600 text-pink-600" 
-                : "border-transparent text-gray-500 hover:text-gray-700"
+            className={`px-6 py-3 font-semibold text-sm border-b-2 transition-colors ${
+              activeTab === tab.id
+                ? "border-pink-600 text-pink-600 dark:text-pink-400 dark:border-pink-400"
+                : "border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
             }`}
           >
             {tab.label}
@@ -43,17 +44,20 @@ export default function DetalleTabs({ descripcion, beneficios, incluye }: Detall
         ))}
       </div>
 
-      <div className="text-gray-700 leading-relaxed text-[17px] min-h-[200px]">
+      {/* Contenido */}
+      <div className="text-gray-600 dark:text-gray-300 leading-relaxed text-base min-h-[140px]">
         {activeTab === "descripcion" && (
-          <p>{descripcion || "No hay descripción disponible para este servicio."}</p>
+          <p className="whitespace-pre-line">
+            {descripcion || <span className="italic text-gray-400">Sin descripción disponible.</span>}
+          </p>
         )}
 
         {activeTab === "beneficios" && (
-          <ul className="space-y-3">{formatList(beneficios)}</ul>
+          <ul className="space-y-2.5">{formatList(beneficios)}</ul>
         )}
 
         {activeTab === "incluye" && (
-          <ul className="space-y-3">{formatList(incluye)}</ul>
+          <ul className="space-y-2.5">{formatList(incluye)}</ul>
         )}
       </div>
     </div>

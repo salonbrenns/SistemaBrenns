@@ -46,7 +46,7 @@ export default async function CursosPage({
   return (
     <div className="space-y-6">
 
-      <h1 className="text-2xl font-bold text-pink-900">Cursos</h1>
+      <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300">Cursos</h1>
 
       {/* FILTROS */}
       <div className="flex gap-3">
