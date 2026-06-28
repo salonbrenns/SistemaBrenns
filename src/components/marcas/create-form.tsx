@@ -9,7 +9,7 @@ export default function CreateMarcaForm() {
   const [isPending, startTransition] = useTransition()
 
   return (
-    <div className="w-full max-w-xl rounded-2xl bg-white p-8 shadow-lg border border-gray-200">
+    <div className="w-full max-w-xl rounded-2xl bg-white dark:bg-gray-800 p-8 shadow-lg border border-gray-200 dark:border-gray-700">
       <h2 className="text-2xl font-bold text-pink-900 mb-6">
         Crear Nueva Marca
       </h2>

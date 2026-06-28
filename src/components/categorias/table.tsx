@@ -42,8 +42,8 @@ export default function CategoriaTable({ categorias, currentPage, totalPages }: 
         <CreateCategoria />
       </div>
 
-      <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-        <table className="min-w-full divide-y divide-gray-200">
+      <div className="w-full overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
 
           <thead className="bg-pink-900">
             <tr>
@@ -55,7 +55,7 @@ export default function CategoriaTable({ categorias, currentPage, totalPages }: 
             </tr>
           </thead>
 
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {categorias.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-6 py-6 text-center text-sm text-gray-500">
@@ -67,12 +67,12 @@ export default function CategoriaTable({ categorias, currentPage, totalPages }: 
                 <tr
                   key={categoria.id}
                   className={`transition-colors ${
-                    !categoria.activo ? 'bg-gray-50 opacity-60' : 'hover:bg-pink-50'
+                    !categoria.activo ? 'bg-gray-50 dark:bg-gray-900 opacity-60' : 'hover:bg-pink-50 dark:hover:bg-gray-700'
                   }`}
                 >
-                  <td className="px-6 py-4 text-sm text-gray-900">{categoria.id}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{categoria.id}</td>
 
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{categoria.nombre}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{categoria.nombre}</td>
 
                   {/* ESTADO ← badge */}
                   <td className="px-6 py-4">

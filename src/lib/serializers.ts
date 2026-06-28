@@ -1,21 +1,17 @@
-import { Producto } from '@prisma/client'
-
-/** Convierte JsonValue → string[] de forma segura */
-function parseImagenes(value: unknown): string[] {
-  if (Array.isArray(value)) {
-    return value.filter((v): v is string => typeof v === 'string' && v.startsWith('http'))
-  }
-  if (typeof value === 'string' && value.startsWith('http')) {
-    return [value]
-  }
-  return []
+type ProductoRaw = {
+  precio_costo?: { toNumber: () => number } | null
+  precio_venta?: { toNumber: () => number } | null
+  imagen?: unknown
+  [key: string]: unknown
 }
 
-export function serializeProducto(producto: Producto & { marca?: unknown; categoria?: unknown }) {
+export function serializeProducto(producto: ProductoRaw) {
   return {
     ...producto,
-   precio_costo: producto.precio_costo?.toNumber() ?? 0,
-precio_venta: producto.precio_venta?.toNumber() ?? 0,
-    imagenes: parseImagenes(producto.imagen), // ← string[] limpio
+    precio_costo: producto.precio_costo?.toNumber() ?? null,
+    precio_venta: producto.precio_venta?.toNumber() ?? null,
+    imagen: Array.isArray(producto.imagen)
+      ? (producto.imagen as string[])
+      : producto.imagen ?? null,
   }
 }

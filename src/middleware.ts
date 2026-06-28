@@ -43,18 +43,29 @@ export default auth((req) => {
   }
   // ──────────────────────────────────────────────────────────
 
- // ── Rutas de Admin ──────────────────────────────────────────
-if (path.startsWith("/admin")) {
-  if (!isLoggedIn) {
-    const url = new URL("/login", nextUrl.origin)
-    url.searchParams.set("next", path)
-    return NextResponse.redirect(url)
+  // ── Rutas de Admin (solo ADMIN) ─────────────────────────────
+  if (path.startsWith("/admin")) {
+    if (!isLoggedIn) {
+      const url = new URL("/login", nextUrl.origin)
+      url.searchParams.set("next", path)
+      return NextResponse.redirect(url)
+    }
+    if (role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/", nextUrl.origin))
+    }
   }
-  // ← CAMBIAR: permitir ADMIN y EMPLEADO
-  if (role !== "ADMIN" && role !== "EMPLEADO") {
-    return NextResponse.redirect(new URL("/", nextUrl.origin))
+
+  // ── Rutas de Empleado (EMPLEADO o ADMIN) ────────────────────
+  if (path.startsWith("/empleado")) {
+    if (!isLoggedIn) {
+      const url = new URL("/login", nextUrl.origin)
+      url.searchParams.set("next", path)
+      return NextResponse.redirect(url)
+    }
+    if (role !== "EMPLEADO" && role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/", nextUrl.origin))
+    }
   }
-}
 
   if (path.startsWith("/docente")) {
     if (!isLoggedIn) {
@@ -67,7 +78,21 @@ if (path.startsWith("/admin")) {
     }
   }
 
-  const rutasCliente = ["/perfil", "/carrito", "/checkout", "/pago", "/mis-cursos", "/agendar", "/inscribirse"]
+  // ── Rutas de Cliente (requieren sesión activa) ──────────────
+  const rutasCliente = [
+    "/perfil",
+    "/carrito",
+    "/checkout",
+    "/pago",
+    "/agendar",
+    "/inscribirse",
+    "/favoritos",
+    "/mis-citas",
+    "/mis-cursos",
+    "/mis-mensajes",
+    "/mis-pedidos",
+    "/pedido",
+  ]
   if (rutasCliente.some(r => path.startsWith(r)) && !isLoggedIn) {
     const url = new URL("/login", nextUrl.origin)
     url.searchParams.set("next", path)
@@ -81,13 +106,20 @@ export const config = {
   matcher: [
     "/api/auth/callback/credentials",
     "/admin/:path*",
+    "/empleado/:path*",
     "/docente/:path*",
+    // Rutas protegidas del grupo (cliente)
     "/perfil/:path*",
     "/carrito/:path*",
     "/checkout/:path*",
     "/pago/:path*",
-    "/mis-cursos/:path*",
     "/agendar/:path*",
     "/inscribirse/:path*",
+    "/favoritos/:path*",
+    "/mis-citas/:path*",
+    "/mis-cursos/:path*",
+    "/mis-mensajes/:path*",
+    "/mis-pedidos/:path*",
+    "/pedido/:path*",
   ],
 }

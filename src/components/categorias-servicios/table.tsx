@@ -137,7 +137,7 @@ export default function CategoriaServicioTable({ categorias, currentPage, totalP
             </tr>
           </thead>
 
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {categorias.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-6 py-6 text-center text-sm text-gray-500">
@@ -149,7 +149,7 @@ export default function CategoriaServicioTable({ categorias, currentPage, totalP
                 <tr
                   key={c.id}
                   className={`transition-colors ${
-                    !c.activo ? 'bg-gray-50 opacity-60' : 'hover:bg-pink-50'
+                    !c.activo ? 'bg-gray-50 dark:bg-gray-900 opacity-60' : 'hover:bg-pink-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   <td className="px-6 py-4 text-sm text-gray-500">{c.id}</td>
@@ -294,7 +294,7 @@ function CategoriaModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-xl border border-pink-100 overflow-hidden">
+      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-xl border border-pink-100 dark:border-gray-700 overflow-hidden">
 
         {/* Header */}
         <div className="bg-gradient-to-r from-pink-900 to-pink-700 px-8 py-5">
@@ -315,7 +315,7 @@ function CategoriaModal({
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               placeholder="Ej. Uñas esculturales"
-              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition"
+              className="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition"
             />
             {error && <p className="text-xs text-red-500">{error}</p>}
           </div>

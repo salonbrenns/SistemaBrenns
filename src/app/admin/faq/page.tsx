@@ -67,8 +67,8 @@ export default function AdminFAQPage() {
       {/* Encabezado */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Preguntas Frecuentes</h1>
-          <p className="text-sm text-gray-500 mt-1">Gestiona las preguntas que verán tus clientes</p>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Preguntas Frecuentes</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Gestiona las preguntas que verán tus clientes</p>
         </div>
         <Link
           href="/admin/faq/nueva"
@@ -84,7 +84,7 @@ export default function AdminFAQPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-600" />
         </div>
       ) : faqs.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
+        <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300">
           <p className="text-gray-400 text-lg">No hay preguntas registradas</p>
           <Link
             href="/admin/faq/nueva"
@@ -94,22 +94,22 @@ export default function AdminFAQPage() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-100">
               <tr>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">Orden</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">Pregunta</th>
-                <th className="text-left px-5 py-3 text-gray-500 font-medium">Estado</th>
-                <th className="text-right px-5 py-3 text-gray-500 font-medium">Acciones</th>
+                <th className="text-left px-5 py-3 text-gray-500 dark:text-gray-400 font-medium">Orden</th>
+                <th className="text-left px-5 py-3 text-gray-500 dark:text-gray-400 font-medium">Pregunta</th>
+                <th className="text-left px-5 py-3 text-gray-500 dark:text-gray-400 font-medium">Estado</th>
+                <th className="text-right px-5 py-3 text-gray-500 dark:text-gray-400 font-medium">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {faqs.map((faq) => (
-                <tr key={faq.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={faq.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                   <td className="px-5 py-4 text-gray-400 font-mono">{faq.orden}</td>
                   <td className="px-5 py-4">
-                    <p className="font-medium text-gray-800 line-clamp-1">{faq.pregunta}</p>
+                    <p className="font-medium text-gray-800 dark:text-white line-clamp-1">{faq.pregunta}</p>
                     <p className="text-gray-400 text-xs line-clamp-1 mt-0.5">{faq.respuesta}</p>
                   </td>
                   <td className="px-5 py-4">
@@ -118,7 +118,7 @@ export default function AdminFAQPage() {
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                         faq.activo
                           ? "bg-green-100 text-green-700 hover:bg-green-200"
-                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                          : "bg-gray-100 text-gray-500 dark:text-gray-400 hover:bg-gray-200"
                       }`}
                     >
                       {faq.activo ? "Activo" : "Inactivo"}

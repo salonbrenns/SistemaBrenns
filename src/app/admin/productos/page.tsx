@@ -127,7 +127,7 @@ export default async function ProductosPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-pink-900">Productos</h1>
+      <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300">Productos</h1>
 
       <Search placeholder="Buscar productos..." />
 

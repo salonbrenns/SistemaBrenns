@@ -94,17 +94,17 @@ export default function MiHorarioPage() {
   return (
     <div className="space-y-6 max-w-4xl">
       <div>
-        <h1 className="text-2xl font-bold text-pink-900 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300 flex items-center gap-2">
           <Clock className="w-6 h-6 text-pink-500" />
           {esAdmin ? "Horario por empleado" : "Mi horario"}
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           {esAdmin ? "Consulta el horario efectivo de cada especialista" : "Tu horario semanal asignado"}
         </p>
       </div>
 
       {esAdmin && (
-        <div className="bg-white rounded-2xl border border-pink-100 p-5 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-100 p-5 shadow-sm">
           <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
             <Users className="w-3.5 h-3.5 text-pink-400" /> Seleccionar empleado
           </p>
@@ -119,7 +119,7 @@ export default function MiHorarioPage() {
               {empleados.map(emp => (
                 <button key={emp.id} onClick={() => setEmpleadoSel(emp.id)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-semibold transition-all ${
-                    empleadoSel === emp.id ? "bg-pink-600 text-white border-pink-600 shadow-sm" : "bg-white text-gray-600 border-gray-200 hover:border-pink-300"
+                    empleadoSel === emp.id ? "bg-pink-600 text-white border-pink-600 shadow-sm" : "bg-white text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-pink-300"
                   }`}>
                   <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
                     empleadoSel === emp.id ? "bg-pink-500 text-white" : "bg-pink-100 text-pink-600"
@@ -160,12 +160,12 @@ export default function MiHorarioPage() {
 
       {horario && !cargandoHorario && (
         <>
-          <div className="bg-white rounded-2xl border border-pink-100 p-5 shadow-sm flex items-center gap-4 flex-wrap">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-100 p-5 shadow-sm flex items-center gap-4 flex-wrap">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
               {horario.usuario.nombre.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-gray-800">{horario.usuario.nombre}</p>
+              <p className="font-bold text-gray-800 dark:text-white">{horario.usuario.nombre}</p>
               <p className="text-xs text-gray-400 truncate">{horario.usuario.correo}</p>
             </div>
             <div className="text-center px-4 border-l border-pink-100">
@@ -179,7 +179,7 @@ export default function MiHorarioPage() {
           </div>
 
           {horario.dias.length === 0 ? (
-            <div className="text-center py-16 text-gray-400 bg-white rounded-2xl border border-pink-100">
+            <div className="text-center py-16 text-gray-400 bg-white dark:bg-gray-800 rounded-2xl border border-pink-100">
               <AlertCircle className="w-10 h-10 mx-auto mb-3 opacity-30" />
               <p className="font-medium">Sin días asignados</p>
               <p className="text-sm mt-1">
@@ -187,7 +187,7 @@ export default function MiHorarioPage() {
               </p>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-pink-100 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-100 shadow-sm overflow-hidden">
               <div className="flex border-b border-pink-50 overflow-x-auto">
                 {[...horario.dias].sort((a, b) => a - b).map(diaId => {
                   const dia   = DIAS.find(d => d.id === diaId)
@@ -195,11 +195,11 @@ export default function MiHorarioPage() {
                   return (
                     <button key={diaId} onClick={() => setDiaActivo(diaId)}
                       className={`flex-shrink-0 px-5 py-3.5 text-sm font-semibold border-b-2 transition-all flex flex-col items-center gap-1 ${
-                        diaActivo === diaId ? "border-pink-600 text-pink-600 bg-pink-50" : "border-transparent text-gray-500 hover:text-pink-500 hover:bg-pink-50/40"
+                        diaActivo === diaId ? "border-pink-600 text-pink-600 bg-pink-50" : "border-transparent text-gray-500 dark:text-gray-400 hover:text-pink-500 hover:bg-pink-50/40"
                       }`}>
                       {dia?.label}
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        diaActivo === diaId ? "bg-pink-600 text-white" : "bg-gray-100 text-gray-500"
+                        diaActivo === diaId ? "bg-pink-600 text-white" : "bg-gray-100 text-gray-500 dark:text-gray-400"
                       }`}>{horas.length} slots</span>
                     </button>
                   )
@@ -244,9 +244,9 @@ export default function MiHorarioPage() {
                       return (
                         <button key={diaId} onClick={() => setDiaActivo(diaId)}
                           className={`rounded-xl p-3 text-center border transition-all ${
-                            diaActivo === diaId ? "border-pink-400 bg-pink-50" : "border-gray-100 bg-gray-50 hover:border-pink-200"
+                            diaActivo === diaId ? "border-pink-400 bg-pink-50" : "border-gray-100 bg-gray-50 dark:bg-gray-900 hover:border-pink-200"
                           }`}>
-                          <p className="text-xs text-gray-500 mb-1">{dia?.label.slice(0, 3)}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{dia?.label.slice(0, 3)}</p>
                           <p className="text-xl font-bold text-pink-600">{horas.length}</p>
                           <p className="text-[10px] text-gray-400">slots</p>
                         </button>

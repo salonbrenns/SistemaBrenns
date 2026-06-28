@@ -3,9 +3,10 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  schemas  = ["agenda", "catalogos", "cursos", "seguridad", "ventas"]
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["agenda", "catalogos", "cursos", "seguridad", "ventas"]
 }
 
 model Cita {
@@ -20,11 +21,15 @@ model Cita {
   nombre_contacto   String?
   telefono_contacto String?
   empleado_id       Int?
-  estado            String       @default("PENDIENTE")
-  empleado          Usuario?     @relation("CitaEmpleado", fields: [empleado_id], references: [id])
-  servicio          Servicio     @relation(fields: [servicio_id], references: [id])
-  usuario           Usuario?     @relation("CitaCliente", fields: [usuario_id], references: [id])
-  avisos            AvisoAdmin[]
+  estado                String       @default("PENDIENTE")
+  total                 Decimal?     @db.Decimal(10, 2)
+  recordatorio_enviado  Boolean      @default(false)
+  cancelado_por         String?
+  cancelado_en          DateTime?
+  empleado              Usuario?     @relation("CitaEmpleado", fields: [empleado_id], references: [id])
+  servicio              Servicio     @relation(fields: [servicio_id], references: [id])
+  usuario               Usuario?     @relation("CitaCliente", fields: [usuario_id], references: [id])
+  avisos                AvisoAdmin[]
 
   @@map("tblcitas")
   @@schema("agenda")

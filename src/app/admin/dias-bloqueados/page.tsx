@@ -28,8 +28,8 @@ export default async function DiasBloqueadosPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-pink-900">Días y horas bloqueadas</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300">Días y horas bloqueadas</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Gestiona días completos sin servicio y horas puntuales bloqueadas
         </p>
       </div>

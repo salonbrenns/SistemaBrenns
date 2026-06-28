@@ -63,7 +63,7 @@ const Input = ({
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-100 transition-all bg-white"
+      className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-100 transition-all bg-white dark:bg-gray-700 dark:text-white"
     />
   </div>
 )
@@ -85,7 +85,7 @@ const Textarea = ({
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       rows={rows}
-      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-100 resize-none transition-all bg-white"
+      className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-100 resize-none transition-all bg-white dark:bg-gray-700 dark:text-white"
     />
     {hint && <p className="text-[10px] text-gray-400 mt-1">{hint}</p>}
   </div>
@@ -96,8 +96,8 @@ const Card = ({
 }: {
   icon: React.ElementType; title: string; children: React.ReactNode; className?: string
 }) => (
-  <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4 ${className}`}>
-    <h2 className="font-bold text-gray-700 flex items-center gap-2 text-[10px] uppercase tracking-[0.15em] border-b border-gray-50 pb-3">
+  <div className={`bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4 ${className}`}>
+    <h2 className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2 text-[10px] uppercase tracking-[0.15em] border-b border-gray-50 pb-3">
       <Icon className="w-3.5 h-3.5 text-pink-400" /> {title}
     </h2>
     <div className="space-y-4">
@@ -136,21 +136,21 @@ const LogoUploader = ({
   }
 
   return (
-    <div className="flex items-center gap-4 p-3 border border-dashed border-gray-200 rounded-xl bg-gray-50/30">
-      <div className="relative w-14 h-14 rounded-lg bg-white border border-gray-100 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+    <div className="flex items-center gap-4 p-3 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900/30">
+      <div className="relative w-14 h-14 rounded-lg bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
         {currentLogo ? (
           <Image src={currentLogo} alt="Logo" className="w-full h-full object-contain p-1" fill />
         ) : (
           <ImageIcon2 className="w-5 h-5 text-gray-300" />
         )}
         {uploading && (
-          <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+          <div className="absolute inset-0 bg-white/80 dark:bg-gray-800/80 flex items-center justify-center">
             <Loader2 className="w-4 h-4 text-pink-500 animate-spin" />
           </div>
         )}
       </div>
       <div className="space-y-1.5">
-        <label className="cursor-pointer bg-white border border-gray-200 hover:border-pink-300 px-3 py-1.5 rounded-lg text-[11px] font-bold text-gray-600 transition-all shadow-sm flex items-center gap-2 w-fit">
+        <label className="cursor-pointer bg-white border border-gray-200 dark:border-gray-700 hover:border-pink-300 px-3 py-1.5 rounded-lg text-[11px] font-bold text-gray-600 dark:text-gray-400 transition-all shadow-sm flex items-center gap-2 w-fit">
           <Upload className="w-3 h-3 text-pink-500" />
           {uploading ? "Subiendo..." : "Subir Logo"}
           <input type="file" accept="image/*" className="hidden" onChange={handleFile} disabled={uploading} />
@@ -191,7 +191,7 @@ const SlideEditor = ({
   const LABELS = ["Salón de Belleza", "Academia Brenn's", "Distribuidora"]
 
   return (
-    <div className="border border-gray-100 rounded-2xl p-4 space-y-3 bg-gray-50/50">
+    <div className="border border-gray-100 rounded-2xl p-4 space-y-3 bg-gray-50 dark:bg-gray-900/50">
       <p className="text-[10px] font-black text-pink-500 uppercase tracking-widest">
         Slide {index + 1} — {LABELS[index] ?? slide.etiqueta}
       </p>
@@ -296,7 +296,7 @@ export default function ConfiguracionPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-pink-900 flex items-center gap-2 tracking-tight">
+          <h1 className="text-2xl font-black text-pink-900 dark:text-pink-300 flex items-center gap-2 tracking-tight">
             <Settings className="w-6 h-6 text-pink-500" /> Configuración
           </h1>
           <p className="text-xs text-gray-400 font-medium">Gestiona la identidad y contenido global del sitio</p>
@@ -316,19 +316,19 @@ export default function ConfiguracionPage() {
       {/* Alertas */}
       <div className="fixed bottom-6 right-6 z-50 space-y-2">
         {error && (
-          <div className="bg-white border-l-4 border-red-500 text-red-600 text-sm px-6 py-3 rounded-xl shadow-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4">
+          <div className="bg-white dark:bg-gray-800 border-l-4 border-red-500 text-red-600 dark:text-red-400 text-sm px-6 py-3 rounded-xl shadow-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4">
             <span className="font-bold">Error:</span> {error}
           </div>
         )}
         {exito && (
-          <div className="bg-white border-l-4 border-green-500 text-green-600 text-sm px-6 py-3 rounded-xl shadow-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4">
+          <div className="bg-white dark:bg-gray-800 border-l-4 border-green-500 text-green-600 dark:text-green-400 text-sm px-6 py-3 rounded-xl shadow-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4">
             ✅ Cambios guardados correctamente
           </div>
         )}
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-2xl w-fit border border-gray-200/50">
+      <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl w-fit border border-gray-200 dark:border-gray-700/50">
         {tabs.map(t => {
           const Icon = t.icon
           return (
@@ -337,8 +337,8 @@ export default function ConfiguracionPage() {
               onClick={() => setTab(t.id)}
               className={`flex items-center gap-2 px-6 py-2 rounded-xl text-xs font-bold transition-all ${
                 tab === t.id
-                  ? "bg-white text-pink-600 shadow-sm ring-1 ring-black/5"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "bg-white dark:bg-gray-700 text-pink-600 shadow-sm ring-1 ring-black/5"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300"
               }`}
             >
               <Icon className="w-3.5 h-3.5" /> {t.label}

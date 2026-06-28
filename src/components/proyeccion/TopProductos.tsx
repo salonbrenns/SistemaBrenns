@@ -14,9 +14,9 @@ export default function TopProductos({ productos }: Props) {
   if (top5.length === 0) return null
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100">
-        <h2 className="text-base font-semibold text-gray-800">Productos más vendidos</h2>
+        <h2 className="text-base font-semibold text-gray-800 dark:text-white">Productos más vendidos</h2>
         <p className="text-xs text-gray-400 mt-0.5">Top 5 con mayor demanda</p>
       </div>
 
@@ -58,7 +58,7 @@ export default function TopProductos({ productos }: Props) {
               {/* Stats */}
               <div className="flex gap-6 text-sm text-right flex-shrink-0">
                 <div>
-                  <p className="font-semibold text-gray-800">{p.ventas_totales}</p>
+                  <p className="font-semibold text-gray-800 dark:text-white">{p.ventas_totales}</p>
                   <p className="text-xs text-gray-400">vendidos</p>
                 </div>
                 <div>

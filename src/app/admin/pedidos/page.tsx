@@ -75,7 +75,7 @@ export default function AdminPedidosPage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <Package className="w-7 h-7 text-rose-600" />
-        <h1 className="text-2xl font-black text-gray-900">Pedidos</h1>
+        <h1 className="text-2xl font-black text-gray-900 dark:text-white">Pedidos</h1>
         <span className="text-sm text-gray-400 font-semibold">({pedidos.length} total)</span>
       </div>
 
@@ -86,7 +86,7 @@ export default function AdminPedidosPage() {
             className={`px-3 py-1.5 rounded-full text-xs font-bold border ${
               filtro === e
                 ? 'bg-rose-700 text-white border-rose-700'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-rose-300'
+                : 'bg-white text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-rose-300'
             }`}>
             {e}
           </button>
@@ -94,7 +94,7 @@ export default function AdminPedidosPage() {
       </div>
 
       {/* Tabla */}
-      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border shadow-sm overflow-hidden">
         <table className="min-w-full divide-y">
           <thead className="bg-rose-900">
             <tr>
@@ -143,7 +143,7 @@ export default function AdminPedidosPage() {
                     ${pedido.total.toLocaleString('es-MX')}
                   </td>
 
-                  <td className="px-5 py-4 text-xs text-gray-500">
+                  <td className="px-5 py-4 text-xs text-gray-500 dark:text-gray-400">
                     {new Date(pedido.fecha_pedido).toLocaleDateString('es-MX')}
                   </td>
 
@@ -190,7 +190,7 @@ function DetailPedido({ detalles }: { readonly detalles: Detalle[] }) {
       {detalles.map((d) => (
         <div
           key={`${d.nombre_producto}-${d.descripcion_variante}`}
-          className="flex justify-between text-xs bg-white p-2 rounded border"
+          className="flex justify-between text-xs bg-white dark:bg-gray-700 p-2 rounded border dark:border-gray-600"
         >
           <span>
             {d.nombre_producto}

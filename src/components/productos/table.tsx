@@ -80,9 +80,9 @@ export default function ProductoTable({ productos, currentPage, totalPages }: Pr
         <CreateProducto />
       </div>
 
-      <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-rose-900">
+      <div className="w-full overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-rose-900 dark:bg-rose-950">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Foto</th>
               {columns.map(col => (
@@ -101,10 +101,10 @@ export default function ProductoTable({ productos, currentPage, totalPages }: Pr
             </tr>
           </thead>
 
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
             {productos.length === 0 ? (
               <tr>
-                <td colSpan={10} className="px-6 py-6 text-center text-sm text-gray-500">
+                <td colSpan={10} className="px-6 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
                   No hay productos registrados
                 </td>
               </tr>
@@ -123,7 +123,7 @@ export default function ProductoTable({ productos, currentPage, totalPages }: Pr
                 }
 
                 return (
-                  <tr key={p.id} className={`transition-colors ${p.activo === false ? 'bg-gray-50 opacity-60' : 'hover:bg-rose-50'}`}>
+                  <tr key={p.id} className={`transition-colors ${p.activo === false ? 'bg-gray-50 dark:bg-gray-900/50 opacity-60' : 'hover:bg-rose-50 dark:hover:bg-gray-700'}`}>
                     <td className="px-6 py-3">
                       {foto ? (
                         <div className="relative h-12 w-12 group">
@@ -141,13 +141,13 @@ export default function ProductoTable({ productos, currentPage, totalPages }: Pr
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{p.variantes[0]?.codigo || '—'}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{p.nombre}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">{p.descripcion || '—'}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900 font-semibold">${p.precio_min.toFixed(2)}</td>
-                    <td className="px-6 py-4 text-sm">{p.marca?.nombre || 'Sin marca'}</td>
-                    <td className="px-6 py-4 text-sm">{p.categoria?.nombre || 'Sin categoría'}</td>
-                    <td className="px-6 py-4 text-sm font-medium">{p.stock_total}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">{p.variantes[0]?.codigo || '—'}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{p.nombre}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate">{p.descripcion || '—'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white font-semibold">${p.precio_min.toFixed(2)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{p.marca?.nombre || 'Sin marca'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{p.categoria?.nombre || 'Sin categoría'}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-700 dark:text-gray-300">{p.stock_total}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex px-2 py-1 text-xs rounded-full ${p.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                         {p.activo ? 'Activo' : 'Inactivo'}
@@ -169,21 +169,21 @@ export default function ProductoTable({ productos, currentPage, totalPages }: Pr
 
       <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
         <a href={createPageURL(currentPage - 1)}
-          className={`px-3 py-1 rounded border text-sm ${currentPage <= 1 ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100'}`}>
+          className={`px-3 py-1 rounded border border-gray-200 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 ${currentPage <= 1 ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
           Anterior
         </a>
         {generatePagination().map((page, i) =>
           typeof page === 'string'
-            ? <span key={i} className="px-2">...</span>
+            ? <span key={i} className="px-2 text-gray-400">...</span>
             : (
               <a key={i} href={createPageURL(page)}
-                className={`px-3 py-1 rounded border text-sm ${currentPage === page ? 'bg-rose-900 text-white' : 'hover:bg-gray-100'}`}>
+                className={`px-3 py-1 rounded border text-sm ${currentPage === page ? 'bg-rose-900 text-white border-rose-900' : 'border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
                 {page}
               </a>
             )
         )}
         <a href={createPageURL(currentPage + 1)}
-          className={`px-3 py-1 rounded border text-sm ${currentPage >= totalPages ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100'}`}>
+          className={`px-3 py-1 rounded border border-gray-200 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 ${currentPage >= totalPages ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
           Siguiente
         </a>
       </div>

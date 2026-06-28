@@ -50,7 +50,7 @@ export function ToggleProducto({ id, nombre, activo }: { id: number; nombre: str
       {/* Modal de confirmación */}
       {open && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md shadow-xl">
             <h2 className="text-lg font-semibold">
               {activo ? 'Desactivar producto' : 'Activar producto'}
             </h2>

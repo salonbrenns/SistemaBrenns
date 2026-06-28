@@ -22,8 +22,8 @@ export default function FilterSidebar({
   placeholder,
 }: FilterSidebarProps) {
   return (
-    <div className="bg-white rounded-3xl shadow-lg p-6 border border-pink-100 mb-8 w-full">
-      <div className="flex items-center gap-2 mb-4 text-gray-800">
+    <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg p-6 border border-pink-100 dark:border-gray-700 mb-8 w-full">
+      <div className="flex items-center gap-2 mb-4 text-gray-800 dark:text-white">
         <Filter className="w-5 h-5 text-pink-600" />
         <h3 className="font-bold text-lg">{title}</h3>
       </div>
@@ -37,7 +37,7 @@ export default function FilterSidebar({
             placeholder={placeholder || "¿Qué servicio buscas?"}
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 rounded-2xl border border-gray-100 bg-gray-50 focus:bg-white focus:border-pink-500 focus:outline-none text-gray-700 transition-all"
+            className="w-full pl-11 pr-4 py-3 rounded-2xl border border-gray-100 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 focus:border-pink-500 focus:outline-none text-gray-700 dark:text-white transition-all"
           />
         </div>
 
@@ -51,7 +51,7 @@ export default function FilterSidebar({
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap border ${
                   isSelected
                     ? "bg-pink-600 text-white border-pink-600 shadow-md"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-pink-300"
+                    : "bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-200 border-gray-200 dark:border-gray-600 hover:border-pink-300"
                 }`}
               >
                 {categoria}

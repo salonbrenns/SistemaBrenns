@@ -72,7 +72,7 @@ export const useSiteConfigStore = create<SiteConfig & {
 
   setPrimaryColor: (color: string) => void;
 }>((set) => ({
-  nombre: "Brenn&apos;s",
+  nombre: "Brenn's",
   slogan: "Academia • Distribuidora • Salón",
   telefono: "961 000 0000",
   email: "salonbrenns11@gmail.com",
@@ -92,13 +92,13 @@ export const useSiteConfigStore = create<SiteConfig & {
 
   redes: {
     instagram: "@salon_de_belleza_brenns",
-    facebook: "Brenn&apos;s en Facebook",
+    facebook: "Brenn's en Facebook",
     whatsapp: "961 000 0000",
     tiktok: "@brenns",
   },
 
   empleados: [
-    { nombre: "Brenda García", puesto: "Dueña y Administradora", descripcion: "Fundadora del Salón Brenn&apos;s con más de 10 años de experiencia." }
+    { nombre: "Brenda García", puesto: "Dueña y Administradora", descripcion: "Fundadora del Salón Brenn's con más de 10 años de experiencia." }
   ],
 
   terminos: "Términos y condiciones del servicio...",

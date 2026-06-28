@@ -49,14 +49,14 @@ export function ToggleMarca({ id, nombre, activo }: { id: number; nombre: string
 
       {open && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
-            <h2 className="text-lg font-semibold text-gray-800">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
               {activo ? 'Desactivar marca' : 'Activar marca'}
             </h2>
 
             <p className="mt-2 text-sm text-gray-600">
               ¿Deseas {activo ? 'desactivar' : 'activar'} la marca{' '}
-              <span className="font-medium text-gray-800">&quot;{nombre}&quot;</span>?
+              <span className="font-medium text-gray-800 dark:text-white">&quot;{nombre}&quot;</span>?
               {activo && (
                 <span className="block mt-1 text-gray-400">
                   La marca dejará de aparecer en el catálogo pero no se eliminará.

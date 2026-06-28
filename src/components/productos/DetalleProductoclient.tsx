@@ -3,10 +3,11 @@
 import { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, Heart, ShoppingBag, Tag, Layers, Package, Plus, Minus, Loader2 } from 'lucide-react'
+import { Heart, ShoppingBag, Tag, Layers, Package, Plus, Minus, Loader2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useCarrito } from '@/hooks/useCarrito'
 import { useFavoritos } from '@/hooks/useFavoritos'
+import BackButton from '@/components/ui/BackButton'
 
 interface Variante {
   id:           number
@@ -99,7 +100,7 @@ useEffect(() => {
   const esFav = autenticado && esFavorito(producto.id)
 
   return (
-    <div className="min-h-screen bg-[#fffafa]">
+    <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950">
       {toastMsg && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-rose-600 text-white font-bold px-8 py-3 rounded-full shadow-2xl animate-fade-in-up text-sm">
           {toastMsg}
@@ -107,9 +108,7 @@ useEffect(() => {
       )}
 
       <div className="max-w-7xl mx-auto px-6 pt-8">
-        <Link href="/catalogo" className="inline-flex items-center gap-2 text-rose-600 hover:text-rose-800 font-semibold text-sm transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Volver al catálogo
-        </Link>
+        <BackButton fallbackHref="/catalogo" label="Volver al catálogo" />
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -117,7 +116,7 @@ useEffect(() => {
 
           {/* Galería */}
           <div className="space-y-3 lg:sticky lg:top-8">
-            <div className="relative rounded-3xl overflow-hidden bg-rose-50 shadow-xl aspect-square">
+            <div className="relative rounded-3xl overflow-hidden bg-rose-50 dark:bg-gray-800 shadow-xl aspect-square">
               {imagenPrincipal ? (
                 <Image src={imagenPrincipal} alt={producto.nombre} fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -129,7 +128,7 @@ useEffect(() => {
               )}
               {sinStock && (
                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                  <span className="bg-white text-gray-800 text-sm font-black px-6 py-3 rounded-full shadow-lg uppercase tracking-widest">Agotado</span>
+                  <span className="bg-white dark:bg-gray-900 text-gray-800 dark:text-white text-sm font-black px-6 py-3 rounded-full shadow-lg uppercase tracking-widest">Agotado</span>
                 </div>
               )}
               <button onClick={handleFavorito}
@@ -159,24 +158,24 @@ useEffect(() => {
           <div className="space-y-6">
             <div className="flex items-center gap-3 flex-wrap">
               {producto.marca && (
-                <span className="inline-flex items-center gap-1.5 bg-rose-100 text-rose-700 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest">
+                <span className="inline-flex items-center gap-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest">
                   <Tag className="w-3 h-3" /> {producto.marca.nombre}
                 </span>
               )}
               {producto.categoria && (
-                <span className="inline-flex items-center gap-1.5 bg-pink-100 text-pink-700 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest">
+                <span className="inline-flex items-center gap-1.5 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest">
                   <Layers className="w-3 h-3" /> {producto.categoria.nombre}
                 </span>
               )}
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight">{producto.nombre}</h1>
+            <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white leading-tight">{producto.nombre}</h1>
 
-            <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-6 border border-rose-100">
+            <div className="bg-gradient-to-r from-rose-50 to-pink-50 dark:from-gray-800 dark:to-gray-800 rounded-2xl p-6 border border-rose-100 dark:border-gray-700">
               {precioFinal ? (
                 <div className="space-y-1">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <p className="text-4xl font-black text-gray-900">
+                    <p className="text-4xl font-black text-gray-900 dark:text-white">
                       ${precioFinal.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       <span className="text-lg font-semibold text-gray-400 ml-2">MXN</span>
                     </p>
@@ -187,12 +186,12 @@ useEffect(() => {
                   <p className="text-base text-gray-400 line-through">
                     Precio normal: ${precioOriginal.toLocaleString('es-MX')} MXN
                   </p>
-                  <p className="text-sm text-green-600 font-bold">
+                  <p className="text-sm text-green-600 dark:text-green-400 font-bold">
                     Ahorras ${(precioOriginal - precioFinal).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN
                   </p>
                 </div>
               ) : (
-                <p className="text-4xl font-black text-gray-900">
+                <p className="text-4xl font-black text-gray-900 dark:text-white">
                   ${precioOriginal.toLocaleString('es-MX')}
                   <span className="text-lg font-semibold text-gray-400 ml-2">MXN</span>
                 </p>
@@ -201,8 +200,8 @@ useEffect(() => {
 
             {hayTonos && (
               <div className="space-y-2">
-                <p className="text-xs font-black text-gray-500 uppercase tracking-widest">
-                  Tono: <span className="font-semibold text-gray-700 normal-case">{tonoSel}</span>
+                <p className="text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                  Tono: <span className="font-semibold text-gray-700 dark:text-gray-200 normal-case">{tonoSel}</span>
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {tonos.map(tono => {
@@ -213,8 +212,8 @@ useEffect(() => {
                       <button key={tono} onClick={() => setTonoSel(tono)} disabled={!disponible}
                         className={`px-3 py-1.5 rounded-full text-sm font-semibold border transition-all ${
                           tonoSel === tono ? 'bg-rose-700 text-white border-rose-700 shadow-md'
-                            : disponible ? 'bg-white text-gray-700 border-gray-300 hover:border-rose-400'
-                            : 'bg-gray-50 text-gray-400 border-gray-200 line-through cursor-not-allowed'
+                            : disponible ? 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-500 hover:border-rose-400'
+                            : 'bg-gray-50 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 line-through cursor-not-allowed'
                         }`}>
                         {tono}
                       </button>
@@ -226,8 +225,8 @@ useEffect(() => {
 
             {hayPresentaciones && (
               <div className="space-y-2">
-                <p className="text-xs font-black text-gray-500 uppercase tracking-widest">
-                  Presentación: <span className="font-semibold text-gray-700 normal-case">{presentacionSel}</span>
+                <p className="text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                  Presentación: <span className="font-semibold text-gray-700 dark:text-gray-200 normal-case">{presentacionSel}</span>
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {presentaciones.map(pres => {
@@ -238,8 +237,8 @@ useEffect(() => {
                       <button key={pres} onClick={() => setPresentacionSel(pres)} disabled={!disponible}
                         className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${
                           presentacionSel === pres ? 'bg-rose-700 text-white border-rose-700 shadow-md'
-                            : disponible ? 'bg-white text-gray-700 border-gray-300 hover:border-rose-400'
-                            : 'bg-gray-50 text-gray-400 border-gray-200 line-through cursor-not-allowed'
+                            : disponible ? 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-500 hover:border-rose-400'
+                            : 'bg-gray-50 dark:bg-gray-800 text-gray-400 border-gray-200 dark:border-gray-700 line-through cursor-not-allowed'
                         }`}>
                         {pres}
                       </button>
@@ -250,7 +249,7 @@ useEffect(() => {
             )}
 
             {producto.descripcion && (
-              <p className="text-gray-600 leading-relaxed">{producto.descripcion}</p>
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{producto.descripcion}</p>
             )}
 
             <div className="flex items-center gap-2">
@@ -266,14 +265,14 @@ useEffect(() => {
 
             {!sinStock && autenticado && (
               <div className="flex items-center gap-4">
-                <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Cantidad:</p>
-                <div className="flex items-center bg-gray-50 rounded-full border border-gray-200">
-                  <button onClick={() => setCantidad(c => Math.max(1, c - 1))} className="p-2.5 hover:bg-gray-100 rounded-full transition">
-                    <Minus className="w-4 h-4" />
+                <p className="text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">Cantidad:</p>
+                <div className="flex items-center bg-gray-50 dark:bg-gray-700 rounded-full border border-gray-200 dark:border-gray-600">
+                  <button onClick={() => setCantidad(c => Math.max(1, c - 1))} className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-full transition">
+                    <Minus className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                   </button>
-                  <span className="px-5 font-bold text-base">{cantidad}</span>
-                  <button onClick={() => setCantidad(c => Math.min(maxCantidad, c + 1))} className="p-2.5 hover:bg-gray-100 rounded-full transition">
-                    <Plus className="w-4 h-4" />
+                  <span className="px-5 font-bold text-base text-gray-800 dark:text-white">{cantidad}</span>
+                  <button onClick={() => setCantidad(c => Math.min(maxCantidad, c + 1))} className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-full transition">
+                    <Plus className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                   </button>
                 </div>
               </div>
@@ -296,9 +295,6 @@ useEffect(() => {
               </Link>
             )}
 
-            <Link href="/catalogo" className="block text-center text-sm text-gray-400 hover:text-rose-600 transition-colors font-medium">
-              ← Seguir comprando
-            </Link>
           </div>
         </div>
       </div>

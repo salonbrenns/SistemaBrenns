@@ -1,4 +1,3 @@
-// src/app/api/auth/credentials/route.ts
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { NextRequest } from "next/server"
@@ -8,64 +7,57 @@ export async function POST(req: NextRequest) {
     const { correo, password } = await req.json()
 
     if (!correo || !password) {
-      return Response.json({ error: "Correo y contraseña requeridos" }, { status: 400 })
+      return Response.json({ error: "Por favor ingresa tu correo y contrasena.", code: "MISSING_FIELDS" }, { status: 400 })
     }
 
-    const usuario = await prisma.usuario.findUnique({
-      where: { correo: correo as string },
-    })
+    const usuario = await prisma.usuario.findUnique({ where: { correo: correo as string } })
 
     if (!usuario) {
-      return Response.json({ error: "Correo o contraseña incorrectos" }, { status: 401 })
+      return Response.json({ error: "No existe una cuenta con ese correo electronico.", code: "USER_NOT_FOUND" }, { status: 401 })
     }
 
     if (usuario.cuenta_bloqueada) {
-      return Response.json({ error: "Tu cuenta está bloqueada." }, { status: 403 })
+      return Response.json({ error: "Tu cuenta esta bloqueada por demasiados intentos fallidos. Contacta al administrador.", code: "ACCOUNT_LOCKED" }, { status: 403 })
     }
 
     if (!usuario.activo) {
-      return Response.json({ error: "Tu cuenta está desactivada." }, { status: 403 })
+      return Response.json({ error: "Tu cuenta esta desactivada. Contacta al administrador.", code: "ACCOUNT_INACTIVE" }, { status: 403 })
     }
 
     const passwordValida = await bcrypt.compare(password as string, usuario.password)
 
     if (!passwordValida) {
-      const intentos = usuario.intentos_fallidos + 1
+      const intentos  = usuario.intentos_fallidos + 1
+      const bloqueada = intentos >= 5
 
       await prisma.usuario.update({
         where: { id: usuario.id },
-        data: { 
-          intentos_fallidos: intentos, 
-          cuenta_bloqueada: intentos >= 5 
-        },
+        data:  { intentos_fallidos: intentos, cuenta_bloqueada: bloqueada },
       })
 
-      return Response.json({ error: "Correo o contraseña incorrectos" }, { status: 401 })
+      const restantes = 5 - intentos
+      return Response.json({
+        error: bloqueada
+          ? "Cuenta bloqueada por 5 intentos fallidos. Contacta al administrador."
+          : `Contrasena incorrecta. Te queda${restantes === 1 ? "" : "n"} ${restantes} intento${restantes === 1 ? "" : "s"}.`,
+        code: bloqueada ? "ACCOUNT_LOCKED" : "WRONG_PASSWORD",
+      }, { status: 401 })
     }
 
-    // Resetear intentos fallidos
     await prisma.usuario.update({
       where: { id: usuario.id },
-      data: { intentos_fallidos: 0 },
+      data:  { intentos_fallidos: 0 },
     })
 
     return Response.json({
-      id: String(usuario.id),
-      name: usuario.nombre,
-      email: usuario.correo,
-      role: usuario.rol,
+      id:       String(usuario.id),
+      name:     usuario.nombre,
+      email:    usuario.correo,
+      role:     usuario.rol,
       telefono: usuario.telefono,
     })
   } catch (error) {
     console.error("Error en /api/auth/credentials:", error)
-    
-    // Mejor manejo del error sin usar 'any'
-    const errorMessage = error instanceof Error 
-      ? error.message 
-      : "Error interno del servidor"
-
-    return Response.json({ 
-      error: errorMessage 
-    }, { status: 500 })
+    return Response.json({ error: "Error de conexion con el servidor. Intenta mas tarde.", code: "SERVER_ERROR" }, { status: 500 })
   }
 }

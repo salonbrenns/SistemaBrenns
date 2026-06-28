@@ -35,7 +35,7 @@ export default function ToggleCurso({
       {open && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/30">
 
-          <div className="bg-white p-6 rounded-xl w-96">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-96">
 
             <h2 className="font-semibold text-lg">
               {activo ? 'Desactivar curso' : 'Activar curso'}

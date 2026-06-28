@@ -42,8 +42,8 @@ export default function MarcaTable({ marcas, currentPage, totalPages }: Props) {
         <CreateMarca />
       </div>
 
-      <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-        <table className="min-w-full divide-y divide-gray-200">
+      <div className="w-full overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
 
           <thead className="bg-pink-900">
             <tr>
@@ -55,7 +55,7 @@ export default function MarcaTable({ marcas, currentPage, totalPages }: Props) {
             </tr>
           </thead>
 
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {marcas.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-6 py-6 text-center text-sm text-gray-500">
@@ -67,12 +67,12 @@ export default function MarcaTable({ marcas, currentPage, totalPages }: Props) {
                 <tr
                   key={marca.id}
                   className={`transition-colors ${
-                    !marca.activo ? 'bg-gray-50 opacity-60' : 'hover:bg-pink-50'
+                    !marca.activo ? 'bg-gray-50 dark:bg-gray-900 opacity-60' : 'hover:bg-pink-50 dark:hover:bg-gray-700'
                   }`}
                 >
-                  <td className="px-6 py-4 text-sm text-gray-900">{marca.id}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{marca.id}</td>
 
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{marca.nombre}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{marca.nombre}</td>
 
                   {/* ESTADO ← badge */}
                   <td className="px-6 py-4">

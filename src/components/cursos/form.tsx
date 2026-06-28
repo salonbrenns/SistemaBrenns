@@ -22,8 +22,8 @@ interface Curso {
   imagenes: string[]
 }
 
-const inputClass = 'w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition'
-const labelClass = 'text-xs font-semibold text-gray-500 uppercase tracking-wider'
+const inputClass = 'w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition'
+const labelClass = 'text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider'
 
 export default function CursoForm({ curso }: { curso?: Curso }) {
   const [isPending, startTransition] = useTransition()
@@ -56,14 +56,15 @@ export default function CursoForm({ curso }: { curso?: Curso }) {
         } else {
           await createCurso(formData)
         }
-      } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_error) {
         alert("Error al guardar el curso")
       }
     })
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto rounded-3xl bg-white shadow-2xl border border-pink-100 overflow-hidden">
+    <div className="w-full max-w-5xl mx-auto rounded-3xl bg-white dark:bg-gray-800 shadow-2xl border border-pink-100 dark:border-gray-700 overflow-hidden">
       <div className="bg-gradient-to-r from-pink-700 to-pink-600 px-10 py-6">
         <h2 className="text-2xl font-semibold text-white tracking-wide">
           {curso ? 'Editar Curso' : 'Nuevo Curso'}
@@ -132,13 +133,13 @@ export default function CursoForm({ curso }: { curso?: Curso }) {
 
             <label className="flex items-center gap-3 cursor-pointer">
               <input type="checkbox" checked={form.activo} onChange={() => setForm(prev => ({ ...prev, activo: !prev.activo }))} className="sr-only peer" />
-              <div className="w-11 h-6 bg-gray-200 rounded-full peer-checked:bg-pink-600 transition-colors" />
-              <span className="text-sm font-medium text-gray-700">Curso activo</span>
+              <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 rounded-full peer-checked:bg-pink-600 transition-colors" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Curso activo</span>
             </label>
           </div>
 
           {/* COLUMNA DERECHA - IMÁGENES */}
-          <div className="w-full md:w-96 p-10 bg-gray-50/50">
+          <div className="w-full md:w-96 p-10 bg-gray-50/50 dark:bg-gray-900/50">
             <UploadCursoImages value={form.imagenes} />
             <div className="mt-8 rounded-2xl bg-amber-50 border border-amber-100 p-5">
               <p className="text-xs text-amber-700 flex gap-2">
@@ -149,8 +150,8 @@ export default function CursoForm({ curso }: { curso?: Curso }) {
           </div>
         </div>
 
-        <div className="flex justify-end gap-4 px-10 py-6 bg-gray-50 border-t">
-          <Link href="/admin/cursos" className="px-6 py-3 rounded-xl border text-sm font-medium hover:bg-gray-100 transition">
+        <div className="flex justify-end gap-4 px-10 py-6 bg-gray-50 dark:bg-gray-900 border-t dark:border-gray-700">
+          <Link href="/admin/cursos" className="px-6 py-3 rounded-xl border dark:border-gray-600 text-sm font-medium dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
             Cancelar
           </Link>
           <button type="submit" disabled={isPending} className="px-8 py-3 rounded-xl bg-pink-700 text-white font-semibold hover:bg-pink-800 disabled:opacity-60 transition flex items-center gap-2">

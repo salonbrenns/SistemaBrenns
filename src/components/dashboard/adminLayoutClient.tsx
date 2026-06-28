@@ -25,10 +25,10 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
   }, [isMenuOpen]);
 
   return (
-    <div className="flex h-screen flex-col lg:flex-row bg-pink-50">
+    <div className="flex h-screen flex-col lg:flex-row bg-pink-50 dark:bg-gray-900 transition-colors">
       {/* Header móvil */}
-      <header className="flex items-center justify-between p-4 bg-pink-900 text-white lg:hidden">
-        <h1 className="font-bold text-lg">{"Brenn&apos;s Beauty"}</h1>
+      <header className="flex items-center justify-between p-4 bg-pink-900 dark:bg-gray-950 text-white lg:hidden">
+        <h1 className="font-bold text-lg">{"Brenn's Beauty"}</h1>
 
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -40,7 +40,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
         {isMenuOpen && (
           <div
             ref={menuRef}
-            className="absolute top-16 right-4 z-50 w-52 rounded-lg bg-white text-sm shadow-lg"
+            className="absolute top-16 right-4 z-50 w-52 rounded-lg bg-white dark:bg-gray-800 text-sm shadow-lg"
           >
             <SideNav mobile onClose={() => setIsMenuOpen(false)} />
           </div>
@@ -53,7 +53,7 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
       </div>
 
       {/* Contenido */}
-      <main className="flex-grow p-4 lg:overflow-y-auto lg:p-8 bg-white">
+      <main className="flex-grow p-4 lg:overflow-y-auto lg:p-8 bg-white dark:bg-gray-900 transition-colors">
         <div className="mx-auto max-w-7xl">{children}</div>
       </main>
     </div>

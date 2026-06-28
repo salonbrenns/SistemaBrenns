@@ -35,7 +35,7 @@ export default function FiltroServicios({
             placeholder="Buscar cursos..."
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 rounded-2xl border border-pink-100 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-300 text-sm"
+            className="w-full pl-11 pr-4 py-3 rounded-2xl border border-pink-100 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-300 text-sm"
           />
         </div>
         <button
@@ -43,7 +43,7 @@ export default function FiltroServicios({
           className={`flex items-center gap-2 px-5 py-3 rounded-2xl border font-semibold text-sm transition-all shadow-sm ${
             abierto || hayActivos
               ? 'bg-pink-600 text-white border-pink-600'
-              : 'bg-white text-gray-700 border-pink-100 hover:border-pink-300'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-pink-100 dark:border-gray-600 hover:border-pink-300'
           }`}
         >
           <SlidersHorizontal className="w-4 h-4" />
@@ -58,7 +58,7 @@ export default function FiltroServicios({
 
       {/* Panel desplegable */}
       {abierto && (
-        <div className="bg-white rounded-2xl border border-pink-100 shadow-md p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-100 dark:border-gray-700 shadow-md p-6">
           <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">Categoría</p>
           <div className="flex flex-wrap gap-2">
             {categoriasDisponibles.map(c => (

@@ -126,7 +126,7 @@ export default function Footer() {
             <p className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">
               © {year} {config.nombre}
             </p>
-            <span className="hidden md:block text-gray-800">|</span>
+            <span className="hidden md:block text-gray-800 dark:text-white">|</span>
             <p className="text-[11px] text-gray-600 font-medium italic">
               Excelencia en Belleza & Educación Profesional
             </p>
