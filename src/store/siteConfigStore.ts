@@ -91,7 +91,7 @@ export const useSiteConfigStore = create<SiteConfig & {
   horarios: "Lun - Vie: 9:00 - 19:00 | Sáb: 9:00 - 15:00",
 
   redes: {
-    instagram: "@salon_de_belleza_brenns",
+    instagram: "@studio.brenns",
     facebook: "Brenn's en Facebook",
     whatsapp: "961 000 0000",
     tiktok: "@brenns",
