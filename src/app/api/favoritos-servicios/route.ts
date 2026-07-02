@@ -56,8 +56,8 @@ export async function POST(req: NextRequest) {
   const { servicio_id } = await req.json()
   if (!servicio_id) return NextResponse.json({ error: 'servicio_id requerido' }, { status: 400 })
 
-  const existe = await prisma.favoritoServicio.findUnique({
-    where: { usuario_id_servicio_id: { usuario_id: usuarioId, servicio_id: Number(servicio_id) } },
+  const existe = await prisma.favoritoServicio.findFirst({
+    where: { usuario_id: usuarioId, servicio_id: Number(servicio_id) },
   })
 
   if (existe) {

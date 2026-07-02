@@ -120,50 +120,55 @@ function RegisterContenido() {
                       acceptTerms
 
   return (
-    <div className="min-h-screen flex font-sans bg-pink-50 dark:bg-gray-950">
-      {/* Columna Izquierda - Branding */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-pink-600 via-rose-600 to-pink-700 relative overflow-hidden items-center justify-center">
-        <div className="absolute inset-0 bg-[radial-gradient(at_center,#ffffff15_0%,transparent_70%)]" />
-        
-        <div className="relative z-10 max-w-md text-center px-8">
-          <div className="flex justify-center mb-8">
-            <div className="w-20 h-20 bg-white dark:bg-gray-800 rounded-3xl flex items-center justify-center text-pink-600 font-black text-5xl shadow-2xl">
-              B
-            </div>
+    <div className="min-h-screen flex font-sans">
+      {/* ── Panel izquierdo — Rosa ── */}
+      <div className="hidden lg:flex flex-1 relative overflow-hidden flex-col bg-gradient-to-br from-rose-500 via-pink-600 to-rose-700">
+        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-pink-300/15 blur-3xl pointer-events-none" />
+
+        {/* Logo */}
+        <div className="relative z-10 p-8">
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center text-rose-600 font-black text-base shadow-lg">B</div>
+            <span className="text-white font-bold tracking-wide">Brenn&apos;s</span>
           </div>
-          <h1 className="text-5xl font-extrabold text-white leading-tight mb-6">
-            Bienvenida a<br />Brenn&apos;s
+        </div>
+
+        {/* Texto central */}
+        <div className="relative z-10 flex-1 flex flex-col justify-center px-10">
+          <p className="text-rose-100/70 text-xs font-bold uppercase tracking-widest mb-4">Academia · Salón · Distribuidora</p>
+          <h1 className="text-5xl font-black text-white leading-tight mb-5">
+            Únete a<br />
+            <span className="text-rose-100">Brenn&apos;s</span>
           </h1>
-          <p className="text-pink-100 text-xl">
-            Crea tu cuenta y comienza tu formación profesional en manicure y belleza
+          <p className="text-white/65 text-base leading-relaxed max-w-[340px]">
+            Crea tu cuenta y comienza tu camino en el mundo de la belleza profesional.
           </p>
-          <div className="mt-12 flex justify-center gap-2 text-pink-200">
-            <Sparkles className="w-5 h-5" />
-            <span className="text-sm">+500 alumnas capacitadas</span>
+          <div className="mt-5 flex items-center gap-2 text-white/60 text-sm">
+            <Sparkles className="w-4 h-4 text-rose-100" />
+            <span>+500 alumnas capacitadas</span>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="relative z-10 px-8 pb-6">
+          <p className="text-white/25 text-xs">© 2026 Brenn&apos;s · Huejutla de Reyes, Hidalgo</p>
         </div>
       </div>
 
-      {/* Columna Derecha - Formulario */}
-      <div className="flex-1 flex items-center justify-center p-6 md:p-12 lg:p-16 bg-white dark:bg-gray-900">
+      {/* ── Panel derecho — Formulario ── */}
+      <div className="flex-1 flex items-center justify-center p-6 md:p-8 bg-white dark:bg-gray-900">
         <div className="w-full max-w-2xl">
-          <div className="mb-10">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-4xl font-bold text-gray-900 dark:text-white">Crear Cuenta</h2>
-                <p className="text-gray-500 dark:text-gray-400 mt-2">Regístrate para comenzar tu camino en el mundo de la belleza Brenn&apos;s</p>
-              </div>
-              <div className="hidden md:block">
-            
-              </div>
-            </div>
+          <div className="mb-5">
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white">Crear Cuenta</h2>
+            <p className="text-gray-500 dark:text-gray-400 mt-1.5">Regístrate para comenzar tu camino en el mundo de la belleza Brenn&apos;s</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-10">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Sección 1: Información Personal */}
             <div>
           
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre</label>
                   <input
@@ -171,7 +176,7 @@ function RegisterContenido() {
                     value={name}
                     onChange={handleNameChange(setName)}
                     placeholder="Brenda"
-                    className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none text-lg"
+                    className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none"
                   />
                 </div>
                 <div>
@@ -181,7 +186,7 @@ function RegisterContenido() {
                     value={appaterno}
                     onChange={handleNameChange(setAppaterno)}
                     placeholder="García"
-                    className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none text-lg"
+                    className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none"
                   />
                 </div>
                 <div>
@@ -191,18 +196,18 @@ function RegisterContenido() {
                     value={apmaterno}
                     onChange={handleNameChange(setApmaterno)}
                     placeholder="Hernández"
-                    className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none text-lg"
+                    className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none"
                   />
                 </div>
-                
-                {/* --- AQUI SE INTERCAMBIÓ EL CORREO POR EL TELÉFONO --- */}
+
+                {/* Teléfono */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Teléfono</label>
                   <div className="flex gap-2">
                     <select
                       value={countryCode}
                       onChange={(e) => setCountryCode(e.target.value)}
-                      className="w-24 px-2 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 bg-white text-base outline-none cursor-pointer"
+                      className="w-24 px-2 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 bg-white text-base outline-none cursor-pointer"
                     >
                       <option value="+52">🇲🇽 +52</option>
                       <option value="+1">🇺🇸 +1</option>
@@ -219,22 +224,21 @@ function RegisterContenido() {
                 </div>
               </div>
 
-              {/* --- AQUI SE INTERCAMBIÓ EL TELÉFONO POR EL CORREO --- */}
-              <div className="mt-6">
+              {/* Correo Electrónico */}
+              <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Correo Electrónico</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className="w-full px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none text-lg"
+                  className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none"
                 />
               </div>
             </div>
 
             {/* Sección 2: Seguridad */}
             <div>
-            
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Contraseña</label>
                 <div className="relative">
@@ -276,7 +280,6 @@ function RegisterContenido() {
               </div>
             </div>
 
-
             {error && (
               <div className="p-4 bg-red-50 border border-red-200 text-red-600 rounded-2xl text-center">
                 {error}
@@ -286,7 +289,7 @@ function RegisterContenido() {
             <button
               type="submit"
               disabled={loading || !isFormValid}
-              className="w-full bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold py-4 text-lg rounded-3xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+              className="w-full bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold py-3 text-base rounded-3xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
             >
               {loading ? (
                 <>
@@ -296,7 +299,7 @@ function RegisterContenido() {
               ) : (
                 "Crear Cuenta"
               )}
-            </button>            
+            </button>
             <div className="flex items-start gap-2 pt-2">
               <input
                 type="checkbox"
@@ -315,7 +318,7 @@ function RegisterContenido() {
             </div>
           </form>
 
-          <div className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
+          <div className="mt-5 text-center text-sm text-gray-600 dark:text-gray-400">
             ¿Ya tienes una cuenta?{" "}
             <Link href="/login" className="text-pink-600 font-semibold hover:underline">
               Inicia sesión aquí

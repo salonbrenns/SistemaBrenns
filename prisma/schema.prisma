@@ -210,6 +210,19 @@ model FavoritoServicio {
   @@schema("ventas")
 }
 
+model FavoritoCurso {
+  id        Int      @id @default(autoincrement())
+  usuario_id Int
+  curso_id  Int
+  creado_en DateTime? @default(now()) @db.Timestamp(6)
+  usuario   Usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([usuario_id, curso_id])
+  @@index([usuario_id])
+  @@map("tblfavoritos_cursos")
+  @@schema("ventas")
+}
+
 model CategoriaServicio {
   id        Int        @id @default(autoincrement())
   nombre    String     @unique @db.VarChar(100)
@@ -312,6 +325,7 @@ model Usuario {
   carrito           CarritoItem[]
   favoritos         Favorito[]
   favoritosServicios FavoritoServicio[]
+  favoritosCursos   FavoritoCurso[]
   avisos            AvisoAdmin[]
   permisos          PermisoUsuario[]
   tokenRecuperacion TokenRecuperacion?

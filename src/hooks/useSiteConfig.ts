@@ -43,7 +43,7 @@ export const DEFAULTS: SiteConfig = {
   horario_semana:    "Lunes a Viernes: 9:00 - 19:00",
   horario_sabado:    "Sábado: 9:00 - 15:00",
   red_facebook:      "https://www.facebook.com/1277842365580139",
-  red_instagram:     "https://www.instagram.com/studio.brenns/",
+  red_instagram:     "https://www.instagram.com/studio.brenns/?hl=es-la",
   red_whatsapp:      "https://api.whatsapp.com/message/U54UFGZHOXSOJ1?autoload=1&app_absent=0",
   nosotros_titulo:      "Somos Brenn's",
   nosotros_descripcion: "El ecosistema de belleza integral de la Huasteca.",

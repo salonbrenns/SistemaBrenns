@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Package, Loader2, ChevronDown, ChevronUp, ShoppingBag, CheckCircle2, Clock, Truck } from 'lucide-react'
+import { Package, ChevronDown, ChevronUp, ShoppingBag, CheckCircle2, Clock, Truck } from 'lucide-react'
+import DotsLoader from '@/components/ui/DotsLoader'
 import AuthGuard from '@/components/ui/AuthGuard'
 
 interface Detalle {
@@ -103,7 +104,7 @@ function MisPedidosContenido() {
   if (cargando) {
     return (
       <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-rose-400 animate-spin" />
+        <DotsLoader />
       </div>
     )
   }

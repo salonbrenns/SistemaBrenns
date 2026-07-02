@@ -98,7 +98,7 @@ export default function EmpleadasPage() {
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Gestiona el equipo del salón</p>
         </div>
         <button onClick={abrirCrear}
-          className="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white font-semibold px-4 py-2.5 rounded-xl transition text-sm">
+          className="flex items-center gap-2 bg-rose-700 hover:bg-rose-800 text-white font-semibold px-4 py-2.5 rounded-xl transition text-sm">
           <Plus className="w-4 h-4" /> Nueva empleada
         </button>
       </div>
@@ -118,9 +118,9 @@ export default function EmpleadasPage() {
           {busqueda ? "No se encontraron empleadas con ese criterio" : "Aún no hay empleadas registradas"}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+        <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
           <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
-            <thead className="bg-pink-900 dark:bg-pink-950">
+            <thead className="bg-rose-900 dark:bg-rose-950">
               <tr>
                 {["Empleada", "Contacto", "Citas totales", "Estado", "Acciones"].map(h => (
                   <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">{h}</th>
@@ -129,7 +129,7 @@ export default function EmpleadasPage() {
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
               {filtradas.map(emp => (
-                <tr key={emp.id} className="hover:bg-pink-50 dark:hover:bg-gray-700/50 transition-colors">
+                <tr key={emp.id} className="hover:bg-rose-50 dark:hover:bg-gray-700 transition-colors">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center text-pink-600 dark:text-pink-300 font-bold text-sm flex-shrink-0">

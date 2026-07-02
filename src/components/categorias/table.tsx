@@ -45,7 +45,7 @@ export default function CategoriaTable({ categorias, currentPage, totalPages }: 
       <div className="w-full overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
 
-          <thead className="bg-pink-900">
+          <thead className="bg-rose-900 dark:bg-rose-950">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">ID</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Nombre</th>
@@ -67,7 +67,7 @@ export default function CategoriaTable({ categorias, currentPage, totalPages }: 
                 <tr
                   key={categoria.id}
                   className={`transition-colors ${
-                    !categoria.activo ? 'bg-gray-50 dark:bg-gray-900 opacity-60' : 'hover:bg-pink-50 dark:hover:bg-gray-700'
+                    !categoria.activo ? 'bg-gray-50 dark:bg-gray-900/50 opacity-60' : 'hover:bg-rose-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{categoria.id}</td>
@@ -102,7 +102,7 @@ export default function CategoriaTable({ categorias, currentPage, totalPages }: 
       <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
         <a
           href={createPageURL(currentPage - 1)}
-          className={`px-3 py-1 rounded border ${currentPage <= 1 ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100'}`}
+          className={`px-3 py-1 rounded border border-gray-200 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 ${currentPage <= 1 ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
         >
           Anterior
         </a>
@@ -113,7 +113,7 @@ export default function CategoriaTable({ categorias, currentPage, totalPages }: 
             <a
               key={index}
               href={createPageURL(page)}
-              className={`px-3 py-1 rounded border ${currentPage === page ? 'bg-pink-900 text-white' : 'hover:bg-gray-100'}`}
+              className={`px-3 py-1 rounded border text-sm ${currentPage === page ? 'bg-rose-900 text-white border-rose-900' : 'border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
             >
               {page}
             </a>
@@ -122,7 +122,7 @@ export default function CategoriaTable({ categorias, currentPage, totalPages }: 
 
         <a
           href={createPageURL(currentPage + 1)}
-          className={`px-3 py-1 rounded border ${currentPage >= totalPages ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100'}`}
+          className={`px-3 py-1 rounded border border-gray-200 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 ${currentPage >= totalPages ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
         >
           Siguiente
         </a>

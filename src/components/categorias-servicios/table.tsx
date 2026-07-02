@@ -103,7 +103,7 @@ export default function CategoriaServicioTable({ categorias, currentPage, totalP
       <div className="flex items-center justify-between">
         <button
           onClick={abrirCrear}
-          className="inline-flex items-center gap-2 rounded-lg bg-pink-700 px-4 py-2 text-sm font-medium text-white hover:bg-pink-800 transition"
+          className="inline-flex items-center gap-2 rounded-lg bg-rose-700 px-4 py-2 text-sm font-medium text-white hover:bg-rose-800 transition"
         >
           <PlusIcon className="h-5 w-5" />
           Nueva Categoría
@@ -111,9 +111,9 @@ export default function CategoriaServicioTable({ categorias, currentPage, totalP
       </div>
 
       {/* Tabla */}
-      <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+      <div className="w-full overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-pink-900">
+          <thead className="bg-rose-900 dark:bg-rose-950">
             <tr>
               {columns.map((col) => (
                 <th
@@ -149,12 +149,12 @@ export default function CategoriaServicioTable({ categorias, currentPage, totalP
                 <tr
                   key={c.id}
                   className={`transition-colors ${
-                    !c.activo ? 'bg-gray-50 dark:bg-gray-900 opacity-60' : 'hover:bg-pink-50 dark:hover:bg-gray-700'
+                    !c.activo ? 'bg-gray-50 dark:bg-gray-900/50 opacity-60' : 'hover:bg-rose-50 dark:hover:bg-gray-700'
                   }`}
                 >
-                  <td className="px-6 py-4 text-sm text-gray-500">{c.id}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{c.id}</td>
 
-                  <td className={`px-6 py-4 text-sm font-medium ${c.activo ? 'text-gray-900' : 'text-gray-400'}`}>
+                  <td className={`px-6 py-4 text-sm font-medium ${c.activo ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'}`}>
                     {c.nombre}
                   </td>
 
@@ -210,7 +210,7 @@ export default function CategoriaServicioTable({ categorias, currentPage, totalP
       <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
         <a
           href={createPageURL(currentPage - 1)}
-          className={`px-3 py-1 rounded border text-sm ${currentPage <= 1 ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100'}`}
+          className={`px-3 py-1 rounded border text-sm ${currentPage <= 1 ? 'pointer-events-none opacity-50' : 'border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
         >
           Anterior
         </a>
@@ -221,7 +221,7 @@ export default function CategoriaServicioTable({ categorias, currentPage, totalP
             <a
               key={index}
               href={createPageURL(page)}
-              className={`px-3 py-1 rounded border text-sm ${currentPage === page ? 'bg-pink-900 text-white' : 'hover:bg-gray-100'}`}
+              className={`px-3 py-1 rounded border text-sm ${currentPage === page ? 'bg-rose-900 text-white border-rose-900' : 'border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
             >
               {page}
             </a>
@@ -230,7 +230,7 @@ export default function CategoriaServicioTable({ categorias, currentPage, totalP
 
         <a
           href={createPageURL(currentPage + 1)}
-          className={`px-3 py-1 rounded border text-sm ${currentPage >= totalPages ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100'}`}
+          className={`px-3 py-1 rounded border text-sm ${currentPage >= totalPages ? 'pointer-events-none opacity-50' : 'border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
         >
           Siguiente
         </a>

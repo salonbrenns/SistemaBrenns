@@ -2,10 +2,14 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { Loader2, Sparkles, SearchX, Heart } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { SearchX, Heart } from "lucide-react"
+import DotsLoader from "@/components/ui/DotsLoader"
 import { useEffect, useState, useMemo } from "react"
+import { useSession } from "next-auth/react"
 import FiltroServicios from "@/components/ui/FiltroCursos"
 import Paginacion from "@/components/ui/paginacion"
+import { useFavoritosCursos } from "@/hooks/useFavoritosCursos"
 
 type Curso = {
   id: number
@@ -23,6 +27,9 @@ export default function CursosPage() {
   const [busqueda, setBusqueda] = useState("")
   const [nivelesSeleccionados, setNivelesSeleccionados] = useState<string[]>([])
   const [pagina, setPagina] = useState(1)
+  const { status } = useSession()
+  const router = useRouter()
+  const { toggle, esFavorito } = useFavoritosCursos()
 
   useEffect(() => {
     fetch("/api/cursos")
@@ -110,13 +117,7 @@ export default function CursosPage() {
         )}
 
         {cargando && (
-          <div className="flex flex-col items-center justify-center py-40">
-            <div className="relative">
-              <Loader2 className="w-16 h-16 text-rose-400 animate-spin" />
-              <Sparkles className="w-6 h-6 text-yellow-400 absolute -top-2 -right-2 animate-pulse" />
-            </div>
-            <p className="text-rose-600 font-medium animate-pulse mt-4">Cargando cursos...</p>
-          </div>
+          <DotsLoader texto="Cargando cursos..." />
         )}
 
         {!cargando && cursosPagina.length > 0 && (
@@ -150,12 +151,29 @@ export default function CursosPage() {
                         </div>
                       )}
                       
-                      <button
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation() }}
-                        className="absolute top-4 right-4 bg-white dark:bg-gray-800 p-2 rounded-full shadow hover:bg-pink-600 hover:text-white dark:text-gray-300 transition-colors"
-                      >
-                        <Heart className="w-5 h-5" />
-                      </button>
+                      <div className={`absolute top-3 right-3 z-10 transition-opacity ${esFavorito(curso.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            if (status !== 'authenticated') {
+                              router.push(`/login?next=/cursos`)
+                              return
+                            }
+                            toggle(curso.id)
+                          }}
+                          className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-2 rounded-full shadow-md hover:bg-rose-600 hover:text-white dark:text-gray-300 transition-all duration-200"
+                        >
+                          <Heart
+                            size={22}
+                            className={`transition-colors duration-200 ${
+                              esFavorito(curso.id)
+                                ? 'fill-red-500 stroke-red-500'
+                                : 'fill-transparent stroke-gray-400 hover:stroke-red-400'
+                            }`}
+                          />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="p-6">
@@ -183,33 +201,24 @@ export default function CursosPage() {
         )}
 
         {!cargando && cursosFiltrados.length === 0 && (
-          <div className="text-center py-32 bg-white dark:bg-gray-800 rounded-[3rem] shadow-inner border-2 border-dashed border-rose-100">
-            <div className="mb-6 flex justify-center">
-              <SearchX className="w-16 h-16 text-rose-400" />
-            </div>
-            <p className="text-2xl font-bold text-gray-800 dark:text-white mb-2">No encontramos cursos</p>
-            <p className="text-gray-500 dark:text-gray-400 mb-8">Intenta ajustando los filtros o la búsqueda.</p>
-            <button onClick={limpiarFiltros}
-              className="px-8 py-3 bg-rose-700 text-white font-bold rounded-full hover:bg-rose-800 transition shadow-xl">
-              Ver todos los cursos
+          <div className="text-center py-32 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
+            <SearchX className="w-16 h-16 text-gray-200 dark:text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-400 text-lg font-medium mb-2">Sin resultados</p>
+            <p className="text-gray-300 dark:text-gray-500 text-sm mb-6">Prueba con otros filtros o términos de búsqueda</p>
+            <button onClick={limpiarFiltros} className="text-rose-500 hover:text-rose-700 text-sm font-medium underline">
+              Limpiar filtros
             </button>
           </div>
         )}
 
-        <Paginacion
-          paginaActual={pagina}
-          totalPaginas={totalPaginas}
-          onChange={(p) => { 
-            setPagina(p); 
-            window.scrollTo({ top: 0, behavior: "smooth" }) 
-          }}
-        />
+        {totalPaginas > 1 && (
+          <Paginacion
+            paginaActual={pagina}
+            totalPaginas={totalPaginas}
+            onChange={setPagina}
+          />
+        )}
 
-        <footer className="text-center mt-20 pt-10 border-t border-rose-100">
-          <p className="text-gray-400 font-medium italic">
-            Actualizamos nuestros cursos regularmente.
-          </p>
-        </footer>
       </div>
     </main>
   )

@@ -9,7 +9,7 @@ import AuthGuard from "@/components/ui/AuthGuard"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { validarInscripcion } from "@/lib/validation"
-import { Loader2 } from "lucide-react"
+import DotsLoader from "@/components/ui/DotsLoader"
 
 function PagoContenido() {
   const searchParams = useSearchParams()
@@ -160,7 +160,7 @@ export default function PagoPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-10 h-10 text-pink-400 animate-spin" />
+        <DotsLoader />
       </div>
     }>
       <PagoContenido />

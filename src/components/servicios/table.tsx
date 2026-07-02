@@ -97,7 +97,7 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
       <div className="flex items-center justify-between">
         <Link
           href="/admin/servicios/create"
-          className="inline-flex items-center gap-2 rounded-lg bg-pink-700 px-4 py-2 text-sm font-medium text-white hover:bg-pink-800 transition"
+          className="inline-flex items-center gap-2 rounded-lg bg-rose-700 px-4 py-2 text-sm font-medium text-white hover:bg-rose-800 transition"
         >
           <PlusIcon className="h-5 w-5" />
           Nuevo Servicio
@@ -105,9 +105,9 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
       </div>
 
       {/* Tabla */}
-      <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+      <div className="w-full overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-pink-900">
+          <thead className="bg-rose-900 dark:bg-rose-950">
             <tr>
               {/* Columna foto — igual que productos */}
               <th className="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
@@ -140,7 +140,7 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
             </tr>
           </thead>
 
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
             {servicios.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-6 py-6 text-center text-sm text-gray-500">
@@ -152,7 +152,7 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
                 <tr
                   key={s.id}
                   className={`transition-colors ${
-                    !s.activo ? 'bg-gray-50 dark:bg-gray-900 opacity-60' : 'hover:bg-pink-50 dark:hover:bg-gray-700'
+                    !s.activo ? 'bg-gray-50 dark:bg-gray-900/50 opacity-60' : 'hover:bg-rose-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   {/* Foto */}
@@ -250,7 +250,7 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
         <a
           href={createPageURL(currentPage - 1)}
           className={`px-3 py-1 rounded border text-sm ${
-            currentPage <= 1 ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100'
+            currentPage <= 1 ? 'pointer-events-none opacity-50' : 'border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
           }`}
         >
           Anterior
@@ -264,7 +264,7 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
               key={index}
               href={createPageURL(page)}
               className={`px-3 py-1 rounded border text-sm ${
-                currentPage === page ? 'bg-pink-900 text-white' : 'hover:bg-gray-100'
+                currentPage === page ? 'bg-rose-900 text-white border-rose-900' : 'border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
               {page}
@@ -275,7 +275,7 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
         <a
           href={createPageURL(currentPage + 1)}
           className={`px-3 py-1 rounded border text-sm ${
-            currentPage >= totalPages ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100'
+            currentPage >= totalPages ? 'pointer-events-none opacity-50' : 'border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
           }`}
         >
           Siguiente

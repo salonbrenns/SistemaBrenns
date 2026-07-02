@@ -150,7 +150,7 @@ export default function CitasTable({
       {/* ── Tabla ── */}
       <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-pink-900 dark:bg-pink-950">
+          <thead className="bg-rose-900 dark:bg-rose-950">
             <tr>
               {['Cliente', 'Servicio', 'Fecha / Hora', 'Estado', 'Notas', 'Acciones'].map(h => (
                 <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
@@ -172,7 +172,7 @@ export default function CitasTable({
                 day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'
               })
               return (
-                <tr key={cita.id} className="hover:bg-pink-50 dark:hover:bg-gray-700 transition-colors">
+                <tr key={cita.id} className="hover:bg-rose-50 dark:hover:bg-gray-700 transition-colors">
 
                   {/* Cliente */}
                   <td className="px-4 py-4">

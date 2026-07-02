@@ -1,347 +1,235 @@
-// src/app/(frontend)/mis-cursos/page.tsx
 "use client"
 
 import { useEffect, useState } from "react"
-import { useSession } from "next-auth/react"
 import Link from "next/link"
 import AuthGuard from "@/components/ui/AuthGuard"
 import {
-  Calendar, Clock, ShoppingBag, Package,
-  CheckCircle, Truck, XCircle, Loader2, Scissors,
-  AlertTriangle, X, Ban,
+  GraduationCap, Clock, Calendar, BookOpen,
+  CheckCircle2, AlertCircle, Loader2, Plus,
+  CreditCard, Banknote, ChevronRight,
 } from "lucide-react"
 
-// ── Tipos ─────────────────────────────────────────────────────
-type DetallePedido = {
-  id: number
-  nombre_producto: string
-  precio_unitario: number
-  cantidad: number
-  subtotal: number
-}
-type Pedido = {
-  id: number
-  estado: string
-  subtotal: number
-  costo_envio: number
-  total: number
-  fecha_pedido: string
-  detalles: DetallePedido[]
-}
-type Cita = {
-  id: number
-  fecha: string
-  hora: string
-  estado: string
-  notas: string | null
-  servicio: { nombre: string; precio: number; imagen: string | null }
+type PagoCurso = {
+  id:          number
+  numero_pago: number | null
+  monto:       number
+  metodo_pago: string | null
+  estado:      string
+  fecha_pago:  string
 }
 
-// ── Estado badge configs ───────────────────────────────────────
-const pedidoEstado: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
-  PENDIENTE:  { label: "Pendiente",  color: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400", icon: Clock },
-  PAGADO:     { label: "Pagado",     color: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",         icon: CheckCircle },
-  ENVIADO:    { label: "Enviado",    color: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400", icon: Truck },
-  ENTREGADO:  { label: "Entregado",  color: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",     icon: CheckCircle },
-  CANCELADO:  { label: "Cancelado",  color: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",             icon: XCircle },
-}
-const citaEstado: Record<string, { label: string; color: string }> = {
-  PENDIENTE:  { label: "Pendiente",  color: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400" },
-  CONFIRMADA: { label: "Confirmada", color: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"         },
-  COMPLETADA: { label: "Completada", color: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"     },
-  CANCELADA:  { label: "Cancelada",  color: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"             },
+type CursoInscrito = {
+  inscripcionId:     number
+  estado:            string
+  fecha_inscripcion: string
+  totalPagado:       number
+  pagos:             PagoCurso[]
+  curso: {
+    id:             number
+    titulo:         string
+    nivel:          string | null
+    duracion_horas: number | null
+    precio_total:   number
+    fecha_inicio:   string | null
+    fecha_fin:      string | null
+    imagenes:       string[]
+  } | null
 }
 
-// Calcula las horas que faltan para la cita
-function horasParaCita(fecha: string, hora: string): number {
-  const d = new Date(fecha)
-  const [h, m] = hora.split(":").map(Number)
-  d.setHours(h, m, 0, 0)
-  return (d.getTime() - Date.now()) / (1000 * 60 * 60)
+const estadoBadge: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
+  ACTIVO:   { label: "Activo",   color: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400", icon: CheckCircle2 },
+  CANCELADO:{ label: "Cancelado",color: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",                 icon: AlertCircle  },
+}
+
+const pagoBadge: Record<string, string> = {
+  PAGADO:   "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
+  PENDIENTE:"bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
+}
+
+function formatDate(d: string | null) {
+  if (!d) return "Por definir"
+  return new Date(d).toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric" })
+}
+
+function MisCursosContent() {
+  const [cursos, setCursos]   = useState<CursoInscrito[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError]     = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch("/api/mis-cursos")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) throw new Error(d.error)
+        setCursos(d.cursos)
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return (
+    <div className="flex items-center justify-center py-32">
+      <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
+    </div>
+  )
+
+  if (error) return (
+    <div className="flex items-center gap-3 p-6 bg-red-50 dark:bg-red-900/20 rounded-2xl text-red-600 dark:text-red-400">
+      <AlertCircle className="w-6 h-6 shrink-0" />
+      <p>{error}</p>
+    </div>
+  )
+
+  if (cursos.length === 0) return (
+    <div className="flex flex-col items-center justify-center py-24 text-center">
+      <div className="w-24 h-24 bg-rose-50 dark:bg-rose-900/20 rounded-full flex items-center justify-center mb-6">
+        <GraduationCap className="w-12 h-12 text-rose-300" />
+      </div>
+      <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">Sin cursos aún</h3>
+      <p className="text-gray-500 dark:text-gray-400 max-w-sm mb-8">
+        Todavía no te has inscrito a ningún curso. ¡Explora el catálogo y comienza tu camino!
+      </p>
+      <Link
+        href="/cursos"
+        className="inline-flex items-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-3 rounded-full font-bold hover:bg-rose-600 dark:hover:bg-rose-100 transition-all"
+      >
+        <Plus className="w-4 h-4" />
+        Ver catálogo de cursos
+      </Link>
+    </div>
+  )
+
+  return (
+    <div className="space-y-6">
+      {cursos.map((item) => {
+        if (!item.curso) return null
+        const c       = item.curso
+        const badge   = estadoBadge[item.estado] ?? estadoBadge.ACTIVO
+        const BadgeIcon = badge.icon
+        const pendiente = item.pagos.some((p) => p.estado === "PENDIENTE")
+        const deuda     = c.precio_total - item.totalPagado
+
+        return (
+          <div
+            key={item.inscripcionId}
+            className="bg-white dark:bg-gray-800 rounded-[2rem] border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden"
+          >
+            <div className="flex flex-col md:flex-row gap-0">
+              {/* Imagen */}
+              <div className="w-full md:w-48 h-36 md:h-auto shrink-0 bg-rose-50 dark:bg-gray-700 flex items-center justify-center text-5xl">
+                {Array.isArray(c.imagenes) && c.imagenes.length > 0 ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={c.imagenes[0]} alt={c.titulo} className="w-full h-full object-cover" />
+                ) : (
+                  "🎓"
+                )}
+              </div>
+
+              {/* Contenido */}
+              <div className="flex-1 p-6">
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${badge.color}`}>
+                        <BadgeIcon className="w-3 h-3" />
+                        {badge.label}
+                      </span>
+                      {c.nivel && (
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 capitalize">
+                          {c.nivel}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-lg font-black text-gray-900 dark:text-white">{c.titulo}</h3>
+                  </div>
+                  <Link
+                    href={`/curso/${c.id}`}
+                    className="shrink-0 p-2 rounded-xl bg-gray-50 dark:bg-gray-700 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-gray-400 hover:text-rose-500 transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </Link>
+                </div>
+
+                {/* Info del curso */}
+                <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  {c.duracion_horas && (
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      {c.duracion_horas} horas
+                    </span>
+                  )}
+                  {c.fecha_inicio && (
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5" />
+                      {formatDate(c.fecha_inicio)}
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1">
+                    <BookOpen className="w-3.5 h-3.5" />
+                    Inscrito el {formatDate(item.fecha_inscripcion)}
+                  </span>
+                </div>
+
+                {/* Pagos */}
+                <div className="flex flex-wrap gap-3 items-center">
+                  <span className="text-xs text-gray-400 font-bold uppercase tracking-wide">Pagos:</span>
+                  {item.pagos.map((pago) => {
+                    const MetodoIcon = pago.metodo_pago === "TRANSFERENCIA" ? Banknote : CreditCard
+                    return (
+                      <div key={pago.id} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold ${pagoBadge[pago.estado] ?? pagoBadge.PENDIENTE}`}>
+                        <MetodoIcon className="w-3.5 h-3.5" />
+                        ${pago.monto.toLocaleString("es-MX")} · {pago.estado}
+                      </div>
+                    )
+                  })}
+
+                  {deuda > 0 && item.estado === "ACTIVO" && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      Resto: ${deuda.toLocaleString("es-MX")} MXN
+                    </span>
+                  )}
+
+                  {pendiente && (
+                    <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                      · Transferencia pendiente de verificar
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })}
+
+      <div className="text-center pt-4">
+        <Link
+          href="/cursos"
+          className="inline-flex items-center gap-2 text-rose-500 hover:text-rose-700 font-bold text-sm"
+        >
+          <Plus className="w-4 h-4" />
+          Inscribirme a otro curso
+        </Link>
+      </div>
+    </div>
+  )
 }
 
 export default function MisCursosPage() {
-  const { data: session }                   = useSession()
-  const [pestana, setPestana]               = useState("compras")
-  const [pedidos, setPedidos]               = useState<Pedido[]>([])
-  const [citas, setCitas]                   = useState<Cita[]>([])
-  const [loadingPedidos, setLoadingPedidos] = useState(true)
-  const [loadingCitas, setLoadingCitas]     = useState(true)
-  // Cancelación
-  const [citaACancelar, setCitaACancelar]   = useState<Cita | null>(null)
-  const [cancelando, setCancelando]         = useState(false)
-  const [cancelExito, setCancelExito]       = useState<number | null>(null) // id de cita cancelada
-
-  useEffect(() => {
-    fetch("/api/pedidos")
-      .then(r => r.json())
-      .then(d => { setPedidos(d.pedidos || []); setLoadingPedidos(false) })
-      .catch(() => setLoadingPedidos(false))
-
-    fetch("/api/citas")
-      .then(r => r.json())
-      .then(d => { setCitas(d.citas || []); setLoadingCitas(false) })
-      .catch(() => setLoadingCitas(false))
-  }, [])
-
-  const confirmarCancelacion = async () => {
-    if (!citaACancelar) return
-    setCancelando(true)
-    try {
-      const res  = await fetch(`/api/citas/${citaACancelar.id}/cancelar`, { method: "POST" })
-      const data = await res.json()
-      if (res.ok) {
-        setCitas(prev => prev.map(c => c.id === citaACancelar.id ? { ...c, estado: "CANCELADA" } : c))
-        setCancelExito(citaACancelar.id)
-        setTimeout(() => setCancelExito(null), 6000)
-      } else {
-        alert(data.error)
-      }
-    } finally {
-      setCancelando(false)
-      setCitaACancelar(null)
-    }
-  }
-
-  const tabs = [
-    { key: "compras", label: "Mis Compras", icon: ShoppingBag, count: pedidos.length },
-    { key: "citas",   label: "Mis Citas",   icon: Scissors,    count: citas.length   },
-    { key: "cursos",  label: "Mis Cursos",  icon: Clock,       count: 0              },
-  ]
-
   return (
     <AuthGuard>
-      <main className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 py-8 sm:py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
-
-          <header className="text-center mb-10">
-            <h1 className="text-4xl sm:text-5xl font-bold text-pink-600">Mi Historial</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-3 text-lg">Todo lo que has hecho en Brenn&apos;s está aquí ♡</p>
-          </header>
-
-          {/* Pestañas */}
-          <div className="flex flex-wrap justify-center gap-3 mb-10">
-            {tabs.map(({ key, label, icon: Icon, count }) => (
-              <button key={key} onClick={() => setPestana(key)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold text-base transition ${
-                  pestana === key ? "bg-pink-600 text-white shadow-lg" : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-2 border-pink-200 dark:border-gray-600 hover:bg-pink-50 dark:hover:bg-gray-700"
-                }`}>
-                <Icon className="w-5 h-5" />
-                {label}
-                {count > 0 && (
-                  <span className={`text-xs rounded-full px-2 py-0.5 font-bold ${
-                    pestana === key ? "bg-white/20 text-white" : "bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-300"
-                  }`}>{count}</span>
-                )}
-              </button>
-            ))}
+      <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 py-10 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+              <GraduationCap className="w-8 h-8 text-rose-500" />
+              Mis Cursos
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">Cursos en los que estás inscrita</p>
           </div>
-
-          {/* ── COMPRAS ──────────────────────────────────── */}
-          {pestana === "compras" && (
-            <div className="space-y-4">
-              {loadingPedidos ? (
-                <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 text-pink-400 animate-spin" /></div>
-              ) : pedidos.length === 0 ? (
-                <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-3xl shadow border border-pink-100">
-                  <ShoppingBag className="w-16 h-16 mx-auto text-pink-200 mb-4" />
-                  <p className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-6">Aún no tienes compras</p>
-                  <Link href="/catalogo" className="bg-pink-600 hover:bg-pink-700 text-white font-bold px-8 py-3 rounded-full transition inline-block">
-                    Ir al catálogo
-                  </Link>
-                </div>
-              ) : pedidos.map(pedido => {
-                const cfg  = pedidoEstado[pedido.estado] || pedidoEstado.PENDIENTE
-                const Icon = cfg.icon
-                const fecha = new Date(pedido.fecha_pedido).toLocaleDateString("es-MX", { day: "2-digit", month: "long", year: "numeric" })
-                return (
-                  <div key={pedido.id} className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-pink-100 dark:border-gray-700 overflow-hidden">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-4 bg-pink-50 dark:bg-gray-900/40 border-b border-pink-100 dark:border-gray-700">
-                      <div className="flex items-center gap-3">
-                        <Package className="w-5 h-5 text-pink-500" />
-                        <div>
-                          <p className="font-bold text-gray-800 dark:text-white">Pedido #{pedido.id}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">{fecha}</p>
-                        </div>
-                      </div>
-                      <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold ${cfg.color}`}>
-                        <Icon className="w-4 h-4" />{cfg.label}
-                      </span>
-                    </div>
-                    <div className="px-6 py-4 space-y-3">
-                      {pedido.detalles.map(d => (
-                        <div key={d.id} className="flex justify-between items-center text-sm">
-                          <div>
-                            <p className="font-medium text-gray-800 dark:text-white">{d.nombre_producto}</p>
-                            <p className="text-gray-500 dark:text-gray-400">Cantidad: {d.cantidad} × ${Number(d.precio_unitario).toFixed(2)}</p>
-                          </div>
-                          <p className="font-bold text-pink-600">${Number(d.subtotal).toFixed(2)}</p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 space-y-1 text-sm">
-                      <div className="flex justify-between text-gray-600 dark:text-gray-400"><span>Subtotal</span><span>${Number(pedido.subtotal).toFixed(2)}</span></div>
-                      <div className="flex justify-between text-gray-600 dark:text-gray-400"><span>Envío</span><span>{Number(pedido.costo_envio) === 0 ? "Gratis" : `$${Number(pedido.costo_envio).toFixed(2)}`}</span></div>
-                      <div className="flex justify-between font-bold text-base text-gray-800 dark:text-white pt-2 border-t border-gray-100 dark:border-gray-700">
-                        <span>Total</span>
-                        <span className="text-pink-600">${Number(pedido.total).toFixed(2)} MXN</span>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-
-          {/* ── CITAS ─────────────────────────────────────── */}
-          {pestana === "citas" && (
-            <div className="space-y-4">
-              {loadingCitas ? (
-                <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 text-pink-400 animate-spin" /></div>
-              ) : citas.length === 0 ? (
-                <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-3xl shadow border border-pink-100">
-                  <Scissors className="w-16 h-16 mx-auto text-pink-200 mb-4" />
-                  <p className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">Aún no tienes citas</p>
-                  <p className="text-gray-400 mb-6">Agenda tu primera cita en el salón</p>
-                  <Link href="/servicios" className="bg-pink-600 hover:bg-pink-700 text-white font-bold px-8 py-3 rounded-full transition inline-block">
-                    Ver servicios
-                  </Link>
-                </div>
-              ) : citas.map(cita => {
-                const cfg   = citaEstado[cita.estado] || citaEstado.PENDIENTE
-                const fecha = new Date(cita.fecha).toLocaleDateString("es-MX", { day: "2-digit", month: "long", year: "numeric" })
-                return (
-                  <div key={cita.id} className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-pink-100 dark:border-gray-700 overflow-hidden">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-4 bg-pink-50 dark:bg-gray-900/40 border-b border-pink-100 dark:border-gray-700">
-                      <div className="flex items-center gap-3">
-                        <Scissors className="w-5 h-5 text-pink-500" />
-                        <p className="font-bold text-gray-800 dark:text-white">{cita.servicio.nombre}</p>
-                      </div>
-                      <span className={`px-4 py-1.5 rounded-full text-sm font-bold ${cfg.color}`}>{cfg.label}</span>
-                    </div>
-                    <div className="px-6 py-4 flex flex-wrap gap-6 text-sm">
-                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                        <Calendar className="w-4 h-4 text-pink-400" />{fecha}
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                        <Clock className="w-4 h-4 text-pink-400" />{cita.hora}
-                      </div>
-                      <div className="flex items-center gap-2 font-bold text-pink-600">
-                        ${Number(cita.servicio.precio).toLocaleString()} MXN
-                      </div>
-                    </div>
-                    {cita.notas && (
-                      <div className="px-6 pb-4 text-sm text-gray-500 dark:text-gray-400 italic">&quot;{cita.notas}&quot;</div>
-                    )}
-
-                    {/* Aviso de éxito tras cancelar */}
-                    {cancelExito === cita.id && (
-                      <div className="mx-6 mb-4 flex items-start gap-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl px-4 py-3 text-sm text-green-700 dark:text-green-400">
-                        <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                        <p>Cita cancelada. Si realizaste un pago anticipado, será reembolsado en <strong>3-5 días hábiles</strong>.</p>
-                      </div>
-                    )}
-
-                    {/* Botón cancelar — solo para citas activas */}
-                    {["PENDIENTE", "CONFIRMADA"].includes(cita.estado) && (() => {
-                      const horas = horasParaCita(cita.fecha, cita.hora)
-                      const puedeCancel = horas >= 24
-                      return (
-                        <div className="px-6 pb-4">
-                          {puedeCancel ? (
-                            <button
-                              onClick={() => setCitaACancelar(cita)}
-                              className="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-semibold transition"
-                            >
-                              <Ban className="w-3.5 h-3.5" /> Cancelar cita
-                            </button>
-                          ) : (
-                            <p className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
-                              <Ban className="w-3.5 h-3.5" />
-                              No se puede cancelar — faltan menos de 24 horas
-                            </p>
-                          )}
-                        </div>
-                      )
-                    })()}
-                  </div>
-                )
-              })}
-            </div>
-          )}
-
-          {/* ── CURSOS ───────────────────────────────────── */}
-          {pestana === "cursos" && (
-            <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-3xl shadow border border-pink-100">
-              <Clock className="w-16 h-16 mx-auto text-pink-200 mb-4" />
-              <p className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">Aún no tienes cursos inscritos</p>
-              <p className="text-gray-400 mb-6">Explora nuestros cursos de belleza</p>
-              <Link href="/cursos" className="bg-pink-600 hover:bg-pink-700 text-white font-bold px-8 py-3 rounded-full transition inline-block">
-                Ver cursos
-              </Link>
-            </div>
-          )}
-
-          <div className="text-center mt-12">
-            <p className="text-gray-500 dark:text-gray-400">
-              ¡Gracias por ser parte de la familia Brenn&apos;s, {session?.user?.name?.split(" ")[0]}! ♡
-            </p>
-          </div>
+          <MisCursosContent />
         </div>
-      </main>
-
-      {/* Modal de confirmación de cancelación */}
-      {citaACancelar && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-md p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
-                  <AlertTriangle className="w-5 h-5 text-red-500" />
-                </div>
-                <h2 className="text-lg font-bold text-gray-800 dark:text-white">Cancelar cita</h2>
-              </div>
-              <button onClick={() => setCitaACancelar(null)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 transition">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="bg-pink-50 dark:bg-gray-900/40 rounded-2xl p-4 mb-5 space-y-1 text-sm">
-              <p className="font-semibold text-gray-800 dark:text-white">{citaACancelar.servicio.nombre}</p>
-              <p className="text-gray-500 dark:text-gray-400">
-                {new Date(citaACancelar.fecha).toLocaleDateString("es-MX", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })} · {citaACancelar.hora}
-              </p>
-            </div>
-
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl px-4 py-3 mb-5">
-              <p className="text-xs text-blue-700 dark:text-blue-300 font-semibold">
-                💳 Reembolso: si realizaste un pago anticipado, será devuelto en 3-5 días hábiles tras la cancelación.
-              </p>
-            </div>
-
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
-              ¿Confirmas que deseas cancelar esta cita? Esta acción no se puede deshacer.
-            </p>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setCitaACancelar(null)}
-                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-              >
-                No, conservar
-              </button>
-              <button
-                onClick={confirmarCancelacion}
-                disabled={cancelando}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition disabled:opacity-60"
-              >
-                {cancelando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />}
-                Sí, cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
     </AuthGuard>
   )
 }
