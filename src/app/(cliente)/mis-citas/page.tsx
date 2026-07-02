@@ -4,7 +4,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { CalendarDays, Loader2, ChevronDown, ChevronUp, Clock, User } from 'lucide-react'
+import { CalendarDays, ChevronDown, ChevronUp, Clock, User } from 'lucide-react'
+import DotsLoader from '@/components/ui/DotsLoader'
 import AuthGuard from '@/components/ui/AuthGuard'
 
 interface Servicio {
@@ -50,7 +51,7 @@ function MisCitasContenido() {
   if (cargando) {
     return (
       <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-pink-400 animate-spin" />
+        <DotsLoader />
       </div>
     )
   }

@@ -109,8 +109,8 @@ export default function RolesPage() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden bg-white dark:bg-gray-800">
+        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
           <div>
             <h3 className="font-bold text-gray-800 dark:text-white">Personal del sistema</h3>
             <p className="text-xs text-gray-400 mt-0.5">Administradores, Empleados y Docentes</p>
@@ -118,10 +118,10 @@ export default function RolesPage() {
           {cargando && <Loader2 className="w-4 h-4 text-pink-400 animate-spin" />}
         </div>
         <table className="w-full text-sm">
-          <thead className="bg-pink-50">
+          <thead className="bg-rose-900 dark:bg-rose-950">
             <tr>
               {["Usuario","Correo","Rol actual","Cambiar rol"].map(h => (
-                <th key={h} className="text-left text-pink-600 font-semibold px-4 py-3 text-xs">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">{h}</th>
               ))}
             </tr>
           </thead>
@@ -132,9 +132,9 @@ export default function RolesPage() {
               <tr><td colSpan={4} className="text-center py-8 text-gray-400 text-sm">No hay personal registrado</td></tr>
             ) : (
               usuarios.map(u => (
-                <tr key={u.id} className="border-b border-gray-50 hover:bg-gray-50 dark:bg-gray-900 transition-colors">
+                <tr key={u.id} className="hover:bg-rose-50 dark:hover:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700">
                   <td className="px-4 py-3 font-semibold text-gray-800 dark:text-white">{u.nombre}</td>
-                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">{u.correo}</td>
+                  <td className="px-4 py-3 text-gray-700 dark:text-gray-300 text-xs">{u.correo}</td>
                   <td className="px-4 py-3">
                     <span className={`text-xs font-bold px-2 py-1 rounded-full ${badgeColor(u.rol)}`}>{u.rol}</span>
                     {exito === u.id && <span className="ml-2 text-xs text-green-600 font-semibold">✓ Guardado</span>}
@@ -159,8 +159,8 @@ export default function RolesPage() {
         </table>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
           <h3 className="font-bold text-gray-800 dark:text-white">Cambiar rol a un cliente</h3>
           <p className="text-xs text-gray-400 mt-0.5">Busca un cliente por nombre o correo para cambiar su rol</p>
         </div>

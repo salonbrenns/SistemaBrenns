@@ -1,9 +1,7 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
 interface FAQ {
   id: number;
   pregunta: string;
@@ -11,13 +9,11 @@ interface FAQ {
   orden: number;
   activo: boolean;
 }
-
 export default function AdminFAQPage() {
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [loading, setLoading] = useState(true);
   const [eliminando, setEliminando] = useState<number | null>(null);
   const router = useRouter();
-
   const cargarFaqs = async () => {
     try {
       const res = await fetch("/api/admin/faq");
@@ -29,11 +25,9 @@ export default function AdminFAQPage() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     cargarFaqs();
   }, []);
-
   const eliminar = async (id: number) => {
     if (!confirm("¿Estás seguro de eliminar esta pregunta?")) return;
     setEliminando(id);
@@ -46,7 +40,6 @@ export default function AdminFAQPage() {
       setEliminando(null);
     }
   };
-
   const toggleActivo = async (faq: FAQ) => {
     try {
       await fetch(`/api/admin/faq/${faq.id}`, {
@@ -61,23 +54,21 @@ export default function AdminFAQPage() {
       console.error("Error al actualizar:", error);
     }
   };
-
   return (
     <div className="p-6">
       {/* Encabezado */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Preguntas Frecuentes</h1>
+          <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300">Preguntas Frecuentes</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Gestiona las preguntas que verán tus clientes</p>
         </div>
         <Link
           href="/admin/faq/nueva"
-          className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+          className="bg-rose-700 hover:bg-rose-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
         >
           + Nueva pregunta
         </Link>
       </div>
-
       {/* Tabla */}
       {loading ? (
         <div className="flex justify-center items-center h-40">
@@ -94,19 +85,19 @@ export default function AdminFAQPage() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-100">
+            <thead className="bg-rose-900 dark:bg-rose-950">
               <tr>
-                <th className="text-left px-5 py-3 text-gray-500 dark:text-gray-400 font-medium">Orden</th>
-                <th className="text-left px-5 py-3 text-gray-500 dark:text-gray-400 font-medium">Pregunta</th>
-                <th className="text-left px-5 py-3 text-gray-500 dark:text-gray-400 font-medium">Estado</th>
-                <th className="text-right px-5 py-3 text-gray-500 dark:text-gray-400 font-medium">Acciones</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Orden</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Pregunta</th>
+                <th className="px-5 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Estado</th>
+                <th className="text-right px-5 py-3 text-xs font-semibold text-white uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
               {faqs.map((faq) => (
-                <tr key={faq.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <tr key={faq.id} className="hover:bg-rose-50 dark:hover:bg-gray-700 transition-colors">
                   <td className="px-5 py-4 text-gray-400 font-mono">{faq.orden}</td>
                   <td className="px-5 py-4">
                     <p className="font-medium text-gray-800 dark:text-white line-clamp-1">{faq.pregunta}</p>
@@ -148,5 +139,5 @@ export default function AdminFAQPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

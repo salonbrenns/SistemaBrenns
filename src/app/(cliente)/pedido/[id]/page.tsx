@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { CheckCircle2, Clock, CreditCard, Building2, Banknote, Package, Loader2 } from 'lucide-react'
+import { CheckCircle2, Clock, CreditCard, Building2, Banknote, Package } from 'lucide-react'
 import AuthGuard from '@/components/ui/AuthGuard'
+import DotsLoader from '@/components/ui/DotsLoader'
 
 interface Detalle {
   id: number
@@ -79,7 +80,7 @@ function ConfirmacionContenido() {
   if (cargando) {
     return (
       <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-rose-400 animate-spin" />
+        <DotsLoader />
       </div>
     )
   }

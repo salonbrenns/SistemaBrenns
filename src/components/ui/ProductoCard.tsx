@@ -1,6 +1,11 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { Heart, ShoppingBag } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useFavoritos } from '@/hooks/useFavoritos'
 
 export type ProductoCardType = {
   id: number
@@ -28,6 +33,9 @@ interface Props {
 export default function ProductoCard({ producto, descuentoProducto = 0, precioConDescuento }: Props) {
   const foto = getImagen(producto.imagen)
   const sinStock = !producto.en_stock
+  const { status } = useSession()
+  const router = useRouter()
+  const { toggle, esFavorito } = useFavoritos()
   const tonos = [...new Set(producto.variantes.map(v => v.tono).filter(Boolean))] as string[]
   const tieneVariantes = producto.variantes.length > 1
 
@@ -77,12 +85,29 @@ export default function ProductoCard({ producto, descuentoProducto = 0, precioCo
             </div>
           )}
 
-          <button
-            onClick={e => { e.preventDefault(); e.stopPropagation() }}
-            className="absolute top-3 right-3 bg-white/80 backdrop-blur-md p-2 rounded-full shadow-md hover:bg-rose-600 hover:text-white transition-all z-10 text-rose-600 opacity-0 group-hover:opacity-100"
-          >
-            <Heart className="w-4 h-4" />
-          </button>
+          <div className={`absolute top-3 right-3 z-10 transition-opacity ${esFavorito(producto.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+            <button
+              onClick={e => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (status !== 'authenticated') {
+                  router.push(`/login?next=/producto/${producto.id}`)
+                  return
+                }
+                toggle(producto.id)
+              }}
+              className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-2 rounded-full shadow-md hover:bg-rose-600 hover:text-white dark:text-gray-300 transition-all duration-200"
+            >
+              <Heart
+                size={22}
+                className={`transition-colors duration-200 ${
+                  esFavorito(producto.id)
+                    ? 'fill-red-500 stroke-red-500'
+                    : 'fill-transparent stroke-gray-400 hover:stroke-red-400'
+                }`}
+              />
+            </button>
+          </div>
         </div>
 
         {/* Info */}
@@ -141,9 +166,9 @@ export default function ProductoCard({ producto, descuentoProducto = 0, precioCo
                 {tieneVariantes && (
                   <span className="text-xs text-gray-400 font-medium">desde</span>
                 )}
-                <div className="flex items-baseline gap-1">
+                <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-black text-gray-900 dark:text-white">
-                    ${precioOriginal.toLocaleString('es-MX')}
+                    ${precioOriginal.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                   <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter">MXN</span>
                 </div>
@@ -158,9 +183,10 @@ export default function ProductoCard({ producto, descuentoProducto = 0, precioCo
         <Link href={`/producto/${producto.id}`}>
           <button
             disabled={sinStock}
-            className="w-full bg-gray-900 dark:bg-gray-700 hover:bg-rose-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-3 rounded-xl transition-all shadow-md active:scale-95 text-sm"
+            className="w-full bg-gray-900 hover:bg-rose-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-3 rounded-xl transition-all shadow-md active:scale-95"
           >
-            {sinStock ? 'Sin disponibilidad' : 'Ver producto'}
+            <ShoppingBag className="inline w-4 h-4 mr-2" />
+            {sinStock ? 'Agotado' : 'Ver producto'}
           </button>
         </Link>
       </div>

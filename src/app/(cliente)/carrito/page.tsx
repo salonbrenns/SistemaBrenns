@@ -1,7 +1,8 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ShoppingBag, Trash2, Plus, Minus, Loader2, ShoppingCart } from 'lucide-react'
+import { ShoppingBag, Trash2, Plus, Minus, ShoppingCart } from 'lucide-react'
+import DotsLoader from '@/components/ui/DotsLoader'
 import { useCarrito } from '@/hooks/useCarrito'
 import AuthGuard from '@/components/ui/AuthGuard'
 
@@ -30,7 +31,7 @@ function CarritoContenido() {
   if (cargando) {
     return (
       <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-rose-400 animate-spin" />
+        <DotsLoader />
       </div>
     )
   }

@@ -91,32 +91,43 @@ function LoginContenido() {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row font-sans">
-      <div className="flex-1 bg-gradient-to-br from-pink-500 to-rose-600 p-8 md:p-12 flex flex-col justify-center items-start text-white relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-        <div className="z-10 relative">
-          <div className="mb-8 flex items-center gap-2">
-            <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center text-pink-600 font-bold">B</div>
-            <span className="text-xl font-bold tracking-wide">{"Brenn's"}</span>
+      {/* ── Panel izquierdo — Rosa ── */}
+      <div className="hidden md:flex flex-1 relative overflow-hidden flex-col justify-center bg-gradient-to-br from-rose-500 via-pink-600 to-rose-700 px-10 py-10">
+        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-pink-300/15 blur-3xl pointer-events-none" />
+
+        {/* Logo + Texto — bloque centrado */}
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-10">
+            <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center text-rose-600 font-black text-base shadow-lg">B</div>
+            <span className="text-white font-bold tracking-wide">Brenn&apos;s</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">
-            Bienvenida <br />
-            <span className="text-pink-200">de Nuevo</span>
+          <p className="text-rose-100/70 text-xs font-bold uppercase tracking-widest mb-4">Academia · Salón · Distribuidora</p>
+          <h1 className="text-5xl font-black text-white leading-tight mb-5">
+            Bienvenida<br />
+            <span className="text-rose-100">de Nuevo</span>
           </h1>
-          <p className="text-lg md:text-xl text-pink-50 max-w-lg leading-relaxed">
+          <p className="text-white/65 text-base leading-relaxed max-w-[340px]">
             Accede a tu cuenta para continuar aprendiendo, gestionar tus citas o comprar material de la mejor calidad.
           </p>
         </div>
+
+        {/* Footer */}
+        <div className="relative z-10 absolute bottom-6 left-10">
+          <p className="text-white/25 text-xs">© 2026 Brenn&apos;s · Huejutla de Reyes, Hidalgo</p>
+        </div>
       </div>
 
-      <div className="flex-1 bg-pink-50 dark:bg-gray-900 p-8 flex flex-col justify-center items-center">
-        <div className="max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-pink-100 dark:border-gray-700">
-          <h2 className="text-3xl font-bold mb-2 text-center text-gray-800 dark:text-white">Iniciar Sesion</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-center mb-8">Ingresa tus credenciales para entrar</p>
+      {/* ── Panel derecho — Formulario ── */}
+      <div className="flex-1 bg-white dark:bg-gray-900 flex flex-col justify-center items-center p-6">
+        <div className="w-full max-w-md">
+          <h2 className="text-3xl font-bold mb-1 text-center text-gray-800 dark:text-white">Iniciar Sesión</h2>
+          <p className="text-gray-500 dark:text-gray-400 text-center mb-5">Ingresa tus credenciales para entrar</p>
 
           <button
             onClick={handleGoogle}
             disabled={loadingGoogle}
-            className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-full py-3 px-4 hover:bg-gray-50 dark:bg-gray-900 transition-all mb-6 font-medium text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 border border-gray-200 rounded-full py-2.5 px-4 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 transition-all mb-4 font-medium text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loadingGoogle ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -131,30 +142,30 @@ function LoginContenido() {
             {loadingGoogle ? "Redirigiendo..." : "Continuar con Google"}
           </button>
 
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
             <span className="text-sm text-gray-400">o inicia con correo</span>
-            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Correo Electronico</label>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Correo Electrónico</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); clearErrors() }}
                 placeholder="tucorreo@ejemplo.com"
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100 dark:bg-gray-800 dark:text-white transition-all"
                 disabled={loading}
               />
             </div>
 
             <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Contrasena</label>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Contraseña</label>
                 <Link href="/recuperar-contrasena" className="text-xs text-pink-600 hover:underline">
-                  Olvidaste tu contrasena?
+                  ¿Olvidaste tu contraseña?
                 </Link>
               </div>
               <div className="relative">
@@ -162,8 +173,8 @@ function LoginContenido() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => { setPassword(e.target.value); clearErrors() }}
-                  placeholder="..."
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all"
+                  placeholder="••••••••"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100 dark:bg-gray-800 dark:text-white transition-all"
                   disabled={loading}
                 />
                 <button
@@ -171,7 +182,7 @@ function LoginContenido() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-pink-600 transition-colors"
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
@@ -182,7 +193,7 @@ function LoginContenido() {
               const isPassword = errorCode === "WRONG_PASSWORD"
 
               if (isLocked) return (
-                <div className="flex items-start gap-3 bg-red-50 border border-red-300 text-red-700 rounded-2xl px-4 py-3 text-sm">
+                <div className="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-2xl px-4 py-3 text-sm">
                   <ShieldAlert className="w-5 h-5 mt-0.5 shrink-0" />
                   <div>
                     <p className="font-semibold">Acceso restringido</p>
@@ -190,37 +201,28 @@ function LoginContenido() {
                   </div>
                 </div>
               )
-
               if (isEmail) return (
-                <div className="flex items-start gap-3 bg-amber-50 border border-amber-300 text-amber-800 rounded-xl px-4 py-3 text-sm">
+                <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-4 py-3 text-sm">
                   <Mail className="w-5 h-5 mt-0.5 shrink-0 text-amber-500" />
                   <div>
                     <p className="font-semibold">Correo no encontrado</p>
                     <p className="mt-0.5">{error}</p>
-                    <Link href="/register" className="underline text-pink-600 font-medium mt-1 inline-block">
-                      Crear una cuenta
-                    </Link>
+                    <Link href="/register" className="underline text-pink-600 font-medium mt-1 inline-block">Crear una cuenta</Link>
                   </div>
                 </div>
               )
-
               if (isPassword) return (
                 <div className="flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
                   <Lock className="w-5 h-5 mt-0.5 shrink-0 text-red-400" />
                   <div>
-                    <p className="font-semibold">Contrasena incorrecta</p>
+                    <p className="font-semibold">Contraseña incorrecta</p>
                     <p className="mt-0.5">{error}</p>
-                    <Link href="/recuperar-contrasena" className="underline text-pink-600 font-medium mt-1 inline-block">
-                      Recuperar contrasena
-                    </Link>
+                    <Link href="/recuperar-contrasena" className="underline text-pink-600 font-medium mt-1 inline-block">Recuperar contraseña</Link>
                   </div>
                 </div>
               )
-
               return (
-                <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm text-center border border-red-100">
-                  {error}
-                </div>
+                <div className="p-3 rounded-xl bg-red-50 text-red-600 text-sm text-center border border-red-100">{error}</div>
               )
             })()}
 
@@ -230,19 +232,16 @@ function LoginContenido() {
               className="w-full bg-pink-600 text-white py-3 rounded-full font-bold text-lg shadow-lg hover:bg-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin inline mr-2" />
-                  Verificando...
-                </>
+                <><Loader2 className="w-5 h-5 animate-spin inline mr-2" />Verificando...</>
               ) : "Entrar"}
             </button>
           </form>
 
-          <div className="mt-8 text-center border-t border-gray-100 pt-6">
+          <div className="mt-5 text-center border-t border-gray-100 dark:border-gray-700 pt-4">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              No tienes cuenta?{" "}
+              ¿No tienes cuenta?{" "}
               <Link href="/register" className="text-pink-600 font-bold hover:text-pink-800 hover:underline transition-colors">
-                Registrate aqui
+                Regístrate aquí
               </Link>
             </p>
           </div>
@@ -255,8 +254,8 @@ function LoginContenido() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-10 h-10 text-pink-400 animate-spin" />
+      <div className="min-h-screen bg-pink-50 dark:bg-gray-950 flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-pink-500 animate-spin" />
       </div>
     }>
       <LoginContenido />

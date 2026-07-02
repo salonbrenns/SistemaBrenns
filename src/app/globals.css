@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@keyframes boing {
+  0%, 100% { transform: translateY(0); }
+  30%       { transform: translateY(-22px); }
+  50%       { transform: translateY(-8px); }
+  70%       { transform: translateY(-18px); }
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

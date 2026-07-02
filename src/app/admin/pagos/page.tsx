@@ -110,17 +110,16 @@ export default async function PagosPage() {
       </div>
 
       {/* Tabla */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
           <table className="w-full text-sm">
-            <thead className="bg-pink-900 text-white">
+            <thead className="bg-rose-900 dark:bg-rose-950 text-white">
               <tr>
                 {["Cliente", "Servicio", "Monto cobrado", "Tipo", "Método", "Estado", "Fecha"].map(h => (
                   <th key={h} className="text-left font-semibold px-4 py-3 text-xs uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
               {pagos.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-12 text-gray-400 text-sm">
@@ -129,12 +128,12 @@ export default async function PagosPage() {
                 </tr>
               ) : (
                 pagos.map(p => (
-                  <tr key={p.id} className="hover:bg-gray-50 dark:bg-gray-900 transition-colors">
+                  <tr key={p.id} className="hover:bg-rose-50 dark:hover:bg-gray-700 transition-colors">
                     <td className="px-4 py-3">
                       <p className="font-semibold text-gray-800 dark:text-white">{p.cliente}</p>
                       {p.telefono && <p className="text-xs text-gray-400">{p.telefono}</p>}
                     </td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{p.servicio}</td>
+                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{p.servicio}</td>
                     <td className="px-4 py-3 font-bold text-gray-900 dark:text-white">${p.monto.toLocaleString()} MXN</td>
                     <td className="px-4 py-3">
                       <span className={`text-xs font-bold px-2 py-1 rounded-full ${p.tipo === "ANTICIPO" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700 dark:text-gray-300"}`}>
@@ -170,7 +169,6 @@ export default async function PagosPage() {
               )}
             </tbody>
           </table>
-        </div>
       </div>
     </div>
   )

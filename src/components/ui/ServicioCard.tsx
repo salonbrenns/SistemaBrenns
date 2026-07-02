@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Scissors } from 'lucide-react'
 import { FavoritoServicioBoton } from './FavoritoServicioBoton'
+import { useFavoritosServicios } from '@/hooks/useFavoritosServicios'
 
 export interface ServicioCardType {
   id:         number
@@ -23,6 +24,7 @@ interface Props {
 export default function ServicioCard({ servicio }: Props) {
   const { id, nombre, imagen, categoria, precio_min, disponible, duracion } = servicio
   const noDisponible = !disponible
+  const { esFavorito } = useFavoritosServicios()
 
   return (
     <article className={`group bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm hover:shadow-2xl border border-rose-50 dark:border-gray-700 overflow-hidden transition-all duration-500 hover:-translate-y-2 ${noDisponible ? 'opacity-60' : ''}`}>
@@ -59,8 +61,8 @@ export default function ServicioCard({ servicio }: Props) {
             </div>
           )}
 
-          {/* Botón favorito — aparece en hover igual que ProductoCard */}
-          <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+          {/* Botón favorito — siempre visible si es favorito, hover si no */}
+          <div className={`absolute top-3 right-3 z-10 transition-opacity ${esFavorito(id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
             <FavoritoServicioBoton
               servicioId={id}
               className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-2 rounded-full shadow-md hover:bg-rose-600 hover:text-white dark:text-gray-300 transition-all"
@@ -105,9 +107,9 @@ export default function ServicioCard({ servicio }: Props) {
         <Link href={`/servicio/${id}`}>
           <button
             disabled={noDisponible}
-            className="w-full bg-gray-900 hover:bg-rose-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-3 rounded-xl transition-all shadow-md active:scale-95 text-sm"
+            className="w-full bg-gray-900 hover:bg-rose-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-3 rounded-xl transition-all shadow-md active:scale-95"
           >
-            {noDisponible ? 'No disponible' : 'Ver servicio'}
+            Ver servicio
           </button>
         </Link>
       </div>

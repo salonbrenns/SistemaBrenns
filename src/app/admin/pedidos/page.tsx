@@ -75,7 +75,7 @@ export default function AdminPedidosPage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <Package className="w-7 h-7 text-rose-600" />
-        <h1 className="text-2xl font-black text-gray-900 dark:text-white">Pedidos</h1>
+        <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300">Pedidos</h1>
         <span className="text-sm text-gray-400 font-semibold">({pedidos.length} total)</span>
       </div>
 
@@ -94,19 +94,19 @@ export default function AdminPedidosPage() {
       </div>
 
       {/* Tabla */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
         <table className="min-w-full divide-y">
-          <thead className="bg-rose-900">
+          <thead className="bg-rose-900 dark:bg-rose-950">
             <tr>
               {['#Pedido', 'Cliente', 'Artículos', 'Total', 'Fecha', 'Estado', 'Acción'].map(h => (
-                <th key={h} className="px-5 py-3 text-xs font-bold text-white uppercase">
+                <th key={h} className="px-5 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                   {h}
                 </th>
               ))}
             </tr>
           </thead>
 
-          <tbody className="divide-y">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
             {pedidosFiltrados.length === 0 && (
               <tr>
                 <td colSpan={7} className="text-center py-10 text-gray-400">
@@ -119,7 +119,7 @@ export default function AdminPedidosPage() {
               <Fragment key={pedido.id}>
 
                 {/* FILA PRINCIPAL */}
-                <tr className="hover:bg-rose-50">
+                <tr className="hover:bg-rose-50 dark:hover:bg-gray-700 transition-colors">
                   <td className="px-5 py-4 font-black">
                     <button
                       onClick={() => setAbierto(abierto === pedido.id ? null : pedido.id)}
@@ -133,13 +133,13 @@ export default function AdminPedidosPage() {
                   </td>
 
                   <td className="px-5 py-4">
-                    <p className="font-semibold">{pedido.nombre_cliente}</p>
-                    <p className="text-xs text-gray-400">{pedido.correo_cliente}</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{pedido.nombre_cliente}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{pedido.correo_cliente}</p>
                   </td>
 
-                  <td className="px-5 py-4">{pedido.total_items}</td>
+                  <td className="px-5 py-4 text-gray-900 dark:text-white">{pedido.total_items}</td>
 
-                  <td className="px-5 py-4 font-black">
+                  <td className="px-5 py-4 font-black text-gray-900 dark:text-white">
                     ${pedido.total.toLocaleString('es-MX')}
                   </td>
 
@@ -169,7 +169,7 @@ export default function AdminPedidosPage() {
                 {/* DETALLE */}
                 {abierto === pedido.id && (
                   <tr>
-                    <td colSpan={7} className="bg-rose-50 p-3">
+                    <td colSpan={7} className="bg-rose-50 dark:bg-gray-700/30 p-3">
                       <DetailPedido detalles={pedido.detalles} />
                     </td>
                   </tr>

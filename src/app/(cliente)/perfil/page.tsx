@@ -46,12 +46,6 @@ const ESTADO_PEDIDO: Record<string, string> = {
   CANCELADO: "bg-red-100    text-red-800",
 }
 
-const ESTADO_CITA: Record<string, string> = {
-  PENDIENTE:  "bg-yellow-100 text-yellow-800",
-  CONFIRMADA: "bg-green-100  text-green-800",
-  CANCELADA:  "bg-red-100    text-red-800",
-  COMPLETADA: "bg-blue-100   text-blue-800",
-}
 
 function fotoKey(userId?: number | string) {
   return `brenns_foto_perfil_${userId ?? "anon"}`
@@ -63,6 +57,7 @@ export default function PerfilPage() {
   const [datosLocales, setDatosLocales] = useState<Partial<CustomUser>>({})
   const [totalPedidos, setTotalPedidos] = useState<number | null>(null)
   const [totalCitas,   setTotalCitas]   = useState<number | null>(null)
+  const [totalCursos,  setTotalCursos]  = useState<number | null>(null)
   const { favoritos } = useFavoritos()
   const [fotoSubiendo, setFotoSubiendo] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "warning" } | null>(null)
@@ -87,6 +82,9 @@ export default function PerfilPage() {
     fetch("/api/citas").then(r => r.json())
       .then(d => setTotalCitas(Array.isArray(d) ? d.length : 0))
       .catch(() => setTotalCitas(0))
+    fetch("/api/mis-cursos").then(r => r.json())
+      .then(d => setTotalCursos(Array.isArray(d.cursos) ? d.cursos.length : 0))
+      .catch(() => setTotalCursos(0))
   }, [status])
 
   if (status === "loading") {
@@ -215,13 +213,13 @@ export default function PerfilPage() {
           {/* Columna derecha */}
           <div className="lg:col-span-8 space-y-6">
             <div className="grid grid-cols-3 gap-4">
-              <div className="bg-white dark:bg-gray-800 border border-[#ffd6e3] dark:border-gray-700 rounded-[1.5rem] p-6 text-center shadow-sm">
-                <div className="w-10 h-10 bg-rose-50 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Link href="/mis-cursos" className="bg-white dark:bg-gray-800 border border-[#ffd6e3] dark:border-gray-700 rounded-[1.5rem] p-6 text-center shadow-sm hover:bg-rose-50 dark:hover:bg-gray-700 transition group">
+                <div className="w-10 h-10 bg-rose-50 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-white dark:group-hover:bg-gray-600 transition">
                   <Calendar className="w-5 h-5 text-rose-400" />
                 </div>
-                <p className="text-3xl font-black text-[#3d0020] dark:text-white">0</p>
+                <p className="text-3xl font-black text-[#3d0020] dark:text-white">{totalCursos ?? "0"}</p>
                 <p className="text-[10px] font-bold uppercase text-gray-400 tracking-wider">Cursos</p>
-              </div>
+              </Link>
               <Link href="/mis-citas" className="bg-white dark:bg-gray-800 border border-[#ffd6e3] dark:border-gray-700 rounded-[1.5rem] p-6 text-center shadow-sm hover:bg-rose-50 dark:hover:bg-gray-700 transition group">
                 <div className="w-10 h-10 bg-rose-50 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-white dark:group-hover:bg-gray-600 transition">
                   <Clock className="w-5 h-5 text-rose-400" />
@@ -390,12 +388,17 @@ function UltimaCitaSection() {
             <p className="text-xs text-[#b06080] dark:text-rose-300 mt-1">{new Date(cita.fecha).toLocaleDateString("es-MX")} - {cita.hora}</p>
           </div>
           <div className="flex flex-col items-end">
-            <span className={`text-[9px] font-black px-3 py-1 rounded-full ${ESTADO_CITA[cita.estado]}`}>{cita.estado}</span>
-            <p className="text-lg font-black text-[#3d0020] dark:text-white mt-1">${cita.servicio.precio.toLocaleString("es-MX")} MXN</p>
+            <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+              cita.estado === 'CONFIRMADA' ? 'bg-green-100 text-green-700' :
+              cita.estado === 'PENDIENTE'  ? 'bg-amber-100 text-amber-700' :
+              'bg-gray-100 text-gray-500'
+            }`}>
+              {cita.estado}
+            </span>
           </div>
         </div>
       ) : (
-        <p className="text-center text-sm text-gray-400 italic">No tienes citas agendadas.</p>
+        <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">No tienes citas próximas</p>
       )}
     </div>
   )

@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Loader2, Sparkles } from 'lucide-react'
+import DotsLoader from '@/components/ui/DotsLoader'
 import ServicioCard from '@/components/ui/ServicioCard'
 import type { ServicioCardType } from '@/components/ui/ServicioCard'
 import FiltroServicios from '@/components/ui/FiltroServicios'
@@ -97,15 +97,7 @@ export default function ServiciosPage() {
           </p>
         )}
 
-        {cargando && (
-          <div className="flex flex-col items-center justify-center py-40">
-            <div className="relative">
-              <Loader2 className="w-16 h-16 text-pink-400 animate-spin" />
-              <Sparkles className="w-6 h-6 text-yellow-400 absolute -top-2 -right-2 animate-pulse" />
-            </div>
-            <p className="text-pink-600 font-medium animate-pulse mt-4">Cargando servicios...</p>
-          </div>
-        )}
+        {cargando && <DotsLoader texto="Cargando servicios..." />}
 
         {!cargando && serviciosPagina.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
