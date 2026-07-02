@@ -475,4 +475,31 @@ model PreguntaFrecuente {
 
 model Backup {
   id     Int       @id @default(autoincrement())
-  nombre String    @db.VarChar(
+  nombre String    @db.VarChar(255)
+  ruta   String
+  tama_o String?   @map("tamaño") @db.VarChar(50)
+  fecha  DateTime? @default(now()) @db.Timestamp(6)
+  estado String?   @default("COMPLETADO") @db.VarChar(50)
+
+  @@map("tblbackup")
+  @@schema("seguridad")
+}
+
+enum Rol {
+  ADMIN
+  DOCENTE
+  EMPLEADO
+  CLIENTE
+
+  @@schema("seguridad")
+}
+
+enum EstadoPedido {
+  PENDIENTE
+  PAGADO
+  ENVIADO
+  ENTREGADO
+  CANCELADO
+
+  @@schema("ventas")
+}
