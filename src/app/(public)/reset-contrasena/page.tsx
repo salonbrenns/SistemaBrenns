@@ -50,7 +50,7 @@ function ResetForm() {
         </div>
         <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Enlace inválido</h2>
         <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">Este enlace no es válido o ya expiró.</p>
-        <Link href="/recuperar-contraseña"
+        <Link href="/recuperar-contrasena"
           className="bg-pink-600 text-white font-bold px-6 py-3 rounded-full hover:bg-pink-700 transition">
           Solicitar nuevo enlace
         </Link>

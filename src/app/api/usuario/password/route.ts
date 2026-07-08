@@ -1,10 +1,8 @@
 // src/app/api/usuario/password/route.ts
 import { NextResponse } from "next/server"
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { auth } from "@/lib/auth"
-
-const prisma = new PrismaClient()
 
 export async function PUT(req: Request) {
   try {

@@ -4,11 +4,8 @@ import bcrypt from "bcryptjs"
 import { withRasp } from "@/lib/withRasp"
 
 async function registerHandler(req: NextRequest) {
-const ROLES_VALIDOS = ["ADMIN", "DOCENTE", "EMPLEADO", "CLIENTE"]
-
-
   try {
-    const { name, email, password, telefono, rol } = await req.json()
+    const { name, email, password, telefono } = await req.json()
 
     if (!name || !email || !password || !telefono) {
       return NextResponse.json(
@@ -17,7 +14,8 @@ const ROLES_VALIDOS = ["ADMIN", "DOCENTE", "EMPLEADO", "CLIENTE"]
       )
     }
 
-    const rolFinal = ROLES_VALIDOS.includes(rol) ? rol : "CLIENTE"
+    // El registro público siempre crea un CLIENTE — nunca se acepta rol del body
+    const rolFinal = "CLIENTE"
 
     const usuarioExistente = await prisma.usuario.findUnique({
       where: { correo: email },

@@ -65,7 +65,6 @@ function LoginContenido() {
 
         if (role === "ADMIN")         router.push("/admin/dashboard")
         else if (role === "EMPLEADO") router.push("/empleado/dashboard")
-        else if (role === "DOCENTE")  router.push("/docente/dashboard")
         else                          router.push("/perfil")
 
         router.refresh()

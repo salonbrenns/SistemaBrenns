@@ -61,6 +61,7 @@ export default function PerfilPage() {
   const { favoritos } = useFavoritos()
   const [fotoSubiendo, setFotoSubiendo] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "warning" } | null>(null)
+  const [fechaRegistro, setFechaRegistro] = useState<string | null>(null)
 
   const user = session?.user as CustomUser | undefined
 
@@ -85,6 +86,9 @@ export default function PerfilPage() {
     fetch("/api/mis-cursos").then(r => r.json())
       .then(d => setTotalCursos(Array.isArray(d.cursos) ? d.cursos.length : 0))
       .catch(() => setTotalCursos(0))
+    fetch("/api/usuario/perfil").then(r => r.json())
+      .then(d => d.fecha_registro && setFechaRegistro(d.fecha_registro))
+      .catch(() => null)
   }, [status])
 
   if (status === "loading") {
@@ -102,7 +106,9 @@ export default function PerfilPage() {
   const telefono   = datosLocales.telefono ?? user?.telefono ?? null
   const fotoPerfil = datosLocales.image    ?? user?.image    ?? null
   const primerLetra = nombre.charAt(0).toUpperCase()
-  const fechaReg = new Date().toLocaleDateString("es-MX", { month: "long", year: "numeric" })
+  const fechaReg = fechaRegistro
+    ? new Date(fechaRegistro).toLocaleDateString("es-MX", { month: "long", year: "numeric" })
+    : "—"
 
   const handleSubirFoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -391,15 +397,4 @@ function UltimaCitaSection() {
             <span className={`text-xs font-bold px-3 py-1 rounded-full ${
               cita.estado === 'CONFIRMADA' ? 'bg-green-100 text-green-700' :
               cita.estado === 'PENDIENTE'  ? 'bg-amber-100 text-amber-700' :
-              'bg-gray-100 text-gray-500'
-            }`}>
-              {cita.estado}
-            </span>
-          </div>
-        </div>
-      ) : (
-        <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">No tienes citas próximas</p>
-      )}
-    </div>
-  )
-}
+              'bg-gray-1
