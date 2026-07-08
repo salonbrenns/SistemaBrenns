@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { transporter } from "@/lib/mailer"
+import { getMailTransporter } from "@/lib/email"
 
 export async function GET(req: NextRequest) {
   // Verificar clave secreta
@@ -47,7 +47,8 @@ export async function GET(req: NextRequest) {
     const horaStr  = cita.hora.slice(0, 5) // "HH:MM"
 
     try {
-      await transporter.sendMail({
+      const transporter = getMailTransporter()
+      await transporter?.sendMail({
         from:    `"Brenn's" <${process.env.GMAIL_USER}>`,
         to:      usuario.correo,
         subject: `Recordatorio: tu cita es mañana a las ${horaStr} — Brenn's`,
@@ -95,8 +96,4 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     ok: true,
-    total: citas.length,
-    enviados,
-    errores,
-  })
-}
+    total
