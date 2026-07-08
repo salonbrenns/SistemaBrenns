@@ -3,13 +3,14 @@ import React, { useState, Suspense } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Eye, EyeOff, Loader2, ShieldAlert, Mail, Lock } from "lucide-react"
+import { Eye, EyeOff, Loader2, ShieldAlert, Mail, Lock, Clock } from "lucide-react"
 
 type ErrorCode = "USER_NOT_FOUND" | "WRONG_PASSWORD" | "ACCOUNT_LOCKED" | "ACCOUNT_INACTIVE" | "MISSING_FIELDS" | "SERVER_ERROR" | null
 
 function LoginContenido() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const porInactividad = searchParams?.get("inactividad") === "1"
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -122,6 +123,13 @@ function LoginContenido() {
         <div className="w-full max-w-md">
           <h2 className="text-3xl font-bold mb-1 text-center text-gray-800 dark:text-white">Iniciar Sesión</h2>
           <p className="text-gray-500 dark:text-gray-400 text-center mb-5">Ingresa tus credenciales para entrar</p>
+
+          {porInactividad && (
+            <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-4 py-3 text-sm mb-4">
+              <Clock className="w-4 h-4 mt-0.5 shrink-0 text-amber-500" />
+              <p>Tu sesión se cerró por inactividad. Vuelve a iniciar sesión para continuar.</p>
+            </div>
+          )}
 
           <button
             onClick={handleGoogle}
@@ -240,24 +248,3 @@ function LoginContenido() {
             <p className="text-sm text-gray-600 dark:text-gray-400">
               ¿No tienes cuenta?{" "}
               <Link href="/register" className="text-pink-600 font-bold hover:text-pink-800 hover:underline transition-colors">
-                Regístrate aquí
-              </Link>
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-pink-50 dark:bg-gray-950 flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-pink-500 animate-spin" />
-      </div>
-    }>
-      <LoginContenido />
-    </Suspense>
-  )
-}
