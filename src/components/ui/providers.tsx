@@ -8,3 +8,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <SessionProvider>
+        <IdleGuard />
+        {children}
+      </SessionProvider>
+    </ThemeProvider>
+  )
+}

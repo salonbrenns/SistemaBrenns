@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { withRasp } from "@/lib/withRasp"
 
-// GET — devuelve datos del perfil incluyendo fecha de registro
 export async function GET() {
   const session = await auth()
   if (!session?.user?.id) {
@@ -22,10 +21,10 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      nombre:          usuario.nombre,
-      correo:          usuario.correo,
-      telefono:        usuario.telefono,
-      fecha_registro:  usuario.fecha_registro.toISOString(),
+      nombre:         usuario.nombre,
+      correo:         usuario.correo,
+      telefono:       usuario.telefono,
+      fecha_registro: usuario.fecha_registro.toISOString(),
     })
   } catch (err) {
     console.error("Error obteniendo perfil:", err)
@@ -33,7 +32,6 @@ export async function GET() {
   }
 }
 
-// PUT — actualiza nombre, correo y teléfono
 async function profileHandler(req: NextRequest) {
   try {
     const session = await auth()
@@ -46,3 +44,31 @@ async function profileHandler(req: NextRequest) {
     if (!nombre || !correo) {
       return NextResponse.json({ error: "Nombre y correo son requeridos" }, { status: 400 })
     }
+
+    if (correo !== session.user.email) {
+      const existente = await prisma.usuario.findUnique({ where: { correo } })
+      if (existente && existente.id !== Number(session.user.id)) {
+        return NextResponse.json({ error: "Este correo ya está en uso" }, { status: 409 })
+      }
+    }
+
+    const actualizado = await prisma.usuario.update({
+      where: { id: Number(session.user.id) },
+      data: { nombre, correo, telefono: telefono || null },
+    })
+
+    return NextResponse.json({
+      ok: true,
+      user: {
+        nombre:   actualizado.nombre,
+        correo:   actualizado.correo,
+        telefono: actualizado.telefono,
+      },
+    })
+  } catch (err) {
+    console.error("Error actualizando perfil:", err)
+    return NextResponse.json({ error: "Error interno" }, { status: 500 })
+  }
+}
+
+export const PUT = withRasp(profileHandler)

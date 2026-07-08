@@ -397,4 +397,15 @@ function UltimaCitaSection() {
             <span className={`text-xs font-bold px-3 py-1 rounded-full ${
               cita.estado === 'CONFIRMADA' ? 'bg-green-100 text-green-700' :
               cita.estado === 'PENDIENTE'  ? 'bg-amber-100 text-amber-700' :
-              'bg-gray-1
+              'bg-gray-100 text-gray-500'
+            }`}>
+              {cita.estado}
+            </span>
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">No tienes citas próximas</p>
+      )}
+    </div>
+  )
+}

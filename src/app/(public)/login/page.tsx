@@ -246,5 +246,25 @@ function LoginContenido() {
 
           <div className="mt-5 text-center border-t border-gray-100 dark:border-gray-700 pt-4">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              ¿No tienes cuenta?{" "}
               <Link href="/register" className="text-pink-600 font-bold hover:text-pink-800 hover:underline transition-colors">
+                Regístrate aquí
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-pink-50 dark:bg-gray-950 flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-pink-500 animate-spin" />
+      </div>
+    }>
+      <LoginContenido />
+    </Suspense>
+  )
+}
