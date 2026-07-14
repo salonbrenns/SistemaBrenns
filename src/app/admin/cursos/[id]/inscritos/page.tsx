@@ -6,6 +6,7 @@ import {
   GraduationCap, Users, ArrowLeft,
   CheckCircle2, AlertCircle, CreditCard, Banknote,
 } from "lucide-react"
+import AccionesInscrito from "./AccionesInscrito"
 
 function badge(estado: string) {
   if (estado === "PAGADO")
@@ -18,7 +19,11 @@ function badge(estado: string) {
 function estadoBadge(estado: string) {
   if (estado === "ACTIVO")
     return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-  return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+  if (estado === "COMPLETADO")
+    return "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400"
+  if (estado === "CANCELADO")
+    return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+  return "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
 }
 
 function formatDate(d: Date | string) {
@@ -107,7 +112,7 @@ export default async function InscritosPage({
             <table className="w-full text-sm">
               <thead className="bg-rose-900 dark:bg-rose-950">
                 <tr>
-                  {["#", "Nombre", "Correo", "Teléfono", "Inscripción", "Pago", "Total pagado", "Estado"].map((h) => (
+                  {["#", "Nombre", "Correo", "Teléfono", "Inscripción", "Pago", "Total pagado", "Estado", "Acciones"].map((h) => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                       {h}
                     </th>
@@ -154,6 +159,19 @@ export default async function InscritosPage({
                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${estadoBadge(insc.estado)}`}>
                           {insc.estado}
                         </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <AccionesInscrito
+                          inscripcionId={insc.id}
+                          estadoInscripcion={insc.estado}
+                          pagos={pagosCurso.map(p => ({
+                            id: p.id,
+                            monto: Number(p.monto),
+                            metodo_pago: p.metodo_pago,
+                            estado: p.estado,
+                          }))}
+                          cursoId={cursoId}
+                        />
                       </td>
                     </tr>
                   )

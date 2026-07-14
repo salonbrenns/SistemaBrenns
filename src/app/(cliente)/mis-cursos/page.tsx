@@ -6,7 +6,7 @@ import AuthGuard from "@/components/ui/AuthGuard"
 import {
   GraduationCap, Clock, Calendar, BookOpen,
   CheckCircle2, AlertCircle, Loader2, Plus,
-  CreditCard, Banknote, ChevronRight,
+  CreditCard, Banknote, ChevronRight, Award,
 } from "lucide-react"
 
 type PagoCurso = {
@@ -37,8 +37,9 @@ type CursoInscrito = {
 }
 
 const estadoBadge: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
-  ACTIVO:   { label: "Activo",   color: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400", icon: CheckCircle2 },
-  CANCELADO:{ label: "Cancelado",color: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",                 icon: AlertCircle  },
+  ACTIVO:     { label: "Activo",     color: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400", icon: CheckCircle2    },
+  CANCELADO:  { label: "Cancelado",  color: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",                 icon: AlertCircle     },
+  COMPLETADO: { label: "Completado", color: "bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400",             icon: GraduationCap   },
 }
 
 const pagoBadge: Record<string, string> = {
@@ -104,7 +105,7 @@ function MisCursosContent() {
       {cursos.map((item) => {
         if (!item.curso) return null
         const c       = item.curso
-        const badge   = estadoBadge[item.estado] ?? estadoBadge.ACTIVO
+        const badge   = estadoBadge[item.estado] ?? { label: item.estado, color: "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400", icon: AlertCircle }
         const BadgeIcon = badge.icon
         const pendiente = item.pagos.some((p) => p.estado === "PENDIENTE")
         const deuda     = c.precio_total - item.totalPagado
@@ -196,6 +197,20 @@ function MisCursosContent() {
                     </span>
                   )}
                 </div>
+
+                {/* Botón certificado */}
+                {item.estado === "COMPLETADO" && (
+                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <Link
+                      href={`/certificado/${item.inscripcionId}`}
+                      target="_blank"
+                      className="inline-flex items-center gap-2 bg-pink-50 dark:bg-pink-950/30 hover:bg-pink-100 dark:hover:bg-pink-900/40 border border-pink-200 dark:border-pink-800 text-pink-700 dark:text-pink-300 font-bold text-sm px-4 py-2 rounded-xl transition"
+                    >
+                      <Award className="w-4 h-4" />
+                      Ver e imprimir certificado
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </div>

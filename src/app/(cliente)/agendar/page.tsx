@@ -181,7 +181,7 @@ function AgendarContenido() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white dark:from-gray-900 dark:to-gray-950 flex items-center justify-center py-20">
         <div className="text-center max-w-md px-6">
-          <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 ${esTransferencia ? "bg-amber-100" : "bg-green-100"}`}>
+          <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 ${esTransferencia ? "bg-amber-100 dark:bg-amber-900/30" : "bg-green-100 dark:bg-green-900/30"}`}>
             {esTransferencia
               ? <AlertCircle className="w-14 h-14 text-amber-500" />
               : <CheckCircle className="w-14 h-14 text-green-500" />
@@ -207,9 +207,9 @@ function AgendarContenido() {
               : `Pago completo: $${montoCompleto.toLocaleString()} MXN`}
           </p>
           {esTransferencia && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6 text-left">
-              <p className="text-sm font-bold text-amber-800 mb-1">¿Qué sigue?</p>
-              <p className="text-xs text-amber-700">
+            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl px-4 py-3 mb-6 text-left">
+              <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">¿Qué sigue?</p>
+              <p className="text-xs text-amber-700 dark:text-amber-400">
                 Envía tu comprobante de transferencia por WhatsApp al número del salón. Una vez verificado, tu cita quedará confirmada.
               </p>
             </div>
@@ -461,7 +461,7 @@ function AgendarContenido() {
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Notas adicionales (opcional)</label>
                     <textarea value={notas} onChange={e => setNotas(e.target.value)} rows={2}
                       placeholder="Ej: Alergia a ciertos productos, uñas muy cortas..."
-                      className="w-full rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm focus:outline-none focus:border-pink-400 transition resize-none" />
+                      className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 px-4 py-3 text-sm focus:outline-none focus:border-pink-400 transition resize-none" />
                   </div>
                 )}
 
@@ -494,11 +494,13 @@ function AgendarContenido() {
                     ].map(op => (
                       <button key={op.id} type="button" onClick={() => setTipoPago(op.id)}
                         className={`p-4 rounded-xl border-2 text-left transition-all ${
-                          tipoPago === op.id ? "border-pink-600 bg-pink-50" : "border-gray-100 hover:border-pink-200"
+                          tipoPago === op.id
+                            ? "border-pink-600 bg-pink-50 dark:bg-pink-950/30"
+                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-pink-300 dark:hover:border-pink-700"
                         }`}>
-                        <p className={`font-bold text-sm ${tipoPago === op.id ? "text-pink-700" : "text-gray-700 dark:text-gray-300"}`}>{op.label}</p>
-                        <p className={`text-xl font-black mt-0.5 ${tipoPago === op.id ? "text-pink-600" : "text-gray-400"}`}>{op.monto}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">{op.desc}</p>
+                        <p className={`font-bold text-sm ${tipoPago === op.id ? "text-pink-700 dark:text-pink-300" : "text-gray-700 dark:text-gray-300"}`}>{op.label}</p>
+                        <p className={`text-xl font-black mt-0.5 ${tipoPago === op.id ? "text-pink-600" : "text-gray-400 dark:text-gray-500"}`}>{op.monto}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{op.desc}</p>
                       </button>
                     ))}
                   </div>
@@ -517,10 +519,12 @@ function AgendarContenido() {
                       ].map(({ id, label, icon: Icon }) => (
                         <button key={id} type="button" onClick={() => setMetodoPagoCliente(id)}
                           className={`p-3.5 rounded-xl border-2 flex items-center gap-3 transition-all ${
-                            metodoPagoCliente === id ? "border-pink-600 bg-pink-50" : "border-gray-100 hover:border-pink-200"
+                            metodoPagoCliente === id
+                              ? "border-pink-600 bg-pink-50 dark:bg-pink-950/30"
+                              : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-pink-300 dark:hover:border-pink-700"
                           }`}>
-                          <Icon className={`w-5 h-5 ${metodoPagoCliente === id ? "text-pink-600" : "text-gray-400"}`} />
-                          <span className={`font-bold text-sm ${metodoPagoCliente === id ? "text-pink-700" : "text-gray-600 dark:text-gray-400"}`}>{label}</span>
+                          <Icon className={`w-5 h-5 ${metodoPagoCliente === id ? "text-pink-600" : "text-gray-400 dark:text-gray-500"}`} />
+                          <span className={`font-bold text-sm ${metodoPagoCliente === id ? "text-pink-700 dark:text-pink-300" : "text-gray-600 dark:text-gray-400"}`}>{label}</span>
                         </button>
                       ))}
                     </div>
@@ -528,15 +532,15 @@ function AgendarContenido() {
                     {/* Instrucciones transferencia */}
                     {metodoPagoCliente === "TRANSFERENCIA" && (
                       <div className="space-y-3">
-                        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-1.5">
-                          <p className="font-bold text-blue-800 text-sm mb-2">Datos para transferencia / SPEI</p>
-                          <p className="text-xs text-blue-700">Banco: <strong>BBVA</strong></p>
-                          <p className="text-xs text-blue-700">Titular: <strong>Brenn&apos;s Salón</strong></p>
-                          <p className="text-xs text-blue-700">CLABE: <strong>012 345 678 901 234 5</strong></p>
-                          <p className="text-xs text-blue-700">Concepto: <strong>tu nombre + fecha de cita</strong></p>
+                        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-xl p-4 space-y-1.5">
+                          <p className="font-bold text-blue-800 dark:text-blue-300 text-sm mb-2">Datos para transferencia / SPEI</p>
+                          <p className="text-xs text-blue-700 dark:text-blue-400">Banco: <strong>BBVA</strong></p>
+                          <p className="text-xs text-blue-700 dark:text-blue-400">Titular: <strong>Brenn&apos;s Salón</strong></p>
+                          <p className="text-xs text-blue-700 dark:text-blue-400">CLABE: <strong>012 345 678 901 234 5</strong></p>
+                          <p className="text-xs text-blue-700 dark:text-blue-400">Concepto: <strong>tu nombre + fecha de cita</strong></p>
                         </div>
-                        <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
-                          <p className="text-xs text-amber-700 font-medium">
+                        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 rounded-xl px-4 py-3">
+                          <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
                             Después de transferir, envía tu comprobante por WhatsApp. Tu cita quedará en <strong>espera</strong> hasta que lo verifiquemos.
                           </p>
                         </div>
@@ -588,7 +592,7 @@ function AgendarContenido() {
                 </div>
               ) : servicio ? (
                 <div className="space-y-3">
-                  <div className="bg-pink-50 rounded-xl p-4 border border-pink-100">
+                  <div className="bg-pink-50 dark:bg-pink-950/30 rounded-xl p-4 border border-pink-100 dark:border-pink-900">
                     <p className="font-bold text-gray-800 dark:text-white text-sm">{servicio.nombre}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
                       <Clock className="w-3 h-3" /> {servicio.duracion}

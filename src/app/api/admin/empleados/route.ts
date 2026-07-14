@@ -9,6 +9,8 @@ async function isAdminOrEmpleado() {
 }
 
 export async function GET() {
+  if (!await isAdminOrEmpleado())
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   const empleados = await prisma.empleado.findMany({
     where: { activo: true },
     orderBy: { orden: "asc" },

@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
 import cloudinary from "@/lib/cloudinary"
 
 export async function POST(req: Request) {
+  const session = await auth()
+  if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "EMPLEADO")) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  }
+
   try {
     const formData = await req.formData()
     const files = formData.getAll("files") as File[]

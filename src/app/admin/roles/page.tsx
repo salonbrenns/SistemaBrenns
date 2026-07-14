@@ -5,10 +5,10 @@ import { useEffect, useState } from "react"
 import { Shield, User, GraduationCap, Crown, Check, X, Briefcase, Loader2, AlertCircle, Search } from "lucide-react"
 
 const ROLES_INFO = [
-  { nombre: "ADMIN",    icon: Crown,        color: "bg-pink-500",  border: "border-pink-200",  badge: "bg-pink-100 text-pink-700",   descripcion: "Acceso completo al sistema",    permisos: ["Ver y editar todos los módulos","Gestionar usuarios y roles","Ver reportes y estadísticas","Configurar el sistema","Gestionar pagos"] },
-  { nombre: "EMPLEADO", icon: Briefcase,    color: "bg-amber-500", border: "border-amber-200", badge: "bg-amber-100 text-amber-700", descripcion: "Acceso a citas y agenda",        permisos: ["Ver y gestionar sus citas","Agendar citas para clientes","Ver su perfil y horarios","Sin acceso a configuración","Sin acceso a reportes"] },
-  { nombre: "DOCENTE",  icon: GraduationCap,color: "bg-blue-500",  border: "border-blue-200",  badge: "bg-blue-100 text-blue-700",   descripcion: "Acceso a módulos de cursos",    permisos: ["Ver sus cursos asignados","Ver inscripciones","Ver su perfil","Sin acceso a pagos","Sin acceso a configuración"] },
-  { nombre: "CLIENTE",  icon: User,         color: "bg-green-500", border: "border-green-200", badge: "bg-green-100 text-green-700", descripcion: "Acceso al portal de clientes",  permisos: ["Ver y comprar productos","Agendar citas","Ver sus pedidos y citas","Editar su perfil","Sin acceso al admin"] },
+  { nombre: "ADMIN",    icon: Crown,        color: "bg-pink-500",  border: "border-pink-200 dark:border-pink-900",   badge: "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400",   descripcion: "Acceso completo al sistema",    permisos: ["Ver y editar todos los módulos","Gestionar usuarios y roles","Ver reportes y estadísticas","Configurar el sistema","Gestionar pagos"] },
+  { nombre: "EMPLEADO", icon: Briefcase,    color: "bg-amber-500", border: "border-amber-200 dark:border-amber-900",  badge: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400", descripcion: "Acceso a citas y agenda",        permisos: ["Ver y gestionar sus citas","Agendar citas para clientes","Ver su perfil y horarios","Sin acceso a configuración","Sin acceso a reportes"] },
+  { nombre: "DOCENTE",  icon: GraduationCap,color: "bg-blue-500",  border: "border-blue-200 dark:border-blue-900",   badge: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",   descripcion: "Acceso a módulos de cursos",    permisos: ["Ver sus cursos asignados","Ver inscripciones","Ver su perfil","Sin acceso a pagos","Sin acceso a configuración"] },
+  { nombre: "CLIENTE",  icon: User,         color: "bg-green-500", border: "border-green-200 dark:border-green-900",  badge: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400", descripcion: "Acceso al portal de clientes",  permisos: ["Ver y comprar productos","Agendar citas","Ver sus pedidos y citas","Editar su perfil","Sin acceso al admin"] },
 ]
 
 type Usuario = { id: number; nombre: string; correo: string; telefono: string | null; rol: string; activo: boolean }
@@ -145,7 +145,7 @@ export default function RolesPage() {
                         value={u.rol}
                         onChange={e => cambiarRol(u.id, e.target.value, "lista")}
                         disabled={guardando === u.id}
-                        className="border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-pink-400 disabled:opacity-50"
+                        className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-pink-400 disabled:opacity-50"
                       >
                         {ROLES_OPCIONES.map(r => <option key={r} value={r}>{r}</option>)}
                       </select>
@@ -172,16 +172,16 @@ export default function RolesPage() {
               value={busqueda}
               onChange={e => setBusqueda(e.target.value)}
               placeholder="Nombre o correo del cliente..."
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:border-pink-400"
+              className="w-full pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-500 rounded-xl text-sm focus:outline-none focus:border-pink-400"
             />
             {buscando && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-pink-400 animate-spin" />}
           </div>
           {busResults.length > 0 && (
             <div className="mt-3 space-y-2">
               {busResults.map(u => (
-                <div key={u.id} className="flex items-center justify-between border border-gray-100 rounded-xl px-4 py-3 hover:border-pink-100 transition-colors">
+                <div key={u.id} className="flex items-center justify-between border border-gray-100 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-pink-100 dark:hover:border-pink-900 transition-colors dark:bg-gray-800/50">
                   <div>
-                    <p className="font-semibold text-gray-800 text-sm">{u.nombre}</p>
+                    <p className="font-semibold text-gray-800 dark:text-white text-sm">{u.nombre}</p>
                     <p className="text-xs text-gray-400">{u.correo}</p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -190,7 +190,7 @@ export default function RolesPage() {
                       defaultValue={u.rol || "CLIENTE"}
                       onChange={e => cambiarRol(u.id, e.target.value, "busqueda")}
                       disabled={guardando === u.id}
-                      className="border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-pink-400 disabled:opacity-50"
+                      className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-pink-400 disabled:opacity-50"
                     >
                       {ROLES_OPCIONES.map(r => <option key={r} value={r}>{r}</option>)}
                     </select>

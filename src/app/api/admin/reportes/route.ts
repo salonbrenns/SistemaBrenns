@@ -91,7 +91,11 @@ export async function GET() {
     prisma.cita.count({ where: { estado: { notIn: ["CANCELADO"] }, fecha: { gte: inicioAnio } } }),
     prisma.cita.aggregate({ where: { estado: "COMPLETADO", fecha: { gte: inicioAnio } }, _sum: { total: true } }),
     prisma.cita.count({ where: { fecha: { gte: new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()), lte: new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 23, 59, 59) }, estado: { notIn: ["CANCELADO"] } } }),
-    prisma.usuario.count({ where: { rol: "CLIENTE", activo: true } }),
+    prisma.$queryRaw<[{ count: bigint }]>`
+      SELECT COUNT(*)::bigint AS count
+      FROM seguridad.tblusuarios
+      WHERE rol::text = 'CLIENTE' AND activo = true
+    `,
   ])
 
   return NextResponse.json({
@@ -99,7 +103,7 @@ export async function GET() {
       totalCitasAnio,
       totalIngresosAnio: Number(totalIngresosAnio._sum.total ?? 0),
       citasHoy,
-      clientesTotal,
+      clientesTotal: Number(clientesTotal[0].count),
     },
     ingresosPorMes,
     topServicios: topServiciosDetalle,

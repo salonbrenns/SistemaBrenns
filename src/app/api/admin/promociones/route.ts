@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { auth } from "@/lib/auth"
+
+async function isAdmin() {
+  const session = await auth()
+  return session?.user?.role === 'ADMIN'
+}
 
 export async function GET() {
+  if (!await isAdmin()) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   try {
     const promociones = await prisma.promocion.findMany({
       orderBy: { createdAt: "desc" },
@@ -18,6 +25,10 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const session = await auth()
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  }
   try {
     const body = await req.json() as {
       nombre:       string

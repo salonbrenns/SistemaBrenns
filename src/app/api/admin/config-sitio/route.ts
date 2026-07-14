@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { auth } from "@/lib/auth"
 
 // ✅ Tipo para el body del POST en lugar de any
 type ConfigBody = Record<string, string | number | boolean | object | null>
 
+async function isAdmin() {
+  const session = await auth()
+  return session?.user?.role === "ADMIN"
+}
+
 export async function GET() {
+  if (!await isAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+
   try {
     const registros = await prisma.configSitio.findMany()
     const config: Record<string, unknown> = {}
@@ -28,6 +36,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  if (!await isAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+
   try {
     const body = await req.json() as ConfigBody // ✅ tipo explícito
 

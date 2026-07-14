@@ -80,7 +80,7 @@ export default async function PagosPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5 flex items-center gap-4">
           <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
             <CheckCircle className="w-6 h-6 text-white" />
           </div>
@@ -89,7 +89,7 @@ export default async function PagosPage() {
             <p className="text-xl font-black text-green-600">${totalCobrado.toLocaleString()} MXN</p>
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5 flex items-center gap-4">
           <div className="w-12 h-12 bg-amber-400 rounded-xl flex items-center justify-center">
             <Clock className="w-6 h-6 text-white" />
           </div>
@@ -98,7 +98,7 @@ export default async function PagosPage() {
             <p className="text-xl font-black text-amber-600">{porVerificar} transferencia{porVerificar !== 1 ? "s" : ""}</p>
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5 flex items-center gap-4">
           <div className="w-12 h-12 bg-blue-400 rounded-xl flex items-center justify-center">
             <CreditCard className="w-6 h-6 text-white" />
           </div>
@@ -136,7 +136,7 @@ export default async function PagosPage() {
                     <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{p.servicio}</td>
                     <td className="px-4 py-3 font-bold text-gray-900 dark:text-white">${p.monto.toLocaleString()} MXN</td>
                     <td className="px-4 py-3">
-                      <span className={`text-xs font-bold px-2 py-1 rounded-full ${p.tipo === "ANTICIPO" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700 dark:text-gray-300"}`}>
+                      <span className={`text-xs font-bold px-2 py-1 rounded-full ${p.tipo === "ANTICIPO" ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400" : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"}`}>
                         {p.tipo === "ANTICIPO" ? "Anticipo 50%" : "Pago completo"}
                       </span>
                     </td>
@@ -148,17 +148,17 @@ export default async function PagosPage() {
                     </td>
                     <td className="px-4 py-3">
                       {p.estadoPago === "COBRADO" && (
-                        <span className="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded-full w-fit">
+                        <span className="flex items-center gap-1 text-xs font-bold text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full w-fit">
                           <CheckCircle className="w-3 h-3" /> Cobrado
                         </span>
                       )}
                       {p.estadoPago === "POR_VERIFICAR" && (
-                        <span className="flex items-center gap-1 text-xs font-bold text-amber-700 bg-amber-100 px-2 py-1 rounded-full w-fit">
+                        <span className="flex items-center gap-1 text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-2 py-1 rounded-full w-fit">
                           <Clock className="w-3 h-3" /> Por verificar
                         </span>
                       )}
                       {p.estadoPago === "CANCELADO" && (
-                        <span className="flex items-center gap-1 text-xs font-bold text-red-700 bg-red-100 px-2 py-1 rounded-full w-fit">
+                        <span className="flex items-center gap-1 text-xs font-bold text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded-full w-fit">
                           <XCircle className="w-3 h-3" /> Cancelado
                         </span>
                       )}

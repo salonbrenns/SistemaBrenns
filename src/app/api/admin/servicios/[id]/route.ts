@@ -1,11 +1,17 @@
-// src/app/api/servicios/[id]/route.ts
 import { NextResponse } from 'next/server'
 import { prisma }       from '@/lib/prisma'
+import { auth }         from '@/lib/auth'
+
+async function checkAdmin() {
+  const session = await auth()
+  return session?.user?.role === 'ADMIN'
+}
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!await checkAdmin()) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   try {
     const { id } = await params
     const data   = await request.json()
@@ -36,6 +42,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!await checkAdmin()) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   try {
     const { id }     = await params
     const { activo } = await request.json()

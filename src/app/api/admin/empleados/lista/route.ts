@@ -1,8 +1,14 @@
 // src/app/api/admin/empleados/lista/route.ts
 import { NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
 export async function GET() {
+  const session = await auth()
+  if (!session?.user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  }
+
   try {
     // Traer todos los activos y filtrar en JS para evitar el problema del enum
     const todos = await prisma.usuario.findMany({

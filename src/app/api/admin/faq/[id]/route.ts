@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+
+async function checkAdmin() {
+  const session = await auth()
+  return session?.user?.role === "ADMIN"
+}
 
 // PUT - Editar pregunta
 export async function PUT(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }   // ← Cambiado a Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!await checkAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   try {
     const { id } = await params;                    // ← Await obligatorio
     const faqId = parseInt(id);
@@ -38,8 +45,9 @@ export async function PUT(
 // DELETE - Eliminar pregunta
 export async function DELETE(
   _: Request,
-  { params }: { params: Promise<{ id: string }> }   // ← Cambiado a Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!await checkAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   try {
     const { id } = await params;                    // ← Await obligatorio
     const faqId = parseInt(id);

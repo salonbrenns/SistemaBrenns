@@ -23,7 +23,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         // Llamada a la API Route (esto corre en Node.js, no en Edge)
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+        const baseUrl = process.env.NEXTAUTH_URL ?? process.env.AUTH_URL ?? process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000"
 
         const res = await fetch(`${baseUrl}/api/auth/credentials`, {
           method: "POST",

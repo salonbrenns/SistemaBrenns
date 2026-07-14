@@ -16,12 +16,17 @@ const DIAS = [
   { id: 6, label: "Sábado",    short: "Sá" },
 ]
 
+// Horas disponibles para selección rápida (rango del salón: 10-18h)
 const HORAS_SUGERIDAS = [
-  "08:00","08:30","09:00","09:30","10:00","10:30",
-  "11:00","11:30","12:00","12:30","13:00","13:30",
-  "14:00","14:30","15:00","15:30","16:00","16:30",
-  "17:00","17:30","18:00","18:30","19:00","19:30",
+  "10:00","10:30","11:00","11:30",
+  "12:00","12:30","13:00","13:30",
+  "14:00","14:30","15:00","15:30",
+  "16:00","16:30","17:00","17:30",
 ]
+
+// Horario estándar del salón: Lun-Sáb, 10:00-17:30 (cada 30 min)
+const HORAS_ESTANDAR = HORAS_SUGERIDAS
+const DIAS_ESTANDAR  = [1, 2, 3, 4, 5, 6] // Lun-Sáb
 
 type Horario   = { id: number; hora: string; diaSemana: number; activo: boolean }
 type Empleado  = { id: number; nombre: string; correo: string; rol: string; dias: number[] }
@@ -153,7 +158,7 @@ useEffect(() => {
                 <button key={hora} onClick={() => toggleQuitar(hora)} disabled={!!guardando}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                     quitada
-                      ? "border-red-200 bg-red-50 text-red-400 line-through opacity-70"
+                      ? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 text-red-400 line-through opacity-70"
                       : "border-pink-200 dark:border-pink-800 bg-pink-50 dark:bg-pink-950/30 text-pink-700 dark:text-pink-300 hover:border-red-300 hover:bg-red-50 hover:text-red-500"
                   }`}>
                   {cargandoEsta ? <Loader2 className="w-3 h-3 animate-spin" />
@@ -165,7 +170,7 @@ useEffect(() => {
             {agregadas.map(hora => {
               const exc = excDia.find(e => e.hora === hora && e.tipo === "AGREGAR")
               return (
-                <span key={hora} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-blue-200 bg-blue-50 text-blue-700">
+                <span key={hora} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300">
                   <Plus className="w-3 h-3" />
                   {hora}
                   <button onClick={() => exc && eliminarExcepcion(exc.id)}
@@ -189,7 +194,9 @@ useEffect(() => {
               .sort((a, b) => (a.fecha ?? "").localeCompare(b.fecha ?? ""))
               .map(exc => (
                 <div key={exc.id} className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs border ${
-                  exc.tipo === "QUITAR" ? "bg-red-50 border-red-100 text-red-600" : "bg-blue-50 border-blue-100 text-blue-600"
+                  exc.tipo === "QUITAR"
+                    ? "bg-red-50 dark:bg-red-950/30 border-red-100 dark:border-red-900 text-red-600 dark:text-red-400"
+                    : "bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-900 text-blue-600 dark:text-blue-400"
                 }`}>
                   <span className="flex items-center gap-2">
                     {exc.tipo === "QUITAR" ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
@@ -198,7 +205,9 @@ useEffect(() => {
                       {exc.fecha ? new Date(exc.fecha).toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric" }) : ""}
                     </span>
                     <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                      exc.tipo === "QUITAR" ? "bg-red-100 text-red-500" : "bg-blue-100 text-blue-500"
+                      exc.tipo === "QUITAR"
+                        ? "bg-red-100 dark:bg-red-900/40 text-red-500 dark:text-red-400"
+                        : "bg-blue-100 dark:bg-blue-900/40 text-blue-500 dark:text-blue-400"
                     }`}>
                       {exc.tipo === "QUITAR" ? "Quitada" : "Extra"}
                     </span>
@@ -212,30 +221,30 @@ useEffect(() => {
         </div>
       )}
 
-      <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-3 border border-gray-100">
+      <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-3 border border-gray-100 dark:border-gray-700">
         <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1.5">
           <Plus className="w-3.5 h-3.5" /> Agregar hora extra
         </p>
         <div className="flex gap-1 mb-3">
           <button onClick={() => setModoFecha(false)}
             className={`text-xs px-3 py-1.5 rounded-full border transition ${
-              !modoFecha ? "bg-pink-600 text-white border-pink-600" : "bg-white text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-pink-300"
+              !modoFecha ? "bg-pink-600 text-white border-pink-600" : "bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-pink-300"
             }`}>
             Permanente
           </button>
           <button onClick={() => setModoFecha(true)}
             className={`text-xs px-3 py-1.5 rounded-full border transition ${
-              modoFecha ? "bg-pink-600 text-white border-pink-600" : "bg-white text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-pink-300"
+              modoFecha ? "bg-pink-600 text-white border-pink-600" : "bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-pink-300"
             }`}>
             Por fecha
           </button>
         </div>
         <div className="flex gap-2 flex-wrap">
           <input type="time" value={nuevaHora} onChange={e => setNuevaHora(e.target.value)}
-            className="border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-pink-400" />
+            className="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-pink-400" />
           {modoFecha && (
             <input type="date" value={nuevaFecha} onChange={e => setNuevaFecha(e.target.value)}
-              className="border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-pink-400" />
+              className="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-pink-400" />
           )}
           <button onClick={agregarHoraExtra}
             disabled={!nuevaHora || (modoFecha && !nuevaFecha) || guardando === "nueva"}
@@ -280,13 +289,13 @@ function EmpleadoCard({ emp, horasGlobales }: { emp: Empleado; horasGlobales: Ho
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-50 shadow-sm overflow-hidden">
       <button onClick={() => setExpanded(e => !e)}
-        className="w-full flex items-center justify-between px-5 py-4 hover:bg-pink-50/40 transition text-left">
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-pink-50/40 dark:hover:bg-gray-700/50 transition text-left">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
             {emp.nombre.charAt(0).toUpperCase()}
           </div>
           <div>
-            <p className="font-semibold text-gray-800 text-sm">{emp.nombre}</p>
+            <p className="font-semibold text-gray-800 dark:text-white text-sm">{emp.nombre}</p>
             <p className="text-xs text-gray-400">{emp.correo}</p>
           </div>
         </div>
@@ -294,19 +303,21 @@ function EmpleadoCard({ emp, horasGlobales }: { emp: Empleado; horasGlobales: Ho
           <div className="hidden sm:flex gap-1">
             {DIAS.map(d => (
               <span key={d.id} className={`text-[10px] font-bold w-6 h-6 rounded-full flex items-center justify-center ${
-                diasSel.includes(d.id) ? "bg-pink-600 text-white" : "bg-gray-100 text-gray-400"
+                diasSel.includes(d.id) ? "bg-pink-600 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-400"
               }`}>{d.short}</span>
             ))}
           </div>
           <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-            emp.rol === "ADMIN" ? "bg-purple-100 text-purple-700" : "bg-orange-100 text-orange-700"
+            emp.rol === "ADMIN"
+              ? "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300"
+              : "bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300"
           }`}>{emp.rol}</span>
           {expanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
         </div>
       </button>
 
       {expanded && (
-        <div className="px-5 pb-5 border-t border-pink-50 pt-4 space-y-5">
+        <div className="px-5 pb-5 border-t border-pink-50 dark:border-gray-700 pt-4 space-y-5">
           <div>
             <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
               <Calendar className="w-3.5 h-3.5 text-pink-400" /> Días de atención
@@ -317,7 +328,7 @@ function EmpleadoCard({ emp, horasGlobales }: { emp: Empleado; horasGlobales: Ho
                 return (
                   <button key={d.id} onClick={() => toggleDia(d.id)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 text-sm font-semibold transition-all ${
-                      activo ? "border-pink-600 bg-pink-600 text-white shadow-sm" : "border-gray-200 dark:border-gray-700 bg-white text-gray-600 dark:text-gray-400 hover:border-pink-300"
+                      activo ? "border-pink-600 bg-pink-600 text-white shadow-sm" : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:border-pink-300 dark:hover:border-pink-600"
                     }`}>
                     {activo && <Check className="w-3.5 h-3.5" />}
                     {d.label}
@@ -347,7 +358,7 @@ function EmpleadoCard({ emp, horasGlobales }: { emp: Empleado; horasGlobales: Ho
             </div>
           </div>
 
-          <div className="border-t border-pink-50" />
+          <div className="border-t border-pink-50 dark:border-gray-700" />
 
           <div>
             <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -364,7 +375,7 @@ function EmpleadoCard({ emp, horasGlobales }: { emp: Empleado; horasGlobales: Ho
                     return (
                       <button key={id} onClick={() => setDiaHoras(activo ? null : id)}
                         className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                          activo ? "bg-pink-600 text-white border-pink-600" : "bg-white text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-pink-300"
+                          activo ? "bg-pink-600 text-white border-pink-600" : "bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-pink-400 dark:hover:border-pink-500"
                         }`}>
                         {dia?.label}
                       </button>
@@ -398,8 +409,9 @@ export default function HorariosPage() {
   const [nuevaHora, setNuevaHora] = useState("")
   const [guardando, setGuardando] = useState(false)
   const [error,     setError]     = useState("")
-  const [copiando,  setCopiando]  = useState(false)
-  const [empleados, setEmpleados] = useState<Empleado[]>([])
+  const [copiando,         setCopiando]         = useState(false)
+  const [cargandoEstandar, setCargandoEstandar] = useState(false)
+  const [empleados,        setEmpleados]         = useState<Empleado[]>([])
   const [cargandoEmpleados, setCargandoEmpleados] = useState(false)
 
   // ✅ useCallback para evitar setState-in-effect
@@ -471,6 +483,24 @@ export default function HorariosPage() {
     await cargar()
   }
 
+  const cargarHorarioEstandar = async () => {
+    if (!confirm("¿Cargar horario estándar (Lun-Sáb, 10:00–17:30) para todos los días?\nSolo se agregarán las horas que falten.")) return
+    setCargandoEstandar(true)
+    for (const dia of DIAS_ESTANDAR) {
+      for (const hora of HORAS_ESTANDAR) {
+        const existe = horarios.find(h => h.diaSemana === dia && h.hora === hora)
+        if (!existe) {
+          await fetch("/api/admin/horarios", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ hora, diaSemana: dia }),
+          })
+        }
+      }
+    }
+    await cargar()
+    setCargandoEstandar(false)
+  }
+
   const copiarDesdeDia = async (diaOrigen: number) => {
     const origen = horarios.filter(h => h.diaSemana === diaOrigen)
     if (origen.length === 0) { alert("El día seleccionado no tiene horarios"); return }
@@ -490,20 +520,30 @@ export default function HorariosPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300">Horarios</h1>
+        <button
+          onClick={cargarHorarioEstandar}
+          disabled={cargandoEstandar}
+          className="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white text-sm font-bold px-5 py-2.5 rounded-full transition disabled:opacity-50"
+        >
+          {cargandoEstandar
+            ? <><Loader2 className="w-4 h-4 animate-spin" /> Cargando...</>
+            : <><Calendar className="w-4 h-4" /> Cargar horario estándar (Lun–Sáb, 10–18h)</>
+          }
+        </button>
       </div>
 
-      <div className="flex gap-2 border-b border-gray-100 pb-0">
+      <div className="flex gap-2 border-b border-gray-100 dark:border-gray-700 pb-0">
         <button onClick={() => setSeccion("horarios")}
           className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-t-xl border-b-2 transition-all ${
-            seccion === "horarios" ? "border-pink-600 text-pink-600 bg-pink-50" : "border-transparent text-gray-500 dark:text-gray-400 hover:text-pink-500"
+            seccion === "horarios" ? "border-pink-600 text-pink-600 bg-pink-50 dark:bg-pink-950/30" : "border-transparent text-gray-500 dark:text-gray-400 hover:text-pink-500"
           }`}>
           <Clock className="w-4 h-4" /> Horarios generales
         </button>
         <button onClick={() => setSeccion("empleados")}
           className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-t-xl border-b-2 transition-all ${
-            seccion === "empleados" ? "border-pink-600 text-pink-600 bg-pink-50" : "border-transparent text-gray-500 dark:text-gray-400 hover:text-pink-500"
+            seccion === "empleados" ? "border-pink-600 text-pink-600 bg-pink-50 dark:bg-pink-950/30" : "border-transparent text-gray-500 dark:text-gray-400 hover:text-pink-500"
           }`}>
           <Users className="w-4 h-4" /> Días por empleado
         </button>
@@ -531,12 +571,12 @@ export default function HorariosPage() {
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 space-y-4">
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-100 p-5 shadow-sm">
-                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <h3 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                   <Clock className="w-4 h-4 text-pink-500" /> Agregar hora
                 </h3>
                 <div className="flex gap-2">
                   <input type="time" value={nuevaHora} onChange={e => setNuevaHora(e.target.value)}
-                    className="flex-1 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-pink-400" />
+                    className="flex-1 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-pink-400" />
                   <button onClick={() => agregarHora(nuevaHora)} disabled={!nuevaHora || guardando}
                     className="bg-pink-600 text-white px-4 py-2 rounded-xl hover:bg-pink-700 transition disabled:opacity-40">
                     {guardando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
@@ -546,14 +586,16 @@ export default function HorariosPage() {
               </div>
 
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-100 p-5 shadow-sm">
-                <h3 className="font-bold text-gray-800 mb-3 text-sm">Horas rápidas</h3>
+                <h3 className="font-bold text-gray-800 dark:text-white mb-3 text-sm">Horas rápidas</h3>
                 <div className="grid grid-cols-3 gap-2">
                   {HORAS_SUGERIDAS.map(h => {
                     const yaExiste = horarios.find(x => x.diaSemana === diaActivo && x.hora === h)
                     return (
                       <button key={h} onClick={() => !yaExiste && agregarHora(h)} disabled={!!yaExiste}
                         className={`py-1.5 rounded-lg text-xs font-semibold border transition-all flex items-center justify-center gap-1 ${
-                          yaExiste ? "bg-green-50 border-green-200 text-green-600 cursor-default" : "bg-white border-pink-100 text-gray-700 dark:text-gray-300 hover:border-pink-400 hover:bg-pink-50"
+                          yaExiste
+                            ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 cursor-default"
+                            : "bg-white dark:bg-gray-900 border-pink-100 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-pink-400 hover:bg-pink-50"
                         }`}>
                         {yaExiste && <Check className="w-3 h-3" />}
                         {h}
@@ -564,11 +606,11 @@ export default function HorariosPage() {
               </div>
 
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-100 p-5 shadow-sm">
-                <h3 className="font-bold text-gray-800 mb-3 text-sm">Copiar horarios de otro día</h3>
+                <h3 className="font-bold text-gray-800 dark:text-white mb-3 text-sm">Copiar horarios de otro día</h3>
                 <div className="space-y-2">
                   {DIAS.filter(d => d.id !== diaActivo).map(d => (
                     <button key={d.id} onClick={() => copiarDesdeDia(d.id)} disabled={copiando}
-                      className="w-full text-left px-4 py-2 rounded-xl border border-pink-100 text-sm text-gray-700 dark:text-gray-300 hover:bg-pink-50 hover:border-pink-300 transition flex items-center justify-between">
+                      className="w-full text-left px-4 py-2 rounded-xl border border-pink-100 dark:border-gray-700 bg-transparent text-sm text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-700 hover:border-pink-300 dark:hover:border-pink-700 transition flex items-center justify-between">
                       <span>{d.label}</span>
                       <span className="text-xs text-pink-500">{horarios.filter(h => h.diaSemana === d.id).length} horas</span>
                     </button>
@@ -606,11 +648,13 @@ export default function HorariosPage() {
                         <div className="flex gap-1">
                           <button onClick={() => toggleActivo(h.id, h.activo)}
                             className={`text-xs px-2 py-1 rounded-lg font-semibold transition ${
-                              h.activo ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-gray-100 text-gray-500 dark:text-gray-400 hover:bg-gray-200"
+                              h.activo
+                                ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/60"
+                                : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
                             }`}>
                             {h.activo ? "ON" : "OFF"}
                           </button>
-                          <button onClick={() => eliminar(h.id)} className="p-1 rounded-lg bg-red-50 text-red-400 hover:bg-red-100 transition">
+                          <button onClick={() => eliminar(h.id)} className="p-1 rounded-lg bg-red-50 dark:bg-red-950/30 text-red-400 hover:bg-red-100 dark:hover:bg-red-950/50 transition">
                             <Trash2 className="w-3 h-3" />
                           </button>
                         </div>

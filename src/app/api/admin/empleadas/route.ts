@@ -13,8 +13,12 @@ async function isAdmin() {
 export async function GET() {
   if (!await isAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 
+  // rol::text workaround — Prisma multi-schema enum comparison fails in WHERE clauses
+  const ids = await prisma.$queryRaw<{ id: number }[]>`
+    SELECT id FROM seguridad.tblusuarios WHERE rol::text = 'EMPLEADO'
+  `
   const empleadas = await prisma.usuario.findMany({
-    where: { rol: "EMPLEADO" },
+    where: { id: { in: ids.map(r => r.id) } },
     select: {
       id: true, nombre: true, correo: true, telefono: true,
       activo: true, fecha_registro: true, image: true,

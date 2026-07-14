@@ -10,26 +10,28 @@ datasource db {
 }
 
 model Cita {
-  id                Int          @id @default(autoincrement())
-  usuario_id        Int?
-  servicio_id       Int
-  fecha             DateTime
-  hora              String
-  notas             String?
-  createdAt         DateTime     @default(now())
-  metodo_pago       String?
-  nombre_contacto   String?
-  telefono_contacto String?
-  empleado_id       Int?
-  estado                String       @default("PENDIENTE")
-  total                 Decimal?     @db.Decimal(10, 2)
-  recordatorio_enviado  Boolean      @default(false)
-  cancelado_por         String?
-  cancelado_en          DateTime?
-  empleado              Usuario?     @relation("CitaEmpleado", fields: [empleado_id], references: [id])
-  servicio              Servicio     @relation(fields: [servicio_id], references: [id])
-  usuario               Usuario?     @relation("CitaCliente", fields: [usuario_id], references: [id])
-  avisos                AvisoAdmin[]
+  id                   Int          @id @default(autoincrement())
+  usuario_id           Int?
+  servicio_id          Int
+  fecha                DateTime
+  hora                 String
+  notas                String?
+  createdAt            DateTime     @default(now())
+  metodo_pago          String?
+  nombre_contacto      String?
+  telefono_contacto    String?
+  empleado_id          Int?
+  estado               String       @default("PENDIENTE")
+  recordatorio_enviado Boolean      @default(false)
+  total                Decimal?     @db.Decimal(10, 2)
+  cancelado_en         DateTime?
+  cancelado_por        String?
+  recordatorio_alexa   Boolean?
+  estado_cita          String       @default("PENDIENTE")
+  empleado             Usuario?     @relation("CitaEmpleado", fields: [empleado_id], references: [id])
+  servicio             Servicio     @relation(fields: [servicio_id], references: [id])
+  usuario              Usuario?     @relation("CitaCliente", fields: [usuario_id], references: [id])
+  avisos               AvisoAdmin[]
 
   @@map("tblcitas")
   @@schema("agenda")
@@ -99,23 +101,23 @@ model Categoria {
 }
 
 model Producto {
-  id                  Int        @id @default(autoincrement())
-  nombre              String     @db.VarChar(150)
+  id                  Int                 @id @default(autoincrement())
+  nombre              String              @db.VarChar(150)
   descripcion         String?
   marca_id            Int?
   categoria_id        Int?
-  activo              Boolean?   @default(true)
-  fecha_creacion      DateTime?  @default(now()) @db.Timestamp(6)
-  fecha_actualizacion DateTime?  @default(now()) @db.Timestamp(6)
+  activo              Boolean?            @default(true)
+  fecha_creacion      DateTime?           @default(now()) @db.Timestamp(6)
+  fecha_actualizacion DateTime?           @default(now()) @db.Timestamp(6)
   imagen              Json?
-  codigo              String?    @db.VarChar(50)
-  precio_costo        Decimal?   @db.Decimal(10, 2)
-  precio_venta        Decimal?   @db.Decimal(10, 2)
-  stock               Int        @default(0)
+  codigo              String?             @db.VarChar(50)
+  precio_costo        Decimal?            @db.Decimal(10, 2)
+  precio_venta        Decimal?            @db.Decimal(10, 2)
+  stock               Int                 @default(0)
   favoritos           Favorito[]
-  categoria           Categoria? @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  marca               Marca?     @relation(fields: [marca_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  promociones         PromocionProducto[] 
+  categoria           Categoria?          @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  marca               Marca?              @relation(fields: [marca_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  promociones         PromocionProducto[]
   variantes           Variante[]
 
   @@map("tblproductos")
@@ -188,9 +190,9 @@ model Servicio {
   beneficios   String?
   incluye      String?
   categoria_id Int?
-  categoria    CategoriaServicio? @relation(fields: [categoria_id], references: [id])
   citas        Cita[]
-  favoritos FavoritoServicio[]
+  categoria    CategoriaServicio? @relation(fields: [categoria_id], references: [id])
+  favoritos    FavoritoServicio[]
 
   @@map("tblservicios")
   @@schema("catalogos")
@@ -211,14 +213,14 @@ model FavoritoServicio {
 }
 
 model FavoritoCurso {
-  id        Int      @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   usuario_id Int
-  curso_id  Int
-  creado_en DateTime? @default(now()) @db.Timestamp(6)
-  usuario   Usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  curso_id   Int
+  creado_en  DateTime? @default(now()) @db.Timestamp(6)
+  usuario    Usuario   @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_fav_curso_usuario")
 
-  @@unique([usuario_id, curso_id])
-  @@index([usuario_id])
+  @@unique([usuario_id, curso_id], map: "uq_fav_curso")
+  @@index([usuario_id], map: "idx_fav_cursos_usuario")
   @@map("tblfavoritos_cursos")
   @@schema("ventas")
 }
@@ -305,31 +307,31 @@ model TokenRecuperacion {
 }
 
 model Usuario {
-  id                Int                @id @default(autoincrement())
-  nombre            String             @db.VarChar(150)
-  correo            String             @unique @db.VarChar(100)
-  password          String             @db.VarChar(255)
-  telefono          String?            @db.VarChar(20)
-  rol               Rol                @default(CLIENTE)
-  activo            Boolean            @default(true)
-  intentos_fallidos Int                @default(0)
-  image             String?
-  cuenta_bloqueada  Boolean            @default(false)
-  fecha_registro    DateTime           @default(now()) @db.Timestamp(6)
-  apmaterno         String?            @db.VarChar(150)
-  appaterno         String?            @db.VarChar(150)
-  diasAtencion      EmpleadoDia[]   
-  horaExcepciones EmpleadoHoraExcepcion[]    
-  citasComoCliente  Cita[]             @relation("CitaCliente")
-  citasComoEmpleado Cita[]             @relation("CitaEmpleado")
-  carrito           CarritoItem[]
-  favoritos         Favorito[]
+  id                 Int                     @id @default(autoincrement())
+  nombre             String                  @db.VarChar(150)
+  correo             String                  @unique @db.VarChar(100)
+  password           String                  @db.VarChar(255)
+  telefono           String?                 @db.VarChar(20)
+  rol                Rol                     @default(CLIENTE)
+  activo             Boolean                 @default(true)
+  intentos_fallidos  Int                     @default(0)
+  cuenta_bloqueada   Boolean                 @default(false)
+  fecha_registro     DateTime                @default(now()) @db.Timestamp(6)
+  apmaterno          String?                 @db.VarChar(150)
+  appaterno          String?                 @db.VarChar(150)
+  image              String?
+  citasComoEmpleado  Cita[]                  @relation("CitaEmpleado")
+  citasComoCliente   Cita[]                  @relation("CitaCliente")
+  avisos             AvisoAdmin[]
+  diasAtencion       EmpleadoDia[]
+  horaExcepciones    EmpleadoHoraExcepcion[]
+  permisos           PermisoUsuario[]
+  tokenRecuperacion  TokenRecuperacion?
+  carrito            CarritoItem[]
+  favoritos          Favorito[]
+  favoritosCursos    FavoritoCurso[]
   favoritosServicios FavoritoServicio[]
-  favoritosCursos   FavoritoCurso[]
-  avisos            AvisoAdmin[]
-  permisos          PermisoUsuario[]
-  tokenRecuperacion TokenRecuperacion?
-  pedidos           Pedido[]
+  pedidos            Pedido[]
 
   @@map("tblusuarios")
   @@schema("seguridad")
@@ -345,31 +347,30 @@ model Empleado {
   activo      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  // ← quitar la línea "dias EmpleadoDia[]", ya no aplica
 
   @@map("tblempleados")
   @@schema("catalogos")
 }
 
 model EmpleadoDia {
-  id          Int      @id @default(autoincrement())
-  usuario_id  Int                              // ← antes era empleado_id → Empleado
-  dia_semana  Int
-  usuario     Usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  id         Int     @id @default(autoincrement())
+  usuario_id Int
+  dia_semana Int
+  usuario    Usuario @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
 
   @@unique([usuario_id, dia_semana])
   @@map("tblempleado_dias")
-  @@schema("seguridad")                        // ← mover a seguridad junto con Usuario
+  @@schema("seguridad")
 }
 
 model EmpleadoHoraExcepcion {
-  id          Int       @id @default(autoincrement())
-  usuario_id  Int
-  dia_semana  Int?      // null si es por fecha específica
-  fecha       DateTime? @db.Date  // null si es permanente
-  hora        String    @db.VarChar(5)
-  tipo        String    @db.VarChar(10)  // "QUITAR" | "AGREGAR"
-  usuario     Usuario   @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  id         Int       @id @default(autoincrement())
+  usuario_id Int
+  dia_semana Int?
+  fecha      DateTime? @db.Date
+  hora       String    @db.VarChar(5)
+  tipo       String    @db.VarChar(10)
+  usuario    Usuario   @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
 
   @@unique([usuario_id, dia_semana, hora, tipo])
   @@unique([usuario_id, fecha, hora, tipo])
@@ -424,15 +425,15 @@ model Pedido {
 }
 
 model Promocion {
-  id           Int                @id @default(autoincrement())
-  nombre       String             @db.VarChar(150)
-  tipo         String             @db.VarChar(50)   // PRODUCTO | CODIGO
-  descuento    Decimal            @db.Decimal(5, 2)
-  codigo       String?            @unique @db.VarChar(50)
-  fecha_inicio DateTime           @db.Date
-  fecha_fin    DateTime           @db.Date
-  activo       Boolean            @default(true)
-  createdAt    DateTime           @default(now())
+  id           Int                 @id @default(autoincrement())
+  nombre       String              @db.VarChar(150)
+  tipo         String              @db.VarChar(50)
+  descuento    Decimal             @db.Decimal(5, 2)
+  codigo       String?             @unique @db.VarChar(50)
+  fecha_inicio DateTime            @db.Date
+  fecha_fin    DateTime            @db.Date
+  activo       Boolean             @default(true)
+  createdAt    DateTime            @default(now())
   productos    PromocionProducto[]
 
   @@map("tblpromociones")
@@ -443,8 +444,8 @@ model PromocionProducto {
   id           Int       @id @default(autoincrement())
   promocion_id Int
   producto_id  Int
-  promocion    Promocion @relation(fields: [promocion_id], references: [id], onDelete: Cascade)
   producto     Producto  @relation(fields: [producto_id], references: [id], onDelete: Cascade)
+  promocion    Promocion @relation(fields: [promocion_id], references: [id], onDelete: Cascade)
 
   @@unique([promocion_id, producto_id])
   @@map("tblpromociones_productos")
