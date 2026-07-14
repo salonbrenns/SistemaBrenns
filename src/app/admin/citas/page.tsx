@@ -45,6 +45,7 @@ export default async function CitasPage({
     fecha:        c.fecha.toISOString(),
     createdAt:    c.createdAt.toISOString(),
     cancelado_en: c.cancelado_en ? c.cancelado_en.toISOString() : null,
+    estado_cita:  c.estado_cita ?? c.estado,
     servicio: { ...c.servicio, precio: Number(c.servicio.precio) },
     usuario: c.usuario ?? null,
   }))
