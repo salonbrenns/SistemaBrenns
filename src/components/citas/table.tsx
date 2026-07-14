@@ -16,6 +16,7 @@ type Cita = {
   fecha: string
   hora: string
   estado: string
+  estado_cita: string
   notas: string | null
   nombre_contacto: string | null
   telefono_contacto: string | null
@@ -28,11 +29,21 @@ type Cita = {
 
 const ESTADOS = ['PENDIENTE', 'CONFIRMADA', 'COMPLETADA', 'CANCELADA']
 
+// Confirmación de pago
 const estadoConfig: Record<string, { label: string; color: string }> = {
+  PENDIENTE:  { label: 'Sin pagar',        color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' },
+  CONFIRMADA: { label: 'Pago confirmado',  color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'         },
+  COMPLETADA: { label: 'Pago confirmado',  color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'         },
+  CANCELADA:  { label: 'Cancelada',        color: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'             },
+}
+
+// Estado de realización de la cita
+const estadoCitaConfig: Record<string, { label: string; color: string }> = {
   PENDIENTE:  { label: 'Pendiente',  color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' },
-  CONFIRMADA: { label: 'Confirmada', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'         },
-  COMPLETADA: { label: 'Completada', color: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'     },
+  FINALIZADA: { label: 'Finalizada', color: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'     },
+  COMPLETADA: { label: 'Finalizada', color: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'     },
   CANCELADA:  { label: 'Cancelada',  color: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'             },
+  EN_PROCESO: { label: 'En proceso', color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' },
 }
 
 export default function CitasTable({
@@ -49,6 +60,7 @@ export default function CitasTable({
   const router   = useRouter()
   const pathname = usePathname()
   const [cambiando, setCambiando] = useState<number | null>(null)
+  const [cambiandoCita, setCambiandoCita] = useState<number | null>(null)
 
   const aplicarFiltro = (updates: Record<string, string>) => {
     const params = new URLSearchParams()
@@ -73,6 +85,17 @@ export default function CitasTable({
     })
     router.refresh()
     setCambiando(null)
+  }
+
+  const cambiarEstadoCita = async (id: number, nuevoEstado: string) => {
+    setCambiandoCita(id)
+    await fetch(`/api/admin/citas/${id}`, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ estado_cita: nuevoEstado }),
+    })
+    router.refresh()
+    setCambiandoCita(null)
   }
 
   const hayFiltros = estadoFiltro || desdeFiltro || hastaFiltro
@@ -152,7 +175,7 @@ export default function CitasTable({
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-rose-900 dark:bg-rose-950">
             <tr>
-              {['Cliente', 'Servicio', 'Fecha / Hora', 'Estado', 'Notas', 'Acciones'].map(h => (
+              {['Cliente', 'Servicio', 'Fecha / Hora', 'Conf. Pago', 'Estado Cita', 'Notas', 'Acciones'].map(h => (
                 <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   {h}
                 </th>
@@ -162,7 +185,7 @@ export default function CitasTable({
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
             {citas.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+                <td colSpan={7} className="px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
                   No hay citas con los filtros aplicados
                 </td>
               </tr>
@@ -231,6 +254,18 @@ export default function CitasTable({
                     )}
                   </td>
 
+                  {/* Estado Cita */}
+                  <td className="px-4 py-4">
+                    {cita.estado_cita ? (() => {
+                      const cfgCita = estadoCitaConfig[cita.estado_cita] ?? { label: cita.estado_cita, color: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }
+                      return (
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-bold ${cfgCita.color}`}>
+                          {cfgCita.label}
+                        </span>
+                      )
+                    })() : <span className="text-gray-400">—</span>}
+                  </td>
+
                   {/* Notas */}
                   <td className="px-4 py-4 max-w-[140px]">
                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{cita.notas || '—'}</p>
@@ -239,31 +274,33 @@ export default function CitasTable({
                   {/* Acciones */}
                   <td className="px-4 py-4">
                     <div className="flex gap-1 flex-wrap">
+                      {/* Conf. Pago */}
                       {cita.estado === 'PENDIENTE' && (
                         <button
                           onClick={() => cambiarEstado(cita.id, 'CONFIRMADA')}
                           disabled={cambiando === cita.id}
                           className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 text-blue-700 dark:text-blue-400 text-xs font-medium transition disabled:opacity-50"
                         >
-                          <CheckCircleIcon className="h-3 w-3" /> Confirmar
+                          <CheckCircleIcon className="h-3 w-3" /> Confirmar pago
                         </button>
                       )}
-                      {cita.estado === 'CONFIRMADA' && (
-                        <button
-                          onClick={() => cambiarEstado(cita.id, 'COMPLETADA')}
-                          disabled={cambiando === cita.id}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-green-50 dark:bg-green-900/20 hover:bg-green-100 text-green-700 dark:text-green-400 text-xs font-medium transition disabled:opacity-50"
-                        >
-                          <CheckCircleIcon className="h-3 w-3" /> Completar
-                        </button>
-                      )}
-                      {cita.estado !== 'CANCELADA' && cita.estado !== 'COMPLETADA' && (
+                      {cita.estado !== 'CANCELADA' && (
                         <button
                           onClick={() => cambiarEstado(cita.id, 'CANCELADA')}
                           disabled={cambiando === cita.id}
                           className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-red-50 dark:bg-red-900/20 hover:bg-red-100 text-red-700 dark:text-red-400 text-xs font-medium transition disabled:opacity-50"
                         >
                           <XCircleIcon className="h-3 w-3" /> Cancelar
+                        </button>
+                      )}
+                      {/* Estado Cita */}
+                      {cita.estado_cita !== 'FINALIZADA' && cita.estado_cita !== 'CANCELADA' && (
+                        <button
+                          onClick={() => cambiarEstadoCita(cita.id, 'FINALIZADA')}
+                          disabled={cambiandoCita === cita.id}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-green-50 dark:bg-green-900/20 hover:bg-green-100 text-green-700 dark:text-green-400 text-xs font-medium transition disabled:opacity-50"
+                        >
+                          <CheckCircleIcon className="h-3 w-3" /> Finalizar cita
                         </button>
                       )}
                     </div>

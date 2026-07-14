@@ -57,7 +57,7 @@ function AccionesMenu({ usuario, onReset, onEliminar, onPermisos }: {
   return (
     <div className="relative">
       <button onClick={() => setOpen(!open)}
-        className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
         <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
           <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
         </svg>
@@ -65,21 +65,21 @@ function AccionesMenu({ usuario, onReset, onEliminar, onPermisos }: {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 mt-1 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 z-20 overflow-hidden">
+          <div className="absolute right-0 mt-1 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 z-20 overflow-hidden">
             <button onClick={() => { setOpen(false); onPermisos(usuario) }}
-              className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-900 transition-colors">
+              className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors">
               <Shield className="w-4 h-4 text-purple-500" />
               Ver/editar permisos
             </button>
-            <div className="border-t border-gray-100" />
+            <div className="border-t border-gray-100 dark:border-gray-700" />
             <button onClick={() => { setOpen(false); onReset(usuario) }}
-              className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-gray-900 transition-colors">
+              className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors">
               <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
               </svg>
               Resetear contraseña
             </button>
-            <div className="border-t border-gray-100" />
+            <div className="border-t border-gray-100 dark:border-gray-700" />
             <button onClick={() => { setOpen(false); onEliminar(usuario) }}
               className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -300,7 +300,7 @@ export default function DashboardPage() {
       {/* ✅ Resumen por rol — ahora incluye CLIENTE */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {Object.entries(ROL_CONFIG).map(([rol, cfg]) => (
-          <div key={rol} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
+          <div key={rol} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 flex items-center gap-3">
             <div className={`p-2 rounded-lg ${cfg.color}`}>{cfg.icon}</div>
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400">{cfg.label}s</p>
@@ -311,8 +311,8 @@ export default function DashboardPage() {
       </div>
 
       {/* Tabla usuarios */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100">
-        <div className="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
             <Users className="w-5 h-5 text-pink-500" /> Usuarios del sistema
           </h2>
@@ -419,7 +419,7 @@ export default function DashboardPage() {
       {showPermisos && usuarioPermisos && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-bold">
                   {usuarioPermisos.nombre.charAt(0).toUpperCase()}
@@ -442,7 +442,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="px-6 py-3 border-b border-gray-100 flex gap-2 flex-wrap">
+            <div className="px-6 py-3 border-b border-gray-100 dark:border-gray-700 flex gap-2 flex-wrap">
               {Object.entries(CATEGORIA_COLOR).map(([cat, color]) => (
                 <span key={cat} className={`text-xs font-medium px-2 py-1 rounded-md ${color}`}>{cat}</span>
               ))}
@@ -512,7 +512,7 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <div className="p-4 border-t border-gray-100 flex justify-end">
+            <div className="p-4 border-t border-gray-100 dark:border-gray-700 flex justify-end">
               <button onClick={() => setShowPermisos(false)}
                 className="px-6 py-2 rounded-full bg-pink-600 text-white text-sm font-semibold hover:bg-pink-700 transition-all">
                 Cerrar
@@ -526,7 +526,7 @@ export default function DashboardPage() {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
               <h3 className="text-lg font-bold text-gray-800 dark:text-white">Nuevo usuario</h3>
               <button onClick={() => setShowModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors">

@@ -23,10 +23,17 @@ export async function GET() {
     prisma.pedido.count({
       where: { fecha_pedido: { gte: inicioMes } },
     }),
-    prisma.usuario.count({
-      where: { rol: "CLIENTE", activo: true },
-    }),
+    prisma.$queryRaw<[{ count: bigint }]>`
+      SELECT COUNT(*)::bigint AS count
+      FROM seguridad.tblusuarios
+      WHERE rol::text = 'CLIENTE' AND activo = true
+    `,
   ])
 
-  return NextResponse.json({ citasHoy, citasMes, pedidosMes, clientesTotal })
+  return NextResponse.json({
+    citasHoy,
+    citasMes,
+    pedidosMes,
+    clientesTotal: Number(clientesTotal[0].count),
+  })
 }

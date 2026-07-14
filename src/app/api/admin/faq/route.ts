@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 
-// GET - Listar todas las preguntas
+async function isAdmin() {
+  const session = await auth()
+  return session?.user?.role === 'ADMIN'
+}
+
+// GET - Listar todas las preguntas (incluye inactivas, solo admin)
 export async function GET() {
+  if (!await isAdmin()) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   try {
     const faqs = await prisma.preguntaFrecuente.findMany({
       orderBy: { orden: "asc" },
@@ -16,6 +23,10 @@ export async function GET() {
 
 // POST - Crear nueva pregunta
 export async function POST(req: Request) {
+  const session = await auth()
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  }
   try {
     const body = await req.json();
     const { pregunta, respuesta, orden, activo } = body;

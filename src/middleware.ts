@@ -30,8 +30,6 @@ export default auth((req) => {
   const isLoggedIn = !!session
   const role = session?.user?.role
 
-  console.log("🛡️ path:", path, "| role:", role, "| loggedIn:", isLoggedIn)
-
   // ── RASP: Protección fuerza bruta ──────────────────────────
   if (path.includes("/auth/callback/credentials")) {
     if (checkRateLimit(ip)) {
@@ -67,17 +65,6 @@ export default auth((req) => {
     }
   }
 
-  if (path.startsWith("/docente")) {
-    if (!isLoggedIn) {
-      const url = new URL("/login", nextUrl.origin)
-      url.searchParams.set("next", path)
-      return NextResponse.redirect(url)
-    }
-    if (role !== "DOCENTE" && role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/", nextUrl.origin))
-    }
-  }
-
   // ── Rutas de Cliente (requieren sesión activa) ──────────────
   const rutasCliente = [
     "/perfil",
@@ -107,7 +94,6 @@ export const config = {
     "/api/auth/callback/credentials",
     "/admin/:path*",
     "/empleado/:path*",
-    "/docente/:path*",
     // Rutas protegidas del grupo (cliente)
     "/perfil/:path*",
     "/carrito/:path*",

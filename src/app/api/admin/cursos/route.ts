@@ -1,7 +1,12 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
 
 export async function POST(req: Request) {
+  const session = await auth()
+  if (!session?.user || session.user.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
   try {
     const data = await req.json()
 
@@ -32,7 +37,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(curso)
   } catch (error) {
-    console.log(error)
+    console.error('Error al crear curso:', error)
     return NextResponse.json(
       { error: 'Error al crear curso' },
       { status: 500 }

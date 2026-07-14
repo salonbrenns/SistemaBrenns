@@ -319,3 +319,116 @@ export async function sendPedidoEstado(opts: {
     html:    baseTemplate(contenido),
   })
 }
+
+// ── Recuperación de contraseña (migrado desde mailer.ts) ─────────────────────
+export async function enviarCorreoRecuperacion(correo: string, token: string) {
+  const url = `${process.env.AUTH_URL}/reset-contrasena?token=${token}`
+  return sendEmail({
+    to:      correo,
+    subject: "Recupera tu contraseña — Salón Brenn's",
+    html: `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
+<body style="margin:0;padding:0;background:#f9f0f4;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f0f4;padding:32px 0;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(219,39,119,.1);">
+        <tr><td style="background:linear-gradient(135deg,#ec4899,#be123c);padding:32px 40px;text-align:center;">
+          <span style="color:#fff;font-size:26px;font-weight:700;">Salón Brenn's</span>
+        </td></tr>
+        <tr><td style="padding:40px;">
+          <h2 style="margin:0 0 8px;color:#be123c;font-size:24px;">🔐 Recupera tu contraseña</h2>
+          <p style="color:#6b7280;margin:0 0 28px;">Recibimos una solicitud para restablecer la contraseña de tu cuenta. Este enlace expira en <strong>1 hora</strong>.</p>
+          <div style="text-align:center;margin:32px 0;">
+            <a href="${url}" style="background:linear-gradient(135deg,#ec4899,#be123c);color:#fff;padding:16px 40px;border-radius:50px;text-decoration:none;font-weight:700;font-size:16px;display:inline-block;">Restablecer contraseña</a>
+          </div>
+          <p style="color:#9ca3af;font-size:12px;margin:0;">Si no solicitaste esto, puedes ignorar este correo.</p>
+        </td></tr>
+        <tr><td style="background:#fdf2f8;padding:20px 40px;text-align:center;border-top:1px solid #fce7f3;">
+          <p style="margin:0;font-size:12px;color:#9ca3af;">Enviado automáticamente por Salón Brenn's.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`,
+  })
+}
+
+/** Email al alumno cuando su pago de curso es CONFIRMADO */
+export async function sendPagoCursoConfirmado(opts: {
+  to:     string
+  nombre: string
+  curso:  string
+  monto:  number
+}) {
+  const contenido = `
+    <h2 style="margin:0 0 8px;color:#be123c;font-size:24px;">¡Tu pago fue confirmado! ✅</h2>
+    <p style="color:#6b7280;margin:0 0 28px;">
+      Hola <strong>${opts.nombre}</strong>, hemos verificado tu transferencia y ya quedó registrada en el sistema.
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;border-radius:12px;padding:24px;margin-bottom:28px;border:1px solid #bbf7d0;">
+      <tr>
+        <td style="padding:8px 0;color:#374151;font-size:15px;">
+          <span style="color:#16a34a;font-weight:600;">🎓 Curso:</span>&nbsp; ${opts.curso}
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:8px 0;color:#374151;font-size:15px;">
+          <span style="color:#16a34a;font-weight:600;">💳 Monto confirmado:</span>&nbsp; $${opts.monto.toLocaleString("es-MX")} MXN
+        </td>
+      </tr>
+    </table>
+
+    <p style="color:#6b7280;font-size:14px;margin:0;">
+      Puedes revisar el estado de tu inscripción en cualquier momento desde
+      <strong>Mis Cursos</strong> en tu perfil. ¡Gracias por tu pago! 🌸
+    </p>`
+
+  return sendEmail({
+    to:      opts.to,
+    subject: `✅ Pago confirmado — ${opts.curso}`,
+    html:    baseTemplate(contenido),
+  })
+}
+
+/** Email al alumno cuando su pago de curso es RECHAZADO */
+export async function sendPagoCursoRechazado(opts: {
+  to:     string
+  nombre: string
+  curso:  string
+  monto:  number
+}) {
+  const contenido = `
+    <h2 style="margin:0 0 8px;color:#be123c;font-size:24px;">Pago no verificado ⚠️</h2>
+    <p style="color:#6b7280;margin:0 0 28px;">
+      Hola <strong>${opts.nombre}</strong>, lamentablemente no pudimos verificar tu transferencia.
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff1f2;border-radius:12px;padding:24px;margin-bottom:28px;border:1px solid #fecdd3;">
+      <tr>
+        <td style="padding:8px 0;color:#374151;font-size:15px;">
+          <span style="color:#e11d48;font-weight:600;">🎓 Curso:</span>&nbsp; ${opts.curso}
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:8px 0;color:#374151;font-size:15px;">
+          <span style="color:#e11d48;font-weight:600;">💳 Monto enviado:</span>&nbsp; $${opts.monto.toLocaleString("es-MX")} MXN
+        </td>
+      </tr>
+    </table>
+
+    <p style="color:#6b7280;font-size:14px;margin:0;">
+      Por favor contáctanos por WhatsApp o redes sociales para aclarar la situación
+      y volver a registrar tu pago. ¡Estamos aquí para ayudarte! 💕
+    </p>`
+
+  return sendEmail({
+    to:      opts.to,
+    subject: `⚠️ Pago no verificado — ${opts.curso}`,
+    html:    baseTemplate(contenido),
+  })
+}
+
+// Exportar el transporter para compatibilidad con cron/recordatorios
+export { getTransporter as getMailTransporter }

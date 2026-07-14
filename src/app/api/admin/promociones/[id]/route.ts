@@ -1,11 +1,17 @@
-// src/app/api/admin/promociones/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { auth } from "@/lib/auth"
+
+async function checkAdmin() {
+  const session = await auth()
+  return session?.user?.role === "ADMIN"
+}
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!await checkAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   try {
     const { id: idStr } = await params
     const id = parseInt(idStr)
@@ -43,6 +49,7 @@ export async function DELETE(
   _: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!await checkAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   try {
     const { id: idStr } = await params
     await prisma.promocion.delete({ where: { id: parseInt(idStr) } })

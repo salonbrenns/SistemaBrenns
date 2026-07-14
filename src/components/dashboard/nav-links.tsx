@@ -106,18 +106,21 @@ export default function NavLinks({
       title: "Cursos",
       icon: AcademicCapIcon,
       links: [
-        { name: 'Cursos', href: '/admin/cursos' },
+        { name: 'Cursos',              href: '/admin/cursos'          },
+        { name: 'Inscripciones',       href: '/admin/inscripciones'   },
+        { name: 'Pagos pendientes',    href: '/admin/pagos-cursos'    },
+        { name: 'Certificados',        href: '/admin/certificados'    },
       ],
     },
     {
       title: "Ventas y Marketing",
       icon: SparklesIcon,
       links: [
-        { name: 'Pedidos',      href: '/admin/pedidos'    },
-        { name: 'Proyección',  href: '/admin/proyeccion'  },
-        { name: 'Promociones', href: '/admin/promociones' },
-        { name: 'Pagos',       href: '/admin/pagos'       },
-        { name: 'Reportes',    href: '/admin/reportes'    },
+        { name: 'Pedidos',            href: '/admin/pedidos'    },
+        { name: 'Proyección',         href: '/admin/proyeccion'  },
+        { name: 'Promociones',        href: '/admin/promociones' },
+        { name: 'Pagos de servicios', href: '/admin/pagos'       },
+        { name: 'Reportes',           href: '/admin/reportes'    },
       ],
     },
     {

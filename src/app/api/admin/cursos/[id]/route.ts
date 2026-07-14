@@ -1,10 +1,18 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+
+async function checkAdmin() {
+  const session = await auth()
+  if (!session?.user || session.user.role !== "ADMIN") return false
+  return true
+}
 
 export async function PUT(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }   // ← Cambiado a Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!await checkAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   try {
     const { id } = await params;                     // ← Await obligatorio
     const data = await req.json();
@@ -54,8 +62,9 @@ export async function PUT(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }   // ← Cambiado a Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!await checkAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   try {
     const { id } = await params;                     // ← Await obligatorio
     const { activo } = await req.json();

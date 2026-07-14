@@ -21,13 +21,14 @@ export async function PUT(
   const citaId = Number(id)
   if (!citaId) return NextResponse.json({ error: "ID inválido" }, { status: 400 })
 
-  const { estado, notas, hora, empleado_id } = await req.json()
+  const { estado, estado_cita, notas, hora, empleado_id } = await req.json()
 
   try {
     const cita = await prisma.cita.update({
       where: { id: citaId },
       data: {
         ...(estado      !== undefined && { estado }),
+        ...(estado_cita !== undefined && { estado_cita }),
         ...(notas       !== undefined && { notas }),
         ...(hora        !== undefined && { hora }),
         ...(empleado_id !== undefined && { empleado_id: empleado_id ? Number(empleado_id) : null }),

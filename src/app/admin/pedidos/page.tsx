@@ -86,7 +86,7 @@ export default function AdminPedidosPage() {
             className={`px-3 py-1.5 rounded-full text-xs font-bold border ${
               filtro === e
                 ? 'bg-rose-700 text-white border-rose-700'
-                : 'bg-white text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-rose-300'
+                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-rose-300 dark:hover:border-rose-700'
             }`}>
             {e}
           </button>
@@ -157,7 +157,7 @@ export default function AdminPedidosPage() {
                     <select
                       value={pedido.estado}
                       onChange={e => cambiarEstado(pedido.id, e.target.value)}
-                      className="text-xs border rounded px-2 py-1"
+                      className="text-xs border border-gray-200 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                     >
                       {ESTADOS.map(e => (
                         <option key={e} value={e}>{e}</option>
