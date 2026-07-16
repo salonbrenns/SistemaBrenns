@@ -29,6 +29,12 @@ export interface SiteConfig {
   legal_politicas_fecha?: string;
   legal_terminos_version?: string;
   legal_terminos_fecha?: string;
+  banco_titular:       string
+  banco_banco:         string
+  banco_cuenta:        string
+  banco_clabe:         string
+  banco_celular:       string
+  anticipo_porcentaje: string
 }
 
 export const DEFAULTS: SiteConfig = {
@@ -55,6 +61,12 @@ export const DEFAULTS: SiteConfig = {
   legal_privacidad_version: "1.0",
   legal_privacidad_fecha:   "26 de septiembre de 2025",
   terminos_condiciones:     "Al usar nuestros servicios aceptas nuestros términos.",
+  banco_titular:       "Ruth Barrientos Angeles",
+  banco_banco:         "BBVA",
+  banco_cuenta:        "154 792 8563",
+  banco_clabe:         "012 290 01547928563 4",
+  banco_celular:       "77 1748 2746",
+  anticipo_porcentaje: "50",
 }
 
 export function useSiteConfig(): SiteConfig {

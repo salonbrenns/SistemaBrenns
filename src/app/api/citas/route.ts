@@ -1,8 +1,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth"
-
 import { sendCitaAgendada } from "@/lib/email"
+
+function horaAMin(hora: string): number {
+  const [h, m] = hora.split(":").map(Number)
+  return h * 60 + m
+}
+
+function parseDurMin(dur: string): number {
+  let min = 0
+  const h = dur.match(/(\d+)\s*h/);   if (h) min += parseInt(h[1]) * 60
+  const m = dur.match(/(\d+)\s*min/); if (m) min += parseInt(m[1])
+  return min || 60
+}
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -21,24 +32,35 @@ export async function POST(req: Request) {
     const fechaInicio = new Date(fecha + "T00:00:00");
     const fechaFin    = new Date(fecha + "T23:59:59.999");
 
-    const citaExistente = await (
-      empleado_id
-        ? prisma.$queryRaw<{ id: number }[]>`
-            SELECT id FROM agenda.tblcitas
-            WHERE fecha >= ${fechaInicio}
-              AND fecha <= ${fechaFin}
-              AND hora = ${hora}
-              AND estado IN ('PENDIENTE', 'CONFIRMADA')
-              AND empleado_id = ${Number(empleado_id)}`
-        : prisma.$queryRaw<{ id: number }[]>`
-            SELECT id FROM agenda.tblcitas
-            WHERE fecha >= ${fechaInicio}
-              AND fecha <= ${fechaFin}
-              AND hora = ${hora}
-              AND estado IN ('PENDIENTE', 'CONFIRMADA')`
-    );
+    // Duración del servicio nuevo
+    const servicioNuevo = await prisma.servicio.findUnique({
+      where: { id: Number(servicio_id) },
+      select: { nombre: true, duracion: true },
+    })
+    const durNuevo   = parseDurMin(servicioNuevo?.duracion ?? "1h")
+    const inicioNuevo = horaAMin(hora)
+    const finNuevo    = inicioNuevo + durNuevo
 
-    if (citaExistente.length > 0) {
+    // Citas activas del día
+    const citasDelDia = await prisma.cita.findMany({
+      where: {
+        fecha:  { gte: fechaInicio, lte: fechaFin },
+        estado: { in: ["PENDIENTE", "CONFIRMADA"] },
+        ...(empleado_id ? { empleado_id: Number(empleado_id) } : {}),
+      },
+      select: {
+        hora:     true,
+        servicio: { select: { duracion: true } },
+      },
+    })
+
+    const conflicto = citasDelDia.some(c => {
+      const inicio = horaAMin(c.hora)
+      const fin    = inicio + parseDurMin(c.servicio?.duracion ?? "1h")
+      return inicioNuevo < fin && finNuevo > inicio
+    })
+
+    if (conflicto) {
       return NextResponse.json({ error: "Esa hora ya esta ocupada" }, { status: 409 });
     }
 
@@ -46,12 +68,12 @@ export async function POST(req: Request) {
       data: {
         servicio_id:       Number(servicio_id),
         fecha:             new Date(`${fecha}T${hora}`),
-        hora:              hora,
+        hora,
         usuario_id:        Number(session.user.id),
         empleado_id:       empleado_id ? Number(empleado_id) : null,
         notas:             notas || null,
         metodo_pago:       metodo_pago || "TARJETA",
-        estado:            metodo_pago === "TRANSFERENCIA" ? "PENDIENTE" : "CONFIRMADA",
+        estado:            "CONFIRMADA",
         nombre_contacto:   nombre_contacto || null,
         telefono_contacto: telefono_contacto || null,
       },
@@ -59,14 +81,10 @@ export async function POST(req: Request) {
 
     const clienteEmail = session.user.email
     if (clienteEmail) {
-      const servicioInfo = await prisma.servicio.findUnique({
-        where: { id: Number(servicio_id) },
-        select: { nombre: true },
-      })
       sendCitaAgendada({
         to:       clienteEmail,
         nombre:   session.user.name ?? "Cliente",
-        servicio: servicioInfo?.nombre ?? "Servicio",
+        servicio: servicioNuevo?.nombre ?? "Servicio",
         fecha:    cita.fecha,
         hora:     cita.hora,
         notas:    notas || undefined,
@@ -90,15 +108,15 @@ export async function GET() {
   const citas = await prisma.cita.findMany({
     where: { usuario_id: Number(session.user.id) },
     include: {
-      servicio: { select: { nombre: true, precio: true } },
+      servicio: { select: { nombre: true, precio: true, duracion: true } },
       empleado: { select: { nombre: true } },
     },
-    orderBy: [{ fecha: 'desc' }, { hora: 'asc' }],
+    orderBy: [{ fecha: "desc" }, { hora: "asc" }],
   })
 
   const result = citas.map(c => ({
     ...c,
-    fecha:  c.fecha instanceof Date ? c.fecha.toISOString() : c.fecha,
+    fecha: c.fecha instanceof Date ? c.fecha.toISOString() : c.fecha,
   }))
 
   return NextResponse.json(result)
