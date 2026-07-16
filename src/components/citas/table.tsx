@@ -194,6 +194,14 @@ export default function CitasTable({
               const fecha = new Date(cita.fecha).toLocaleDateString('es-MX', {
                 day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'
               })
+
+              // Si la hora de la cita ya pasó y no está cancelada, mostrar como Finalizada
+              const citaDateTime = new Date(`${cita.fecha.slice(0, 10)}T${cita.hora}:00`)
+              const yaTermino = citaDateTime < new Date() && cita.estado !== 'CANCELADA'
+              const estadoCitaMostrar =
+                yaTermino && (!cita.estado_cita || cita.estado_cita === 'PENDIENTE')
+                  ? 'FINALIZADA'
+                  : cita.estado_cita
               return (
                 <tr key={cita.id} className="hover:bg-rose-50 dark:hover:bg-gray-700 transition-colors">
 
@@ -256,8 +264,8 @@ export default function CitasTable({
 
                   {/* Estado Cita */}
                   <td className="px-4 py-4">
-                    {cita.estado_cita ? (() => {
-                      const cfgCita = estadoCitaConfig[cita.estado_cita] ?? { label: cita.estado_cita, color: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }
+                    {estadoCitaMostrar ? (() => {
+                      const cfgCita = estadoCitaConfig[estadoCitaMostrar] ?? { label: estadoCitaMostrar, color: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }
                       return (
                         <span className={`inline-block px-2 py-1 rounded-full text-xs font-bold ${cfgCita.color}`}>
                           {cfgCita.label}
@@ -294,7 +302,7 @@ export default function CitasTable({
                         </button>
                       )}
                       {/* Estado Cita */}
-                      {cita.estado_cita !== 'FINALIZADA' && cita.estado_cita !== 'CANCELADA' && (
+                      {estadoCitaMostrar !== 'FINALIZADA' && estadoCitaMostrar !== 'CANCELADA' && (
                         <button
                           onClick={() => cambiarEstadoCita(cita.id, 'FINALIZADA')}
                           disabled={cambiandoCita === cita.id}

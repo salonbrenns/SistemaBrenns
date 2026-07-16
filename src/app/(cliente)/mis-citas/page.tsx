@@ -44,7 +44,7 @@ function MisCitasContenido() {
  useEffect(() => {
   fetch('/api/citas')
     .then(r => r.json())
-    .then(data => setCitas(Array.isArray(data.citas) ? data.citas : []))  // ✅
+    .then(data => setCitas(Array.isArray(data) ? data : Array.isArray(data.citas) ? data.citas : []))
     .finally(() => setCargando(false))
 }, [])
 

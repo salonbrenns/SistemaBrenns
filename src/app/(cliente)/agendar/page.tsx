@@ -50,6 +50,31 @@ function AgendarContenido() {
   const [errorPago, setErrorPago] = useState("")
   const [exito,     setExito]     = useState(false)
 
+  const [bancoCfg, setBancoCfg] = useState({
+    titular: "Ruth Barrientos Angeles",
+    banco:   "BBVA",
+    cuenta:  "154 792 8563",
+    clabe:   "012 290 01547928563 4",
+    celular: "77 1748 2746",
+    anticipoPct: 50,
+  })
+
+  useEffect(() => {
+    fetch("/api/config-sitio")
+      .then(r => r.json())
+      .then(data => {
+        if (data) setBancoCfg({
+          titular:     data.banco_titular     || "Ruth Barrientos Angeles",
+          banco:       data.banco_banco       || "BBVA",
+          cuenta:      data.banco_cuenta      || "154 792 8563",
+          clabe:       data.banco_clabe       || "012 290 01547928563 4",
+          celular:     data.banco_celular     || "77 1748 2746",
+          anticipoPct: Number(data.anticipo_porcentaje) || 50,
+        })
+      })
+      .catch(() => {})
+  }, [])
+
   // ── Helpers de calendario
   const diasDelMes = eachDayOfInterval({ start: startOfMonth(mesActual), end: endOfMonth(mesActual) })
   const hoy        = startOfDay(new Date())
@@ -130,7 +155,7 @@ function AgendarContenido() {
   const horariosTarde  = horarios.filter(h => parseInt(h.hora.split(":")[0]) >= 12)
   const horasLibres    = horarios.filter(h => h.disponible).length
 
-  const montoAnticipo = servicio ? Number(servicio.precio) * 0.5 : 0
+  const montoAnticipo = servicio ? Number(servicio.precio) * (bancoCfg.anticipoPct / 100) : 0
   const montoCompleto = servicio ? Number(servicio.precio) : 0
   // montoCobrado: tipoPago === "ANTICIPO" ? montoAnticipo : montoCompleto
 
@@ -177,46 +202,75 @@ function AgendarContenido() {
 
   // ── Pantalla éxito
   if (exito) {
-    const esTransferencia = metodoPagoCliente === "TRANSFERENCIA"
+    const montoAPagar = tipoPago === "ANTICIPO" ? montoAnticipo : montoCompleto
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white dark:from-gray-900 dark:to-gray-950 flex items-center justify-center py-20">
-        <div className="text-center max-w-md px-6">
-          <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 ${esTransferencia ? "bg-amber-100 dark:bg-amber-900/30" : "bg-green-100 dark:bg-green-900/30"}`}>
-            {esTransferencia
-              ? <AlertCircle className="w-14 h-14 text-amber-500" />
-              : <CheckCircle className="w-14 h-14 text-green-500" />
-            }
-          </div>
-          <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-1">
-            {esTransferencia ? "¡Cita en espera!" : "¡Cita confirmada!"}
-          </h2>
-          {esTransferencia && (
-            <p className="text-amber-600 font-semibold text-sm mb-4">
-              Pendiente de verificar tu transferencia
-            </p>
-          )}
-          <p className="text-gray-600 dark:text-gray-400 mb-2"><strong>{servicio?.nombre}</strong></p>
-          <p className="text-gray-500 dark:text-gray-400 mb-1">{fechaSel && format(fechaSel, "EEEE d 'de' MMMM, yyyy", { locale: es })}</p>
-          <p className="text-pink-600 font-bold text-xl mb-2">{horaSel}</p>
-          {empleadoActual && (
-            <p className="text-gray-500 dark:text-gray-400 mb-2 text-sm">Con: {empleadoActual.nombre}</p>
-          )}
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            {tipoPago === "ANTICIPO"
-              ? `Anticipo: $${montoAnticipo.toLocaleString()} MXN`
-              : `Pago completo: $${montoCompleto.toLocaleString()} MXN`}
-          </p>
-          {esTransferencia && (
-            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl px-4 py-3 mb-6 text-left">
-              <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">¿Qué sigue?</p>
-              <p className="text-xs text-amber-700 dark:text-amber-400">
-                Envía tu comprobante de transferencia por WhatsApp al número del salón. Una vez verificado, tu cita quedará confirmada.
-              </p>
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white dark:from-gray-900 dark:to-gray-950 flex items-center justify-center py-20 px-4">
+        <div className="w-full max-w-md">
+          {/* Confirmación */}
+          <div className="text-center mb-6">
+            <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-12 h-12 text-green-500" />
             </div>
-          )}
-          <div className="flex gap-4 justify-center mt-4">
-            <Link href="/mis-citas" className="bg-pink-600 text-white font-bold px-8 py-3 rounded-full hover:bg-pink-700 transition">Ver mis citas</Link>
-            <Link href="/servicios" className="border-2 border-pink-200 text-pink-600 font-bold px-8 py-3 rounded-full hover:bg-pink-50 transition">Ver servicios</Link>
+            <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-1">¡Cita confirmada!</h2>
+            <p className="text-green-600 font-semibold text-sm">Tu lugar está reservado</p>
+          </div>
+
+          {/* Resumen de la cita */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-100 dark:border-gray-700 p-5 mb-4 space-y-2">
+            <p className="font-bold text-gray-800 dark:text-white">{servicio?.nombre}</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">{fechaSel && format(fechaSel, "EEEE d 'de' MMMM, yyyy", { locale: es })}</p>
+            <p className="text-pink-600 font-bold text-xl">{horaSel}</p>
+            {empleadoActual && <p className="text-gray-500 dark:text-gray-400 text-sm">Con: {empleadoActual.nombre}</p>}
+          </div>
+
+          {/* Datos para transferencia */}
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-2xl p-5 mb-4">
+            <p className="font-bold text-blue-800 dark:text-blue-300 text-sm mb-3 flex items-center gap-2">
+              <Banknote className="w-4 h-4" />
+              Realiza tu {tipoPago === "ANTICIPO" ? `anticipo (${bancoCfg.anticipoPct}%)` : "pago"} por transferencia
+            </p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-blue-600 dark:text-blue-400">Monto a transferir</span>
+                <span className="font-black text-blue-800 dark:text-blue-200 text-lg">${montoAPagar.toLocaleString()} MXN</span>
+              </div>
+              <hr className="border-blue-200 dark:border-blue-800" />
+              <div className="flex justify-between text-xs">
+                <span className="text-blue-600 dark:text-blue-400">Banco</span>
+                <span className="font-semibold text-blue-800 dark:text-blue-200">{bancoCfg.banco}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-blue-600 dark:text-blue-400">Titular</span>
+                <span className="font-semibold text-blue-800 dark:text-blue-200">{bancoCfg.titular}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-blue-600 dark:text-blue-400">Cuenta</span>
+                <span className="font-semibold text-blue-800 dark:text-blue-200">{bancoCfg.cuenta}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-blue-600 dark:text-blue-400">CLABE</span>
+                <span className="font-semibold text-blue-800 dark:text-blue-200">{bancoCfg.clabe}</span>
+              </div>
+              {bancoCfg.celular && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-blue-600 dark:text-blue-400">Celular</span>
+                  <span className="font-semibold text-blue-800 dark:text-blue-200">{bancoCfg.celular}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-xs">
+                <span className="text-blue-600 dark:text-blue-400">Concepto</span>
+                <span className="font-semibold text-blue-800 dark:text-blue-200">tu nombre + {fechaSel && format(fechaSel, "d/MM")}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <Link href="/mis-citas" className="flex-1 text-center bg-pink-600 text-white font-bold px-4 py-3 rounded-full hover:bg-pink-700 transition text-sm">
+              Ver mis citas
+            </Link>
+            <Link href="/servicios" className="flex-1 text-center border-2 border-pink-200 text-pink-600 font-bold px-4 py-3 rounded-full hover:bg-pink-50 transition text-sm">
+              Ver servicios
+            </Link>
           </div>
         </div>
       </div>
@@ -486,10 +540,10 @@ function AgendarContenido() {
                   <h2 className="text-sm font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-2">
                     <Banknote className="w-4 h-4 text-pink-400" /> ¿Cuánto deseas pagar hoy?
                   </h2>
-                  <p className="text-xs text-gray-400 mb-4">Se requiere al menos el 50% para confirmar tu cita.</p>
+                  <p className="text-xs text-gray-400 mb-4">Se requiere al menos el {bancoCfg.anticipoPct}% para confirmar tu cita.</p>
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { id: "ANTICIPO" as const, label: "Anticipo 50%", monto: `$${montoAnticipo.toLocaleString()} MXN`, desc: "Resto al llegar" },
+                      { id: "ANTICIPO" as const, label: `Anticipo ${bancoCfg.anticipoPct}%`, monto: `$${montoAnticipo.toLocaleString()} MXN`, desc: "Resto al llegar" },
                       { id: "COMPLETO" as const, label: "Pago completo", monto: `$${montoCompleto.toLocaleString()} MXN`, desc: "Todo liquidado" },
                     ].map(op => (
                       <button key={op.id} type="button" onClick={() => setTipoPago(op.id)}
@@ -531,19 +585,14 @@ function AgendarContenido() {
 
                     {/* Instrucciones transferencia */}
                     {metodoPagoCliente === "TRANSFERENCIA" && (
-                      <div className="space-y-3">
-                        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-xl p-4 space-y-1.5">
-                          <p className="font-bold text-blue-800 dark:text-blue-300 text-sm mb-2">Datos para transferencia / SPEI</p>
-                          <p className="text-xs text-blue-700 dark:text-blue-400">Banco: <strong>BBVA</strong></p>
-                          <p className="text-xs text-blue-700 dark:text-blue-400">Titular: <strong>Brenn&apos;s Salón</strong></p>
-                          <p className="text-xs text-blue-700 dark:text-blue-400">CLABE: <strong>012 345 678 901 234 5</strong></p>
-                          <p className="text-xs text-blue-700 dark:text-blue-400">Concepto: <strong>tu nombre + fecha de cita</strong></p>
-                        </div>
-                        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 rounded-xl px-4 py-3">
-                          <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
-                            Después de transferir, envía tu comprobante por WhatsApp. Tu cita quedará en <strong>espera</strong> hasta que lo verifiquemos.
-                          </p>
-                        </div>
+                      <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-xl p-4 space-y-1.5">
+                        <p className="font-bold text-blue-800 dark:text-blue-300 text-sm mb-2">Datos para transferencia / SPEI</p>
+                        <p className="text-xs text-blue-700 dark:text-blue-400">Banco: <strong>{bancoCfg.banco}</strong></p>
+                        <p className="text-xs text-blue-700 dark:text-blue-400">Titular: <strong>{bancoCfg.titular}</strong></p>
+                        <p className="text-xs text-blue-700 dark:text-blue-400">Cuenta: <strong>{bancoCfg.cuenta}</strong></p>
+                        <p className="text-xs text-blue-700 dark:text-blue-400">CLABE: <strong>{bancoCfg.clabe}</strong></p>
+                        {bancoCfg.celular && <p className="text-xs text-blue-700 dark:text-blue-400">Celular: <strong>{bancoCfg.celular}</strong></p>}
+                        <p className="text-xs text-blue-700 dark:text-blue-400">Concepto: <strong>tu nombre + fecha de cita</strong></p>
                       </div>
                     )}
 
@@ -572,7 +621,7 @@ function AgendarContenido() {
                     className="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-3.5 rounded-full shadow-lg transition flex items-center justify-center gap-3 disabled:opacity-40 disabled:cursor-not-allowed text-sm mt-4">
                     {pagando
                       ? <><Loader2 className="w-4 h-4 animate-spin" /> Registrando cita...</>
-                      : <><CheckCircle className="w-4 h-4" /> Registrar cita (enviaré comprobante)</>
+                      : <><CheckCircle className="w-4 h-4" /> Confirmar cita</>
                     }
                   </button>
                 )}
