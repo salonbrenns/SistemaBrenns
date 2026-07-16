@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import SideNav from './sidenav';
 import { Bars3Icon } from '@heroicons/react/24/outline';
 
@@ -28,7 +29,14 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
     <div className="flex h-screen flex-col lg:flex-row bg-pink-50 dark:bg-gray-900 transition-colors">
       {/* Header móvil */}
       <header className="flex items-center justify-between p-4 bg-pink-900 dark:bg-gray-950 text-white lg:hidden">
-        <h1 className="font-bold text-lg">{"Brenn's Beauty"}</h1>
+        <Image
+            src="/logo/logosinfondo.png"
+            alt="Brenn's Beauty"
+            width={100}
+            height={50}
+            className="object-contain"
+            priority
+          />
 
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}

@@ -130,8 +130,9 @@ export default function NavLinks({
         { name: 'Configuración',   href: '/admin/configuracion'  },
         { name: 'Notificaciones',  href: '/admin/notificaciones' },
         { name: 'Roles',           href: '/admin/roles'          },
-        { name: 'Políticas',  href: '/admin/politicas'  },
-        { name: 'FAQs',       href: '/admin/faq'        },
+        { name: 'Políticas',       href: '/admin/politicas'      },
+        { name: 'FAQs',            href: '/admin/faq'            },
+        { name: 'Alexa Skill',     href: '/admin/alexa'          },
       ],
     },
   ]
