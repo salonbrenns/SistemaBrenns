@@ -27,22 +27,32 @@ export async function GET() {
       where: { id: { in: cursoIds } },
     })
 
-    // 3. Obtener pagos de cada inscripción
+    // 3. Obtener pagos y asistencias de cada inscripción
     const inscripcionIds = inscripciones.map((i) => i.id)
-    const pagos = await prisma.pagoCurso.findMany({
-      where: { inscripcion_id: { in: inscripcionIds } },
-    })
+    const [pagos, asistencias] = await Promise.all([
+      prisma.pagoCurso.findMany({ where: { inscripcion_id: { in: inscripcionIds } } }),
+      prisma.asistencia.findMany({
+        where:   { inscripcion_id: { in: inscripcionIds }, presente: true },
+        select:  { inscripcion_id: true, fecha: true },
+        orderBy: { fecha: 'asc' },
+      }),
+    ])
 
     // 4. Combinar datos
     const resultado = inscripciones.map((insc) => {
-      const curso = cursos.find((c) => c.id === insc.curso_id)
-      const pagosCurso = pagos.filter((p) => p.inscripcion_id === insc.id)
-      const totalPagado = pagosCurso.reduce((sum, p) => sum + Number(p.monto), 0)
+      const curso        = cursos.find((c) => c.id === insc.curso_id)
+      const pagosCurso   = pagos.filter((p) => p.inscripcion_id === insc.id)
+      const totalPagado  = pagosCurso.reduce((sum, p) => sum + Number(p.monto), 0)
+      const misAsistencias = asistencias
+        .filter(a => a.inscripcion_id === insc.id)
+        .map(a => new Date(a.fecha).toISOString().slice(0, 10))
 
       return {
         inscripcionId:     insc.id,
         estado:            insc.estado,
         fecha_inscripcion: insc.fecha_inscripcion,
+        diasAsistidos:     misAsistencias.length,
+        asistencias:       misAsistencias,
         curso: curso
           ? {
               id:            curso.id,

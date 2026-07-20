@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { CalendarDays, ChevronDown, ChevronUp, Clock, User } from 'lucide-react'
+import { CalendarDays, ChevronDown, ChevronUp, Clock, User, XCircle, Loader2 } from 'lucide-react'
 import DotsLoader from '@/components/ui/DotsLoader'
 import AuthGuard from '@/components/ui/AuthGuard'
 
@@ -36,10 +36,39 @@ export default function MisCitasPage() {
   return <AuthGuard><MisCitasContenido /></AuthGuard>
 }
 
+function puedeCancelar(fecha: string, estado: string) {
+  if (estado === 'CANCELADA' || estado === 'COMPLETADA') return false
+  const horasRestantes = (new Date(fecha).getTime() - Date.now()) / (1000 * 60 * 60)
+  return horasRestantes > 24
+}
+
 function MisCitasContenido() {
-  const [citas,    setCitas]    = useState<Cita[]>([])
-  const [cargando, setCargando] = useState(true)
-  const [abierto,  setAbierto]  = useState<number | null>(null)
+  const [citas,      setCitas]      = useState<Cita[]>([])
+  const [cargando,   setCargando]   = useState(true)
+  const [abierto,    setAbierto]    = useState<number | null>(null)
+  const [cancelando, setCancelando] = useState<number | null>(null)
+  const [error,      setError]      = useState<string | null>(null)
+
+  const cancelarCita = async (id: number) => {
+    if (!confirm('¿Segura que quieres cancelar esta cita? Esta acción no se puede deshacer.')) return
+    setCancelando(id)
+    setError(null)
+    try {
+      const res = await fetch('/api/citas', {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ id }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error); return }
+      setCitas(prev => prev.map(c => c.id === id ? { ...c, estado: 'CANCELADA' } : c))
+      setAbierto(null)
+    } catch {
+      setError('Error al cancelar. Intenta de nuevo.')
+    } finally {
+      setCancelando(null)
+    }
+  }
 
  useEffect(() => {
   fetch('/api/citas')
@@ -149,6 +178,31 @@ function MisCitasContenido() {
                       <p className="font-semibold text-pink-500 mb-1">Notas</p>
                       <p>{cita.notas}</p>
                     </div>
+                  )}
+
+                  {/* Cancelar cita */}
+                  {puedeCancelar(cita.fecha, cita.estado) && (
+                    <button
+                      onClick={() => cancelarCita(cita.id)}
+                      disabled={cancelando === cita.id}
+                      className="mt-2 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 border-red-200 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition text-sm font-semibold disabled:opacity-50"
+                    >
+                      {cancelando === cita.id
+                        ? <><Loader2 className="w-4 h-4 animate-spin" /> Cancelando...</>
+                        : <><XCircle className="w-4 h-4" /> Cancelar cita</>
+                      }
+                    </button>
+                  )}
+
+                  {/* Aviso menos de 24h */}
+                  {cita.estado !== 'CANCELADA' && cita.estado !== 'COMPLETADA' && !puedeCancelar(cita.fecha, cita.estado) && (
+                    <p className="text-xs text-gray-400 text-center mt-2">
+                      ⚠️ Ya no es posible cancelar con menos de 24 horas de anticipación
+                    </p>
+                  )}
+
+                  {error && cancelando === null && (
+                    <p className="text-xs text-red-500 text-center mt-1">{error}</p>
                   )}
                 </div>
               )}

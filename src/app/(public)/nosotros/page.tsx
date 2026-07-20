@@ -2,8 +2,14 @@
 // src/app/(frontend)/nosotros/page.tsx
 
 import Link from "next/link"
+import Image from "next/image"
 import { MapPin, Clock, Users, Award, Heart, ChevronRight, ArrowLeft, Sparkles } from "lucide-react"
 import { useSiteConfig } from "@/hooks/useSiteConfig"
+import { useEffect, useState } from "react"
+
+interface MiembroEquipo {
+  id: number; nombre: string; puesto: string; descripcion: string | null; imagen: string | null
+}
 
 const iconosValores = [Users, Award, Heart, Sparkles]
 
@@ -43,20 +49,34 @@ const pilares = [
   },
 ]
 
-const secciones = [
+const seccionesBase = [
   { id: "mision-vision", label: "Misión y Visión" },
   { id: "valores",       label: "Nuestros Valores" },
   { id: "pilares",       label: "Tres Pilares" },
-  { id: "ubicacion",     label: "Ubicación" },
 ]
 
 export default function NosotrosPage() {
   const config = useSiteConfig()
+  const [equipo, setEquipo] = useState<MiembroEquipo[]>([])
+
+  useEffect(() => {
+    fetch("/api/equipo").then(r => r.json()).then(setEquipo).catch(() => {})
+  }, [])
 
   const valores = config.nosotros_valores
     .split(",")
     .map((v: string) => v.trim())
     .filter(Boolean)
+
+  // Sidebar nav dinámico: incluye "Nuestro Equipo" solo si hay miembros
+  const secciones = [
+    ...seccionesBase,
+    ...(equipo.length > 0 ? [{ id: "equipo", label: "Nuestro Equipo" }] : []),
+    { id: "ubicacion", label: "Ubicación" },
+  ]
+
+  // Número de sección de Ubicación depende de si Equipo existe
+  const numUbicacion = equipo.length > 0 ? "05" : "04"
 
   return (
     <main className="min-h-screen bg-[#fffafa] dark:bg-gray-950 scroll-smooth">
@@ -257,10 +277,48 @@ export default function NosotrosPage() {
               </div>
             </section>
 
-            {/* 04 — Ubicación */}
+            {/* 04 — Nuestro Equipo */}
+            {equipo.length > 0 && (
+              <section id="equipo" className="scroll-mt-12 rounded-[3rem] border bg-white dark:bg-gray-800 border-pink-50 dark:border-gray-700 shadow-sm">
+                <div className="p-10 md:p-14">
+                  <span className="text-pink-500 text-xs font-black uppercase tracking-widest mb-2 block">Sección 04</span>
+                  <h2 className="text-3xl font-black text-gray-900 dark:text-white leading-none mb-2">Nuestro Equipo</h2>
+                  <p className="text-gray-500 dark:text-gray-400 mb-10 text-[15px]">Profesionales apasionadas por la belleza, listas para consentirte.</p>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                    {equipo.map(m => (
+                      <div key={m.id} className="flex flex-col items-center gap-3 group">
+                        {/* Foto circular */}
+                        <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-pink-100 dark:border-pink-900 shadow-md group-hover:scale-105 transition-transform duration-300">
+                          {m.imagen ? (
+                            <Image src={m.imagen} alt={m.nombre} fill className="object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center">
+                              <span className="text-4xl font-black text-white">{m.nombre.charAt(0)}</span>
+                            </div>
+                          )}
+                        </div>
+                        {/* Nombre y puesto */}
+                        <div className="text-center">
+                          <p className="font-bold text-gray-800 dark:text-white text-sm">{m.nombre}</p>
+                          {m.puesto && (
+                            <p className="text-xs text-pink-500 font-medium mt-0.5">{m.puesto}</p>
+                          )}
+                          {m.descripcion && (
+                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 leading-snug">{m.descripcion}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* 05 — Ubicación */}
             <section id="ubicacion" className="scroll-mt-12 rounded-[3rem] border bg-white dark:bg-gray-800 border-pink-50 dark:border-gray-700 shadow-sm">
               <div className="p-10 md:p-14">
-                <span className="text-pink-500 text-xs font-black uppercase tracking-widest mb-2 block">Sección 04</span>
+                <span className="text-pink-500 text-xs font-black uppercase tracking-widest mb-2 block">Sección {numUbicacion}</span>
                 <h2 className="text-3xl font-black text-gray-900 dark:text-white leading-none mb-10">Encuéntranos</h2>
 
                 <div className="grid md:grid-cols-2 gap-6 mb-10">

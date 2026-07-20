@@ -1,7 +1,11 @@
 'use client'
 
 import { useEffect, useState, Fragment } from 'react'
-import { Package, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
+import { Package, Loader2, ChevronDown, ChevronUp, CheckCircle, XCircle, Truck, Package2, ClipboardCheck } from 'lucide-react'
+import Paginacion from '@/components/ui/paginacion'
+import DropdownAcciones, { DropdownItem, DropdownSeparator } from '@/components/ui/DropdownAcciones'
+
+const POR_PAGINA = 10
 
 type Detalle = {
   nombre_producto: string
@@ -26,11 +30,11 @@ interface PedidoAdmin {
 const ESTADOS = ['PENDIENTE', 'PAGADO', 'ENVIADO', 'ENTREGADO', 'CANCELADO']
 
 const ESTADO_STYLE: Record<string, string> = {
-  PENDIENTE:  'bg-amber-100  text-amber-700',
-  PAGADO:     'bg-blue-100   text-blue-700',
-  ENVIADO:    'bg-purple-100 text-purple-700',
-  ENTREGADO:  'bg-green-100  text-green-700',
-  CANCELADO:  'bg-red-100    text-red-600',
+  PENDIENTE:  'bg-amber-100  dark:bg-amber-900/30 text-amber-700  dark:text-amber-400',
+  PAGADO:     'bg-blue-100   dark:bg-blue-900/30  text-blue-700   dark:text-blue-400',
+  ENVIADO:    'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400',
+  ENTREGADO:  'bg-green-100  dark:bg-green-900/30 text-green-700  dark:text-green-400',
+  CANCELADO:  'bg-red-100    dark:bg-red-900/30   text-red-600    dark:text-red-400',
 }
 
 export default function AdminPedidosPage() {
@@ -38,11 +42,13 @@ export default function AdminPedidosPage() {
   const [cargando, setCargando] = useState(true)
   const [filtro,   setFiltro]   = useState('TODOS')
   const [abierto,  setAbierto]  = useState<number | null>(null)
+  const [pagina,   setPagina]   = useState(1)
 
   const cargar = () => {
     fetch('/api/admin/pedidos')
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
       .then(data => setPedidos(Array.isArray(data) ? data : []))
+      .catch(() => setPedidos([]))
       .finally(() => setCargando(false))
   }
 
@@ -60,6 +66,11 @@ export default function AdminPedidosPage() {
   const pedidosFiltrados = filtro === 'TODOS'
     ? pedidos
     : pedidos.filter(p => p.estado === filtro)
+
+  const totalPaginas  = Math.ceil(pedidosFiltrados.length / POR_PAGINA)
+  const pedidosPagina = pedidosFiltrados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
+
+  const cambiarFiltro = (f: string) => { setFiltro(f); setPagina(1); setAbierto(null) }
 
   if (cargando) {
     return (
@@ -82,7 +93,7 @@ export default function AdminPedidosPage() {
       {/* Filtros */}
       <div className="flex flex-wrap gap-2">
         {['TODOS', ...ESTADOS].map(e => (
-          <button key={e} onClick={() => setFiltro(e)}
+          <button key={e} onClick={() => cambiarFiltro(e)}
             className={`px-3 py-1.5 rounded-full text-xs font-bold border ${
               filtro === e
                 ? 'bg-rose-700 text-white border-rose-700'
@@ -94,7 +105,7 @@ export default function AdminPedidosPage() {
       </div>
 
       {/* Tabla */}
-      <div className="rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-x-auto">
         <table className="min-w-full divide-y">
           <thead className="bg-rose-900 dark:bg-rose-950">
             <tr>
@@ -107,7 +118,7 @@ export default function AdminPedidosPage() {
           </thead>
 
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
-            {pedidosFiltrados.length === 0 && (
+            {pedidosPagina.length === 0 && (
               <tr>
                 <td colSpan={7} className="text-center py-10 text-gray-400">
                   No hay pedidos
@@ -115,7 +126,7 @@ export default function AdminPedidosPage() {
               </tr>
             )}
 
-            {pedidosFiltrados.map(pedido => (
+            {pedidosPagina.map(pedido => (
               <Fragment key={pedido.id}>
 
                 {/* FILA PRINCIPAL */}
@@ -154,15 +165,29 @@ export default function AdminPedidosPage() {
                   </td>
 
                   <td className="px-5 py-4">
-                    <select
-                      value={pedido.estado}
-                      onChange={e => cambiarEstado(pedido.id, e.target.value)}
-                      className="text-xs border border-gray-200 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
-                    >
-                      {ESTADOS.map(e => (
-                        <option key={e} value={e}>{e}</option>
-                      ))}
-                    </select>
+                    <DropdownAcciones>
+                      {pedido.estado !== 'PAGADO' && (
+                        <DropdownItem onClick={() => cambiarEstado(pedido.id, 'PAGADO')}
+                          icon={<CheckCircle className="w-4 h-4" />} label="Marcar pagado" />
+                      )}
+                      {pedido.estado !== 'ENVIADO' && (
+                        <DropdownItem onClick={() => cambiarEstado(pedido.id, 'ENVIADO')}
+                          icon={<Truck className="w-4 h-4" />} label="Marcar enviado" />
+                      )}
+                      {pedido.estado !== 'ENTREGADO' && (
+                        <DropdownItem onClick={() => cambiarEstado(pedido.id, 'ENTREGADO')}
+                          icon={<Package2 className="w-4 h-4" />} label="Marcar entregado" />
+                      )}
+                      {pedido.estado !== 'PENDIENTE' && (
+                        <DropdownItem onClick={() => cambiarEstado(pedido.id, 'PENDIENTE')}
+                          icon={<ClipboardCheck className="w-4 h-4" />} label="Volver a pendiente" />
+                      )}
+                      {pedido.estado !== 'CANCELADO' && <DropdownSeparator />}
+                      {pedido.estado !== 'CANCELADO' && (
+                        <DropdownItem onClick={() => cambiarEstado(pedido.id, 'CANCELADO')}
+                          icon={<XCircle className="w-4 h-4" />} label="Cancelar pedido" danger />
+                      )}
+                    </DropdownAcciones>
                   </td>
                 </tr>
 
@@ -180,6 +205,12 @@ export default function AdminPedidosPage() {
           </tbody>
         </table>
       </div>
+
+      <Paginacion
+        paginaActual={pagina}
+        totalPaginas={totalPaginas}
+        onChange={(p) => { setPagina(p); setAbierto(null) }}
+      />
     </div>
   )
 }

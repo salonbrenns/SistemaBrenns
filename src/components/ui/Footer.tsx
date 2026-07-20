@@ -83,13 +83,13 @@ export default function Footer() {
             <div>
               <h5 className="text-xs font-black uppercase tracking-[0.2em] text-pink-500 mb-8">Encuéntranos</h5>
               <div className="space-y-4">
-                <a href="#" className="flex items-start gap-4 group text-gray-400 hover:text-white transition-colors">
+                <Link href="/nosotros#ubicacion" className="flex items-start gap-4 group text-gray-400 hover:text-white transition-colors">
                   <MapPin className="w-5 h-5 text-pink-600 shrink-0" />
                   <span className="text-sm leading-snug">
                     {config.ubicacion_calle}, {config.ubicacion_ciudad}<br/>
                     <span className="text-[10px] text-gray-600 uppercase font-black">{config.ubicacion_detalle}</span>
                   </span>
-                </a>
+                </Link>
                 <a href="mailto:salonbrenns11@gmail.com"
                   className="flex items-center gap-4 group text-gray-400 hover:text-white transition-colors">
                   <Mail className="w-5 h-5 text-pink-600 shrink-0" />

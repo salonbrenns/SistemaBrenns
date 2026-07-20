@@ -6,10 +6,12 @@ import {
   CalendarDaysIcon,
   ClockIcon,
   UserIcon,
-  CheckCircleIcon,
-  XCircleIcon,
 } from '@heroicons/react/24/outline'
-import { UserCircle, ShieldCheck } from 'lucide-react'
+import { UserCircle, ShieldCheck, CheckCircle, XCircle, ClipboardCheck } from 'lucide-react'
+import Paginacion from '@/components/ui/paginacion'
+import DropdownAcciones, { DropdownItem, DropdownSeparator } from '@/components/ui/DropdownAcciones'
+
+const POR_PAGINA = 10
 
 type Cita = {
   id: number
@@ -33,7 +35,7 @@ const ESTADOS = ['PENDIENTE', 'CONFIRMADA', 'COMPLETADA', 'CANCELADA']
 const estadoConfig: Record<string, { label: string; color: string }> = {
   PENDIENTE:  { label: 'Sin pagar',        color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' },
   CONFIRMADA: { label: 'Pago confirmado',  color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'         },
-  COMPLETADA: { label: 'Pago confirmado',  color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'         },
+  COMPLETADA: { label: 'Completada',       color: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'     },
   CANCELADA:  { label: 'Cancelada',        color: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'             },
 }
 
@@ -59,8 +61,12 @@ export default function CitasTable({
 }) {
   const router   = useRouter()
   const pathname = usePathname()
-  const [cambiando, setCambiando] = useState<number | null>(null)
+  const [cambiando,     setCambiando]     = useState<number | null>(null)
   const [cambiandoCita, setCambiandoCita] = useState<number | null>(null)
+  const [pagina,        setPagina]        = useState(1)
+
+  const totalPaginas = Math.ceil(citas.length / POR_PAGINA)
+  const citasPagina  = citas.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
 
   const aplicarFiltro = (updates: Record<string, string>) => {
     const params = new URLSearchParams()
@@ -78,24 +84,34 @@ export default function CitasTable({
 
   const cambiarEstado = async (id: number, nuevoEstado: string) => {
     setCambiando(id)
-    await fetch(`/api/admin/citas/${id}`, {
-      method:  'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ estado: nuevoEstado }),
-    })
-    router.refresh()
-    setCambiando(null)
+    try {
+      await fetch(`/api/admin/citas/${id}`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ estado: nuevoEstado }),
+      })
+      router.refresh()
+    } catch {
+      console.error('Error al cambiar estado')
+    } finally {
+      setCambiando(null)
+    }
   }
 
   const cambiarEstadoCita = async (id: number, nuevoEstado: string) => {
     setCambiandoCita(id)
-    await fetch(`/api/admin/citas/${id}`, {
-      method:  'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ estado_cita: nuevoEstado }),
-    })
-    router.refresh()
-    setCambiandoCita(null)
+    try {
+      await fetch(`/api/admin/citas/${id}`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ estado_cita: nuevoEstado }),
+      })
+      router.refresh()
+    } catch {
+      console.error('Error al cambiar estado de cita')
+    } finally {
+      setCambiandoCita(null)
+    }
   }
 
   const hayFiltros = estadoFiltro || desdeFiltro || hastaFiltro
@@ -146,9 +162,10 @@ export default function CitasTable({
           {/* Atajos rápidos */}
           <div className="flex flex-wrap gap-2">
             {[
-              { label: 'Hoy',       fn: () => { const h = hoy(); aplicarFiltro({ desde: h, hasta: h }) } },
+              { label: 'Hoy',        fn: () => { const h = hoy();    aplicarFiltro({ desde: h, hasta: h }) } },
+              { label: 'Mañana',     fn: () => { const m = manana(); aplicarFiltro({ desde: m, hasta: m }) } },
               { label: 'Esta semana', fn: () => { const { d, h } = semana(); aplicarFiltro({ desde: d, hasta: h }) } },
-              { label: 'Este mes',  fn: () => { const { d, h } = mes();    aplicarFiltro({ desde: d, hasta: h }) } },
+              { label: 'Este mes',   fn: () => { const { d, h } = mes();    aplicarFiltro({ desde: d, hasta: h }) } },
             ].map(a => (
               <button key={a.label} onClick={a.fn}
                 className="px-3 py-2 text-xs font-semibold border border-pink-200 dark:border-gray-600 text-pink-600 dark:text-pink-400 rounded-lg hover:bg-pink-50 dark:hover:bg-gray-700 transition">
@@ -175,7 +192,7 @@ export default function CitasTable({
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-rose-900 dark:bg-rose-950">
             <tr>
-              {['Cliente', 'Servicio', 'Fecha / Hora', 'Conf. Pago', 'Estado Cita', 'Notas', 'Acciones'].map(h => (
+              {['#', 'Cliente', 'Servicio', 'Fecha / Hora', 'Conf. Pago', 'Estado Cita', 'Notas', 'Acciones'].map(h => (
                 <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   {h}
                 </th>
@@ -183,27 +200,34 @@ export default function CitasTable({
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
-            {citas.length === 0 ? (
+            {citasPagina.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+                <td colSpan={8} className="px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
                   No hay citas con los filtros aplicados
                 </td>
               </tr>
-            ) : citas.map(cita => {
+            ) : citasPagina.map((cita, idx) => {
+              const num   = (pagina - 1) * POR_PAGINA + idx + 1
               const cfg   = estadoConfig[cita.estado] || estadoConfig.PENDIENTE
               const fecha = new Date(cita.fecha).toLocaleDateString('es-MX', {
                 day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'
               })
 
               // Si la hora de la cita ya pasó y no está cancelada, mostrar como Finalizada
-              const citaDateTime = new Date(`${cita.fecha.slice(0, 10)}T${cita.hora}:00`)
+              const fechaLocal = cita.fecha.slice(0, 10) // YYYY-MM-DD
+              const citaDateTime = new Date(`${fechaLocal}T${cita.hora}:00`)
               const yaTermino = citaDateTime < new Date() && cita.estado !== 'CANCELADA'
               const estadoCitaMostrar =
-                yaTermino && (!cita.estado_cita || cita.estado_cita === 'PENDIENTE')
-                  ? 'FINALIZADA'
-                  : cita.estado_cita
+                cita.estado === 'CANCELADA'
+                  ? 'CANCELADA'
+                  : yaTermino && (!cita.estado_cita || cita.estado_cita === 'PENDIENTE')
+                    ? 'FINALIZADA'
+                    : cita.estado_cita
               return (
                 <tr key={cita.id} className="hover:bg-rose-50 dark:hover:bg-gray-700 transition-colors">
+
+                  {/* # */}
+                  <td className="px-4 py-4 text-xs text-gray-400 font-mono">{num}</td>
 
                   {/* Cliente */}
                   <td className="px-4 py-4">
@@ -235,7 +259,7 @@ export default function CitasTable({
                     </div>
                     <div className="flex items-center gap-1 text-sm font-bold text-gray-900 dark:text-white mt-1">
                       <ClockIcon className="h-4 w-4 text-pink-400 flex-shrink-0" />
-                      {cita.hora}
+                      {horaA12(cita.hora)}
                     </div>
                   </td>
 
@@ -281,37 +305,34 @@ export default function CitasTable({
 
                   {/* Acciones */}
                   <td className="px-4 py-4">
-                    <div className="flex gap-1 flex-wrap">
-                      {/* Conf. Pago */}
+                    <DropdownAcciones>
                       {cita.estado === 'PENDIENTE' && (
-                        <button
+                        <DropdownItem
                           onClick={() => cambiarEstado(cita.id, 'CONFIRMADA')}
                           disabled={cambiando === cita.id}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 text-blue-700 dark:text-blue-400 text-xs font-medium transition disabled:opacity-50"
-                        >
-                          <CheckCircleIcon className="h-3 w-3" /> Confirmar pago
-                        </button>
+                          icon={<CheckCircle className="w-4 h-4" />}
+                          label="Confirmar pago"
+                        />
                       )}
-                      {cita.estado !== 'CANCELADA' && (
-                        <button
-                          onClick={() => cambiarEstado(cita.id, 'CANCELADA')}
-                          disabled={cambiando === cita.id}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-red-50 dark:bg-red-900/20 hover:bg-red-100 text-red-700 dark:text-red-400 text-xs font-medium transition disabled:opacity-50"
-                        >
-                          <XCircleIcon className="h-3 w-3" /> Cancelar
-                        </button>
-                      )}
-                      {/* Estado Cita */}
-                      {estadoCitaMostrar !== 'FINALIZADA' && estadoCitaMostrar !== 'CANCELADA' && (
-                        <button
+                      {estadoCitaMostrar !== 'FINALIZADA' && estadoCitaMostrar !== 'CANCELADA' && cita.estado !== 'CANCELADA' && (
+                        <DropdownItem
                           onClick={() => cambiarEstadoCita(cita.id, 'FINALIZADA')}
                           disabled={cambiandoCita === cita.id}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-green-50 dark:bg-green-900/20 hover:bg-green-100 text-green-700 dark:text-green-400 text-xs font-medium transition disabled:opacity-50"
-                        >
-                          <CheckCircleIcon className="h-3 w-3" /> Finalizar cita
-                        </button>
+                          icon={<ClipboardCheck className="w-4 h-4" />}
+                          label="Finalizar cita"
+                        />
                       )}
-                    </div>
+                      {cita.estado !== 'CANCELADA' && <DropdownSeparator />}
+                      {cita.estado !== 'CANCELADA' && (
+                        <DropdownItem
+                          onClick={() => cambiarEstado(cita.id, 'CANCELADA')}
+                          disabled={cambiando === cita.id}
+                          icon={<XCircle className="w-4 h-4" />}
+                          label="Cancelar cita"
+                          danger
+                        />
+                      )}
+                    </DropdownAcciones>
                   </td>
                 </tr>
               )
@@ -319,24 +340,46 @@ export default function CitasTable({
           </tbody>
         </table>
       </div>
+
+      <Paginacion
+        paginaActual={pagina}
+        totalPaginas={totalPaginas}
+        onChange={setPagina}
+      />
     </div>
   )
 }
 
-// ── Helpers de rangos rápidos ──────────────────────────────────
+// ── Helper AM/PM ──────────────────────────────────────────────
+function horaA12(hora: string): string {
+  const [h, m] = hora.split(':').map(Number)
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  const h12  = h % 12 || 12
+  return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`
+}
+
+// ── Helpers de rangos rápidos (fecha LOCAL, no UTC) ───────────
+function fechaLocal(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 function hoy() {
-  return new Date().toISOString().slice(0, 10)
+  return fechaLocal(new Date())
+}
+function manana() {
+  const d = new Date()
+  d.setDate(d.getDate() + 1)
+  return fechaLocal(d)
 }
 function semana() {
   const hoy = new Date()
-  const dia = hoy.getDay() || 7 // lunes = 1
-  const lunes = new Date(hoy); lunes.setDate(hoy.getDate() - dia + 1)
+  const dia  = hoy.getDay() || 7
+  const lunes   = new Date(hoy); lunes.setDate(hoy.getDate() - dia + 1)
   const domingo = new Date(lunes); domingo.setDate(lunes.getDate() + 6)
-  return { d: lunes.toISOString().slice(0, 10), h: domingo.toISOString().slice(0, 10) }
+  return { d: fechaLocal(lunes), h: fechaLocal(domingo) }
 }
 function mes() {
-  const hoy = new Date()
+  const hoy  = new Date()
   const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
   const fin    = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0)
-  return { d: inicio.toISOString().slice(0, 10), h: fin.toISOString().slice(0, 10) }
+  return { d: fechaLocal(inicio), h: fechaLocal(fin) }
 }

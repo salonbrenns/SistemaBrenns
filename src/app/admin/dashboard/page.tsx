@@ -1,11 +1,16 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useState, Fragment } from "react"
+import { toast } from "@/lib/toast"
+import { confirmDialog } from "@/lib/confirm"
 import { useSession } from "next-auth/react"
 import {
   Users, CalendarCheck, ShoppingBag, Calendar,
-  Shield, GraduationCap, Briefcase, UserCircle,
+  Shield, Briefcase, UserCircle,
   ChevronDown, Plus, X, Eye, EyeOff, Loader2, CheckCircle
 } from "lucide-react"
+import Paginacion from "@/components/ui/paginacion"
+
+const POR_PAGINA = 15
 
 type KPIs = {
   citasHoy: number
@@ -32,19 +37,18 @@ type Permiso = {
 }
 
 const ROL_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  ADMIN:    { label: "Administrador", color: "bg-purple-100 text-purple-700", icon: <Shield className="w-3 h-3" /> },
-  DOCENTE:  { label: "Docente",       color: "bg-blue-100 text-blue-700",    icon: <GraduationCap className="w-3 h-3" /> },
-  EMPLEADO: { label: "Empleado",      color: "bg-orange-100 text-orange-700",icon: <Briefcase className="w-3 h-3" /> },
-  CLIENTE:  { label: "Cliente",       color: "bg-pink-100 text-pink-700",    icon: <UserCircle className="w-3 h-3" /> },
+  ADMIN:    { label: "Administrador", color: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400", icon: <Shield className="w-3 h-3" /> },
+  EMPLEADO: { label: "Empleado",      color: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400",icon: <Briefcase className="w-3 h-3" /> },
+  CLIENTE:  { label: "Cliente",       color: "bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400",        icon: <UserCircle className="w-3 h-3" /> },
 }
 
 const CATEGORIA_COLOR: Record<string, string> = {
-  Ventas:     "bg-blue-100 text-blue-700",
-  Inventario: "bg-yellow-100 text-yellow-700",
-  Productos:  "bg-green-100 text-green-700",
-  Clientes:   "bg-red-100 text-red-700",
-  Agenda:     "bg-purple-100 text-purple-700",
-  Otros:      "bg-gray-100 text-gray-600 dark:text-gray-400",
+  Ventas:     "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
+  Inventario: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400",
+  Productos:  "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
+  Clientes:   "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
+  Agenda:     "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
+  Otros:      "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400",
 }
 
 function AccionesMenu({ usuario, onReset, onEliminar, onPermisos }: {
@@ -100,8 +104,9 @@ export default function DashboardPage() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
   const [loadingKpis, setLoadingKpis] = useState(true)
   const [loadingUsuarios, setLoadingUsuarios] = useState(true)
-  const [filtroRol, setFiltroRol] = useState("TODOS")
+  const [filtroRol,    setFiltroRol]    = useState("EMPLEADO")
   const [cambiandoRol, setCambiandoRol] = useState<number | null>(null)
+  const [pagina,       setPagina]       = useState(1)
 
   // Modal nuevo usuario
   const [showModal, setShowModal] = useState(false)
@@ -167,27 +172,31 @@ export default function DashboardPage() {
   }
 
   const handleResetPassword = async (u: Usuario) => {
-    if (!confirm(`¿Enviar correo de recuperación a ${u.nombre}?`)) return
+    if (!(await confirmDialog(`Se enviará un correo de recuperación de contraseña a ${u.nombre}.`, {
+      danger: false, title: "Enviar correo de recuperación", confirmLabel: "Enviar correo",
+    }))) return
     try {
       await fetch("/api/auth/recuperar-contrasena", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ correo: u.correo }),
       })
-      alert(`Correo enviado a ${u.correo}`)
+      toast.success(`Correo enviado a ${u.correo}`)
     } catch {
-      alert("Error al enviar correo")
+      toast.error("Error al enviar correo")
     }
   }
 
   const handleEliminar = async (u: Usuario) => {
-    if (!confirm(`¿Eliminar a ${u.nombre}? Esta acción no se puede deshacer.`)) return
+    if (!(await confirmDialog(`¿Eliminar a ${u.nombre}? Esta acción no se puede deshacer.`, {
+      danger: true, title: "Eliminar usuario", confirmLabel: "Eliminar",
+    }))) return
     try {
       const res = await fetch(`/api/admin/usuarios?id=${u.id}`, { method: "DELETE" })
       if (res.ok) setUsuarios(prev => prev.filter(x => x.id !== u.id))
-      else alert("No se puede eliminar este usuario")
+      else toast.warning("No se puede eliminar este usuario")
     } catch {
-      alert("Error al eliminar usuario")
+      toast.error("Error al eliminar usuario")
     }
   }
 
@@ -260,8 +269,14 @@ export default function DashboardPage() {
     }
   }
 
-  const usuariosFiltrados = filtroRol === "TODOS" ? usuarios : usuarios.filter(u => u.rol === filtroRol)
+  const usuariosFiltrados = usuarios.filter(u => u.rol === filtroRol)
+  const totalPaginas      = Math.ceil(usuariosFiltrados.length / POR_PAGINA)
+  const usuariosPagina    = usuariosFiltrados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
   const contarPorRol = (rol: string) => usuarios.filter(u => u.rol === rol).length
+  const cambiarFiltroRol  = (rol: string) => { setFiltroRol(rol); setPagina(1) }
+  // Ocultar teléfono y acciones cuando se ven clientes
+  const mostrarExtra = filtroRol !== "CLIENTE"
+
   const categorias = [...new Set(permisos.map(p => p.categoria))]
   const permisosActivos = permisos.filter(p => p.activo).length
 
@@ -297,14 +312,18 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* ✅ Resumen por rol — ahora incluye CLIENTE */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {Object.entries(ROL_CONFIG).map(([rol, cfg]) => (
-          <div key={rol} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${cfg.color}`}>{cfg.icon}</div>
+      {/* Resumen por rol */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          { rol: "ADMIN",    label: "Administradores", gradient: "from-purple-500 to-indigo-600",  icon: <Shield className="w-5 h-5" /> },
+          { rol: "EMPLEADO", label: "Empleados",        gradient: "from-orange-400 to-rose-500",   icon: <Briefcase className="w-5 h-5" /> },
+          { rol: "CLIENTE",  label: "Clientes",         gradient: "from-pink-500 to-rose-600",     icon: <UserCircle className="w-5 h-5" /> },
+        ].map(({ rol, label, gradient, icon }) => (
+          <div key={rol} className={`bg-gradient-to-br ${gradient} rounded-2xl p-5 text-white shadow-md flex items-center gap-4`}>
+            <div className="bg-white/20 p-3 rounded-xl">{icon}</div>
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{cfg.label}s</p>
-              <p className="text-2xl font-bold text-gray-800 dark:text-white">{contarPorRol(rol)}</p>
+              <p className="text-sm font-medium opacity-90">{label}</p>
+              <p className="text-3xl font-bold">{contarPorRol(rol)}</p>
             </div>
           </div>
         ))}
@@ -317,15 +336,20 @@ export default function DashboardPage() {
             <Users className="w-5 h-5 text-pink-500" /> Usuarios del sistema
           </h2>
           <div className="flex items-center gap-3 flex-wrap">
-            {/* ✅ Filtros — ahora incluye CLIENTE */}
+            {/* Filtros por rol — sin "Todos" */}
             <div className="flex gap-2 flex-wrap">
-              {["TODOS", "ADMIN", "DOCENTE", "EMPLEADO", "CLIENTE"].map(rol => (
-                <button key={rol} onClick={() => setFiltroRol(rol)}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                    filtroRol === rol ? "bg-pink-600 text-white" : "bg-gray-100 text-gray-600 dark:text-gray-400 hover:bg-gray-200"
+              {[
+                { key: "ADMIN",    label: `Administrador (${contarPorRol("ADMIN")})` },
+                { key: "EMPLEADO", label: `Empleado (${contarPorRol("EMPLEADO")})` },
+                { key: "CLIENTE",  label: `Cliente (${contarPorRol("CLIENTE")})` },
+              ].map(({ key, label }) => (
+                <button key={key} onClick={() => cambiarFiltroRol(key)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                    filtroRol === key
+                      ? "bg-pink-600 text-white shadow-sm"
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                   }`}>
-                  {rol === "TODOS" ? "Todos" : ROL_CONFIG[rol]?.label}
-                  {rol !== "TODOS" && ` (${contarPorRol(rol)})`}
+                  {label}
                 </button>
               ))}
             </div>
@@ -347,19 +371,22 @@ export default function DashboardPage() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-900 text-xs text-gray-500 dark:text-gray-400 uppercase">
+                  <th className="px-3 py-3 text-left w-10">#</th>
                   <th className="px-5 py-3 text-left">Usuario</th>
-                  <th className="px-5 py-3 text-left">Teléfono</th>
+                  {mostrarExtra && <th className="px-5 py-3 text-left">Teléfono</th>}
                   <th className="px-5 py-3 text-left">Rol</th>
                   <th className="px-5 py-3 text-left">Estado</th>
                   <th className="px-5 py-3 text-left">Registro</th>
-                  <th className="px-5 py-3 text-left">Acciones</th>
+                  {mostrarExtra && <th className="px-5 py-3 text-left">Acciones</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {usuariosFiltrados.map(u => {
+                {usuariosPagina.map((u, idx) => {
                   const cfg = ROL_CONFIG[u.rol]
+                  const num = (pagina - 1) * POR_PAGINA + idx + 1
                   return (
                     <tr key={u.id} className="hover:bg-pink-50/30 transition-colors">
+                      <td className="px-3 py-4 text-xs text-gray-400 font-mono">{num}</td>
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-bold text-sm">
@@ -367,45 +394,65 @@ export default function DashboardPage() {
                           </div>
                           <div>
                             <p className="font-medium text-gray-800 dark:text-white text-sm">{u.nombre}</p>
-                            <p className="text-xs text-gray-400">{u.correo}</p>
+                            {u.rol !== "CLIENTE" && (
+                              <p className="text-xs text-gray-400">{u.correo}</p>
+                            )}
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400">{u.telefono || "—"}</td>
+                      {mostrarExtra && (
+                        <td className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400">
+                          {u.telefono || "—"}
+                        </td>
+                      )}
                       <td className="px-5 py-4">
-                        <div className="relative inline-block">
-                          {/* ✅ Selector de rol — ahora incluye CLIENTE */}
-                          <select value={u.rol} disabled={cambiandoRol === u.id}
-                            onChange={e => handleCambiarRol(u.id, e.target.value)}
-                            className={`text-xs font-semibold px-2 py-1 rounded-full border-0 cursor-pointer appearance-none pr-6 ${cfg?.color} disabled:opacity-50`}>
-                            {Object.entries(ROL_CONFIG).map(([rol, c]) => (
-                              <option key={rol} value={rol}>{c.label}</option>
-                            ))}
-                          </select>
-                          <ChevronDown className="w-3 h-3 absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none opacity-60" />
-                        </div>
+                        {u.rol === "CLIENTE" ? (
+                          <span className={`text-xs font-semibold px-2 py-1 rounded-full ${cfg?.color}`}>
+                            {cfg?.label}
+                          </span>
+                        ) : (
+                          <div className="relative inline-block">
+                            <select value={u.rol} disabled={cambiandoRol === u.id}
+                              onChange={e => handleCambiarRol(u.id, e.target.value)}
+                              className={`text-xs font-semibold px-2 py-1 rounded-full border-0 cursor-pointer appearance-none pr-6 ${cfg?.color} disabled:opacity-50`}>
+                              {Object.entries(ROL_CONFIG).filter(([rol]) => rol !== "CLIENTE").map(([rol, c]) => (
+                                <option key={rol} value={rol}>{c.label}</option>
+                              ))}
+                            </select>
+                            <ChevronDown className="w-3 h-3 absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none opacity-60" />
+                          </div>
+                        )}
                       </td>
                       <td className="px-5 py-4">
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => handleToggleActivo(u.id, u.activo)}
-                            disabled={cambiandoRol === u.id}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${
-                              u.activo ? "bg-green-500" : "bg-gray-300"
-                            }`}>
-                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-                              u.activo ? "translate-x-6" : "translate-x-1"
-                            }`} />
-                          </button>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">{u.activo ? "Activo" : "Inactivo"}</span>
-                        </div>
+                        {u.rol === "CLIENTE" ? (
+                          <span className={`text-xs font-medium ${u.activo ? "text-green-600" : "text-gray-400"}`}>
+                            {u.activo ? "Activo" : "Inactivo"}
+                          </span>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => handleToggleActivo(u.id, u.activo)}
+                              disabled={cambiandoRol === u.id}
+                              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${
+                                u.activo ? "bg-green-500" : "bg-gray-300"
+                              }`}>
+                              <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                                u.activo ? "translate-x-6" : "translate-x-1"
+                              }`} />
+                            </button>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{u.activo ? "Activo" : "Inactivo"}</span>
+                          </div>
+                        )}
                       </td>
                       <td className="px-5 py-4 text-xs text-gray-400">
                         {new Date(u.fecha_registro).toLocaleDateString("es-MX")}
                       </td>
-                      <td className="px-5 py-4">
-                        <AccionesMenu usuario={u} onReset={handleResetPassword}
-                          onEliminar={handleEliminar} onPermisos={handleVerPermisos} />
-                      </td>
+                      {mostrarExtra && (
+                        <td className="px-5 py-4">
+                          <AccionesMenu usuario={u} onReset={handleResetPassword}
+                            onEliminar={handleEliminar} onPermisos={handleVerPermisos} />
+                        </td>
+                      )}
+
                     </tr>
                   )
                 })}
@@ -413,6 +460,12 @@ export default function DashboardPage() {
             </table>
           </div>
         )}
+
+        <Paginacion
+          paginaActual={pagina}
+          totalPaginas={totalPaginas}
+          onChange={setPagina}
+        />
       </div>
 
       {/* Modal Permisos */}
@@ -465,8 +518,8 @@ export default function DashboardPage() {
                   </thead>
                   <tbody>
                     {categorias.map(categoria => (
-                      <>
-                        <tr key={`cat-${categoria}`}>
+                      <Fragment key={categoria}>
+                        <tr>
                           <td colSpan={4} className="px-5 py-2 bg-gray-50 dark:bg-gray-900">
                             <span className={`text-xs font-semibold px-2 py-1 rounded-md ${CATEGORIA_COLOR[categoria]}`}>
                               {categoria}
@@ -495,7 +548,7 @@ export default function DashboardPage() {
                             </td>
                           </tr>
                         ))}
-                      </>
+                      </Fragment>
                     ))}
                   </tbody>
                   <tfoot>

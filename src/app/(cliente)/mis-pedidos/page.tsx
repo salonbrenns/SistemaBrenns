@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Package, ChevronDown, ChevronUp, ShoppingBag, CheckCircle2, Clock, Truck } from 'lucide-react'
-import DotsLoader from '@/components/ui/DotsLoader'
 import AuthGuard from '@/components/ui/AuthGuard'
 
 interface Detalle {
@@ -104,7 +103,7 @@ function MisPedidosContenido() {
   if (cargando) {
     return (
       <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 flex items-center justify-center">
-        <DotsLoader />
+        <div className="w-10 h-10 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin" />
       </div>
     )
   }
@@ -194,7 +193,7 @@ function MisPedidosContenido() {
                     {/* Totales */}
                     <div className="pt-3 border-t border-gray-200 dark:border-gray-700 text-sm space-y-1">
                       <div className="flex justify-between text-gray-500 dark:text-gray-400">
-                        <span>Envio</span>
+                        <span>Envío</span>
                         {pedido.costo_envio === 0
                           ? <span className="text-green-600 font-bold">GRATIS</span>
                           : <span>${pedido.costo_envio.toLocaleString('es-MX')}</span>
@@ -214,10 +213,10 @@ function MisPedidosContenido() {
         ) : (
           <div className="text-center py-32 bg-white dark:bg-gray-800 rounded-[3rem] shadow-inner border-2 border-dashed border-rose-100">
             <ShoppingBag className="w-20 h-20 text-rose-200 mx-auto mb-4" />
-            <p className="text-xl font-bold text-gray-700 dark:text-gray-300 mb-6">Aun no tienes pedidos</p>
+            <p className="text-xl font-bold text-gray-700 dark:text-gray-300 mb-6">Aún no tienes pedidos</p>
             <Link href="/catalogo">
               <button className="px-8 py-3 bg-rose-700 text-white font-bold rounded-full hover:bg-rose-800 transition shadow-xl">
-                Explorar catalogo
+                Explorar catálogo
               </button>
             </Link>
           </div>

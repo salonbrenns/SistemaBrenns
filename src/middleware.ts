@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import NextAuth from "next-auth"
+import { authConfig } from "@/lib/auth.config"
+
+// Instancia Edge-safe (sin Prisma) usada SOLO en el middleware
+const { auth } = NextAuth(authConfig)
 
 // ── Rate Limiter RASP ─────────────────────────────────────────
 const loginAttempts = new Map<string, { count: number; firstAttempt: number }>()

@@ -2,17 +2,16 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Shield, User, GraduationCap, Crown, Check, X, Briefcase, Loader2, AlertCircle, Search } from "lucide-react"
+import { Shield, User, Crown, Check, X, Briefcase, Loader2, AlertCircle, Search } from "lucide-react"
 
 const ROLES_INFO = [
   { nombre: "ADMIN",    icon: Crown,        color: "bg-pink-500",  border: "border-pink-200 dark:border-pink-900",   badge: "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400",   descripcion: "Acceso completo al sistema",    permisos: ["Ver y editar todos los módulos","Gestionar usuarios y roles","Ver reportes y estadísticas","Configurar el sistema","Gestionar pagos"] },
   { nombre: "EMPLEADO", icon: Briefcase,    color: "bg-amber-500", border: "border-amber-200 dark:border-amber-900",  badge: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400", descripcion: "Acceso a citas y agenda",        permisos: ["Ver y gestionar sus citas","Agendar citas para clientes","Ver su perfil y horarios","Sin acceso a configuración","Sin acceso a reportes"] },
-  { nombre: "DOCENTE",  icon: GraduationCap,color: "bg-blue-500",  border: "border-blue-200 dark:border-blue-900",   badge: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",   descripcion: "Acceso a módulos de cursos",    permisos: ["Ver sus cursos asignados","Ver inscripciones","Ver su perfil","Sin acceso a pagos","Sin acceso a configuración"] },
   { nombre: "CLIENTE",  icon: User,         color: "bg-green-500", border: "border-green-200 dark:border-green-900",  badge: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400", descripcion: "Acceso al portal de clientes",  permisos: ["Ver y comprar productos","Agendar citas","Ver sus pedidos y citas","Editar su perfil","Sin acceso al admin"] },
 ]
 
 type Usuario = { id: number; nombre: string; correo: string; telefono: string | null; rol: string; activo: boolean }
-const ROLES_OPCIONES = ["ADMIN", "EMPLEADO", "DOCENTE", "CLIENTE"]
+const ROLES_OPCIONES = ["ADMIN", "EMPLEADO", "CLIENTE"]
 
 function badgeColor(rol: string) {
   return ROLES_INFO.find(r => r.nombre === rol)?.badge || "bg-gray-100 text-gray-600 dark:text-gray-400"
@@ -113,7 +112,7 @@ export default function RolesPage() {
         <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
           <div>
             <h3 className="font-bold text-gray-800 dark:text-white">Personal del sistema</h3>
-            <p className="text-xs text-gray-400 mt-0.5">Administradores, Empleados y Docentes</p>
+            <p className="text-xs text-gray-400 mt-0.5">Administradores y Empleados</p>
           </div>
           {cargando && <Loader2 className="w-4 h-4 text-pink-400 animate-spin" />}
         </div>

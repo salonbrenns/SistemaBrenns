@@ -24,6 +24,17 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: "Tu cuenta esta desactivada. Contacta al administrador.", code: "ACCOUNT_INACTIVE" }, { status: 403 })
     }
 
+    // Verificar que el correo haya sido confirmado
+    const verif = await prisma.$queryRaw<{ correo_verificado: boolean }[]>`
+      SELECT correo_verificado FROM seguridad.tblusuarios WHERE id = ${usuario.id}
+    `
+    if (verif[0] && !verif[0].correo_verificado) {
+      return Response.json({
+        error: "Debes verificar tu correo electrónico. Revisa tu bandeja de entrada.",
+        code: "EMAIL_NOT_VERIFIED",
+      }, { status: 403 })
+    }
+
     const passwordValida = await bcrypt.compare(password as string, usuario.password)
 
     if (!passwordValida) {

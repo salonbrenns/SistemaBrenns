@@ -10,8 +10,8 @@ interface Marca     { id: number; nombre: string }
 interface Categoria { id: number; nombre: string }
 
 const inputClass =
-  'w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition'
-const labelClass = 'text-xs font-semibold text-gray-500 uppercase tracking-wider'
+  'w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition'
+const labelClass = 'text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider'
 
 export default function CreateProductoForm({
   marcas,
@@ -44,7 +44,7 @@ export default function CreateProductoForm({
 
           {/* ── Información general ── */}
           <section className="space-y-4">
-            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">
+            <h3 className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700 pb-2">
               Información general
             </h3>
             <div className="grid grid-cols-2 gap-4">
@@ -96,7 +96,7 @@ export default function CreateProductoForm({
 
           {/* ── Imágenes ── */}
           <section className="space-y-3">
-            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">
+            <h3 className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700 pb-2">
               Imágenes del producto
             </h3>
             <ImageUpload />
@@ -104,7 +104,7 @@ export default function CreateProductoForm({
 
           {/* ── Variantes ── */}
           <section className="space-y-3">
-            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-2">
+            <h3 className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700 pb-2">
               Variantes{' '}
               <span className="ml-2 normal-case font-normal text-gray-400">
                 (tono, presentación, precio y stock por variante)
@@ -116,11 +116,11 @@ export default function CreateProductoForm({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 px-8 py-4 bg-gray-50 border-t border-gray-100">
+        <div className="flex justify-end gap-3 px-8 py-4 bg-gray-50 dark:bg-gray-900/40 border-t border-gray-100 dark:border-gray-700">
           <button
             type="button"
             onClick={() => router.push('/admin/productos')}
-            className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-100 transition"
+            className="px-5 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
           >
             Cancelar
           </button>

@@ -1,7 +1,7 @@
 // src/app/(frontend)/pago/page.tsx
 "use client"
 
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { useState, Suspense } from "react"
 import Breadcrumb from "@/components/Breadcrumb"
 import { CreditCard, CheckCircle, Calendar, Clock, User } from "lucide-react"
@@ -9,10 +9,10 @@ import AuthGuard from "@/components/ui/AuthGuard"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { validarInscripcion } from "@/lib/validation"
-import DotsLoader from "@/components/ui/DotsLoader"
 
 function PagoContenido() {
   const searchParams = useSearchParams()
+  const router = useRouter()
 
   const cita = {
     servicio:    searchParams.get("servicio")  || "Servicio seleccionado",
@@ -41,8 +41,7 @@ function PagoContenido() {
       setFieldErrors(validacion.errores)
       return
     }
-    alert("¡Cita agendada con éxito! Te esperamos en Brenn's")
-    window.location.href = "/servicios"
+    router.push("/mis-citas")
   }
 
   return (
@@ -160,7 +159,7 @@ export default function PagoPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <DotsLoader />
+        <div className="w-10 h-10 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin" />
       </div>
     }>
       <PagoContenido />

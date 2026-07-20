@@ -2,11 +2,6 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 
-async function isAdmin() {
-  const session = await auth()
-  return session?.user?.role === "ADMIN"
-}
-
 async function isAdminOrEmpleado() {
   const session = await auth()
   const role = session?.user?.role
@@ -55,9 +50,15 @@ export async function GET(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  if (!await isAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  const session = await auth()
+  if (session?.user?.role !== "ADMIN") return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 
   const { id, rol, activo } = await req.json()
+
+  // Evitar que el admin cambie su propio rol
+  if (rol && Number(id) === Number(session.user.id)) {
+    return NextResponse.json({ error: "No puedes cambiar tu propio rol" }, { status: 403 })
+  }
 
   if (rol) {
     await prisma.$executeRaw`
@@ -82,12 +83,18 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  if (!await isAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  const session = await auth()
+  if (session?.user?.role !== "ADMIN") return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 
   const { searchParams } = new URL(req.url)
   const id = Number(searchParams.get("id"))
 
   if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 })
+
+  // Evitar que el admin elimine su propia cuenta
+  if (id === Number(session.user.id)) {
+    return NextResponse.json({ error: "No puedes eliminar tu propia cuenta" }, { status: 403 })
+  }
 
   try {
     await prisma.usuario.delete({ where: { id } })

@@ -16,6 +16,7 @@ import {
   CogIcon,
   ChevronDownIcon,
   ClockIcon,
+  UserCircleIcon,
 } from '@heroicons/react/24/outline'
 
 export default function NavLinks({
@@ -42,6 +43,7 @@ export default function NavLinks({
       { name: 'Citas',          href: '/empleado/citas',          icon: CalendarDaysIcon },
       { name: 'Mi horario',     href: '/empleado/mi-horario',     icon: ClockIcon       },
       { name: 'Notificaciones', href: '/empleado/notificaciones', icon: BellIcon        },
+      { name: 'Mi cuenta',     href: '/empleado/mi-cuenta',     icon: UserCircleIcon  },
     ]
 
     return (
@@ -127,6 +129,7 @@ export default function NavLinks({
       title: "Configuración",
       icon: CogIcon,
       links: [
+        { name: 'Mi cuenta',       href: '/admin/mi-cuenta'      },
         { name: 'Configuración',   href: '/admin/configuracion'  },
         { name: 'Notificaciones',  href: '/admin/notificaciones' },
         { name: 'Roles',           href: '/admin/roles'          },

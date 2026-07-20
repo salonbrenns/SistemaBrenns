@@ -9,6 +9,11 @@ async function isAdminOrEmpleado() {
   return role === "ADMIN" || role === "EMPLEADO"
 }
 
+async function isAdmin() {
+  const session = await auth()
+  return session?.user?.role === "ADMIN"
+}
+
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -61,7 +66,7 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!await isAdminOrEmpleado()) {
+  if (!await isAdmin()) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   }
 

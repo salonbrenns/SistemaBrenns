@@ -297,7 +297,7 @@ export default function ConfiguracionPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-pink-900 dark:text-pink-300 flex items-center gap-2 tracking-tight">
+          <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300 flex items-center gap-2">
             <Settings className="w-6 h-6 text-pink-500" /> Configuración
           </h1>
           <p className="text-xs text-gray-400 font-medium">Gestiona la identidad y contenido global del sitio</p>

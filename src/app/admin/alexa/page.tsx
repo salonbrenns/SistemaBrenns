@@ -196,72 +196,71 @@ const TIPOS_PERSONALIZADOS = [
 
 export default function AlexaSkillPage() {
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300">Alexa Skill</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Nombre de invocación: <span className="font-semibold text-pink-700 dark:text-pink-400">salón bren</span>
-        </p>
-      </div>
+    <div className="space-y-6">
 
-      {/* PIN */}
-      <div className="flex items-center gap-4 bg-gradient-to-r from-pink-700 to-pink-900 rounded-2xl p-5 text-white shadow-lg w-fit">
-        <div className="bg-white/20 rounded-xl p-3">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      {/* Header + PIN en una sola barra */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-pink-900 to-pink-700 rounded-2xl px-6 py-5 text-white shadow-lg">
+        <div>
+          <h1 className="text-xl font-bold tracking-wide">Alexa Skill</h1>
+          <p className="text-pink-200 text-sm mt-0.5">
+            Invocación: <span className="font-semibold text-white">salón bren</span>
+          </p>
+        </div>
+        <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 border border-white/20">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-pink-200 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
-        </div>
-        <div>
-          <p className="text-sm text-pink-200 font-medium uppercase tracking-wider">Tu PIN de Alexa es</p>
-          <p className="text-4xl font-bold tracking-widest">{PIN}</p>
+          <div>
+            <p className="text-xs text-pink-200 uppercase tracking-wider font-medium">Tu PIN de Alexa</p>
+            <p className="text-2xl font-bold tracking-widest">{PIN}</p>
+          </div>
         </div>
       </div>
 
-      {/* Tabla de intents */}
+      {/* Cards de intents */}
       <div>
         <h2 className="text-lg font-semibold text-pink-900 dark:text-pink-300 mb-3">Utterances y funciones</h2>
-        <div className="overflow-x-auto rounded-2xl border border-pink-100 dark:border-pink-900 shadow-sm">
-          <table className="min-w-full divide-y divide-pink-100 dark:divide-pink-900">
-            <thead className="bg-pink-50 dark:bg-pink-950/30">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-pink-700 dark:text-pink-400 w-52">Intent</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-pink-700 dark:text-pink-400">Utterances</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-pink-700 dark:text-pink-400 w-72">¿Qué hace?</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-900 divide-y divide-pink-50 dark:divide-pink-900/30">
-              {INTENTS.map((row) => (
-                <tr key={row.intent} className="hover:bg-pink-50/50 dark:hover:bg-pink-950/10 transition-colors">
-                  <td className="px-4 py-3 align-top">
-                    <span className={`inline-block text-xs font-mono font-semibold px-2 py-1 rounded-lg ${
-                      row.tipo === "amazon"
-                        ? "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
-                        : "bg-pink-100 text-pink-700 dark:bg-pink-950/40 dark:text-pink-300"
-                    }`}>
-                      {row.intent}
+        <div className="space-y-2">
+          {INTENTS.map((row) => (
+            <div
+              key={row.intent}
+              className="flex flex-col sm:flex-row gap-3 rounded-xl border border-pink-100 dark:border-pink-900/50 bg-white dark:bg-gray-900 px-4 py-3 hover:bg-pink-50/40 dark:hover:bg-pink-950/10 transition-colors"
+            >
+              {/* Izquierda: intent + descripción */}
+              <div className="sm:w-80 flex-shrink-0 space-y-1.5">
+                <span className={`inline-block text-xs font-mono font-semibold px-2.5 py-1 rounded-md ${
+                  row.tipo === "amazon"
+                    ? "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+                    : "bg-pink-100 text-pink-700 dark:bg-pink-950/40 dark:text-pink-300"
+                }`}>
+                  {row.intent}
+                </span>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                  {row.descripcion}
+                </p>
+              </div>
+
+              {/* Separador vertical */}
+              <div className="hidden sm:block w-px bg-pink-100 dark:bg-pink-900/40 flex-shrink-0" />
+
+              {/* Derecha: utterances como pills */}
+              <div className="flex-1 flex flex-wrap gap-1.5 content-start">
+                {row.utterances.length === 0 ? (
+                  <span className="text-xs text-gray-400 italic self-center">Sin utterances personalizadas</span>
+                ) : (
+                  row.utterances.map((u) => (
+                    <span
+                      key={u}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
+                    >
+                      <span className="text-pink-400">›</span>
+                      {u}
                     </span>
-                  </td>
-                  <td className="px-4 py-3 align-top">
-                    {row.utterances.length === 0 ? (
-                      <span className="text-xs text-gray-400 italic">Sin utterances personalizadas.</span>
-                    ) : (
-                      <ul className="space-y-0.5">
-                        {row.utterances.map((u) => (
-                          <li key={u} className="text-xs text-gray-700 dark:text-gray-300 before:content-['•'] before:mr-1.5 before:text-pink-400">
-                            {u}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 align-top text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {row.descripcion}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  ))
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

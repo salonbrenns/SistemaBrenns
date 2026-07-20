@@ -2,8 +2,8 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 export async function GET() {
-  const empleados = await prisma.$queryRaw<{ id: number; nombre: string }[]>`
-    SELECT id, nombre 
+  const empleados = await prisma.$queryRaw<{ id: number; nombre: string; image: string | null }[]>`
+    SELECT id, nombre, image
     FROM seguridad.tblusuarios
     WHERE rol::text IN ('EMPLEADO', 'ADMIN')
     AND activo = true
@@ -21,7 +21,7 @@ export async function GET() {
       return {
         id:     e.id,
         nombre: e.nombre,
-        imagen: null,
+        imagen: e.image ?? null,
         dias:   dias.map(d => d.dia_semana),
       }
     })

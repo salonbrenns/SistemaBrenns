@@ -1,4 +1,5 @@
 import CursoTable from '@/components/cursos/table'
+import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 
 export const dynamic = "force-dynamic"
@@ -51,10 +52,17 @@ export default async function CursosPage({
       <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300">Cursos</h1>
 
       {/* FILTROS */}
-      <div className="flex gap-3">
-        <a href="/admin/cursos" className="px-3 py-1 border rounded">Todos</a>
-        <a href="/admin/cursos?estado=activos" className="px-3 py-1 border rounded">Activos</a>
-        <a href="/admin/cursos?estado=inactivos" className="px-3 py-1 border rounded">Inactivos</a>
+      <div className="flex flex-wrap gap-2">
+        {[
+          { label: 'Todos',    href: '/admin/cursos' },
+          { label: 'Activos',  href: '/admin/cursos?estado=activos' },
+          { label: 'Inactivos',href: '/admin/cursos?estado=inactivos' },
+        ].map(({ label, href }) => (
+          <Link key={label} href={href}
+            className="px-3 py-1.5 rounded-full text-xs font-bold border bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-rose-300 dark:hover:border-rose-700 transition">
+            {label}
+          </Link>
+        ))}
       </div>
 
       <CursoTable

@@ -122,14 +122,14 @@ export default function MiHorarioPage() {
                     empleadoSel === emp.id ? "bg-pink-600 text-white border-pink-600 shadow-sm" : "bg-white text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-pink-300"
                   }`}>
                   <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
-                    empleadoSel === emp.id ? "bg-pink-500 text-white" : "bg-pink-100 text-pink-600"
+                    empleadoSel === emp.id ? "bg-pink-500 text-white" : "bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400"
                   }`}>
                     {emp.nombre.charAt(0).toUpperCase()}
                   </span>
                   {emp.nombre.split(" ")[0]}
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
                     empleadoSel === emp.id ? "bg-pink-500 text-white"
-                      : emp.rol === "ADMIN" ? "bg-purple-100 text-purple-600" : "bg-orange-100 text-orange-600"
+                      : emp.rol === "ADMIN" ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400" : "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
                   }`}>{emp.rol}</span>
                 </button>
               ))}

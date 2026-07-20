@@ -28,7 +28,7 @@ function AgendarContenido() {
   const searchParams = useSearchParams()
   const servicioId = searchParams.get("servicioId")
 
-  const [paso,        setPaso]        = useState<1 | 2>(1)
+  const [paso,        setPaso]        = useState<0 | 1 | 2>(0)
   const [servicio,    setServicio]    = useState<Servicio | null>(null)
   const [cargandoSrv, setCargandoSrv] = useState(true)
   const [empleados,   setEmpleados]   = useState<Empleado[]>([])
@@ -300,19 +300,73 @@ function AgendarContenido() {
         ]} />
 
         {/* Pasos */}
-        <div className="flex items-center justify-center gap-4 my-8">
-          {[{ n: 1, label: "Fecha y hora" }, { n: 2, label: "Pago" }].map(({ n, label }) => (
+        <div className="flex items-center justify-center gap-3 my-8">
+          {[{ n: 0, label: "Profesional" }, { n: 1, label: "Fecha y hora" }, { n: 2, label: "Pago" }].map(({ n, label }, i) => (
             <div key={n} className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition ${
-                paso >= n ? "bg-pink-600 text-white" : "bg-gray-200 text-gray-500 dark:text-gray-400"
-              }`}>{n}</div>
+                paso >= n ? "bg-pink-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+              }`}>{i + 1}</div>
               <span className={`text-sm font-medium hidden sm:block ${paso >= n ? "text-pink-600" : "text-gray-400"}`}>{label}</span>
-              {n < 2 && <ChevronRight className="w-4 h-4 text-gray-300" />}
+              {i < 2 && <ChevronRight className="w-4 h-4 text-gray-300" />}
             </div>
           ))}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
+
+          {/* ── PASO 0: Seleccionar profesional ── */}
+          {paso === 0 && (
+            <div className="lg:col-span-2">
+              <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Seleccionar profesional</h1>
+              <div className="space-y-3">
+
+                {/* Sin preferencia */}
+                <button
+                  onClick={() => { handleSelEmpleado(null); setPaso(1) }}
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-pink-400 dark:hover:border-pink-600 hover:shadow-md transition-all text-left group"
+                >
+                  <div className="w-16 h-16 rounded-full bg-pink-50 dark:bg-pink-950/30 border-2 border-pink-100 dark:border-pink-900 flex items-center justify-center flex-shrink-0">
+                    <User className="w-7 h-7 text-pink-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-gray-800 dark:text-white text-base">Sin preferencia</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Disponibilidad máxima</p>
+                  </div>
+                  <span className="flex-shrink-0 text-sm font-semibold border-2 border-gray-200 dark:border-gray-600 rounded-full px-5 py-1.5 text-gray-600 dark:text-gray-400 group-hover:border-pink-500 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-all">
+                    Seleccionar
+                  </span>
+                </button>
+
+                {/* Empleadas */}
+                {empleados.map(emp => (
+                  <button
+                    key={emp.id}
+                    onClick={() => { handleSelEmpleado(emp.id); setPaso(1) }}
+                    className="w-full flex items-center gap-4 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-pink-400 dark:hover:border-pink-600 hover:shadow-md transition-all text-left group"
+                  >
+                    <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border-2 border-gray-100 dark:border-gray-700">
+                      {emp.imagen ? (
+                        <div className="relative w-full h-full">
+                          <Image src={emp.imagen} alt={emp.nombre} fill className="object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white text-2xl font-black">
+                          {emp.nombre.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-800 dark:text-white text-base">{emp.nombre}</p>
+                      <p className="text-sm text-pink-500 dark:text-pink-400 mt-0.5">Especialista</p>
+                    </div>
+                    <span className="flex-shrink-0 text-sm font-semibold border-2 border-gray-200 dark:border-gray-600 rounded-full px-5 py-1.5 text-gray-600 dark:text-gray-400 group-hover:border-pink-500 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-all">
+                      Seleccionar
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* ── PASO 1 ── */}
           {paso === 1 && (
@@ -678,7 +732,10 @@ function AgendarContenido() {
                     </div>
                   )}
 
-                  {!fechaSel && (
+                  {paso === 0 && (
+                    <p className="text-xs text-gray-400 text-center pt-1">Elige un profesional para continuar</p>
+                  )}
+                  {paso >= 1 && !fechaSel && (
                     <p className="text-xs text-gray-400 text-center pt-1">Selecciona fecha y hora para continuar</p>
                   )}
                 </div>
@@ -690,64 +747,31 @@ function AgendarContenido() {
               )}
             </div>
 
-            {/* ── Especialista ── */}
-            {empleados.length > 0 && paso === 1 && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-50 p-5">
-                <h2 className="text-sm font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <User className="w-4 h-4 text-pink-400" /> Especialista
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => handleSelEmpleado(null)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 text-sm font-semibold transition-all ${
-                      empleadoSel === null
-                        ? "border-pink-600 bg-pink-600 text-white shadow-md"
-                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:border-pink-300"
-                    }`}
-                  >
-                    <div className="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center">
-                      <User className="w-3 h-3" />
-                    </div>
-                    Sin preferencia
-                  </button>
-                  {empleados.map(emp => (
-                    <button
-                      key={emp.id}
-                      onClick={() => handleSelEmpleado(emp.id)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 text-sm font-semibold transition-all ${
-                        empleadoSel === emp.id
-                          ? "border-pink-600 bg-pink-600 text-white shadow-md"
-                          : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-pink-300"
-                      }`}
-                    >
-                      {emp.imagen ? (
-                        <div className="relative w-5 h-5 rounded-full overflow-hidden flex-shrink-0">
-                          <Image src={emp.imagen} alt={emp.nombre} fill className="object-cover" />
-                        </div>
-                      ) : (
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
-                          empleadoSel === emp.id ? "bg-white/20 text-white" : "bg-gradient-to-br from-pink-400 to-rose-500 text-white"
-                        }`}>
-                          {emp.nombre.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      {emp.nombre.split(" ")[0]}
-                    </button>
-                  ))}
-                </div>
-                {empleadoSel && empleadoActual && (
-                  <div className="mt-3 flex items-center gap-2 bg-pink-50 dark:bg-pink-950/20 rounded-xl px-4 py-2.5 border border-pink-100 dark:border-pink-900">
-                    <Calendar className="w-3.5 h-3.5 text-pink-400 flex-shrink-0" />
-                    <p className="text-xs text-pink-700 dark:text-pink-300 font-medium">
-                      <span className="font-bold">{empleadoActual.nombre.split(" ")[0]}</span> atiende los:{" "}
-                      {diasAtiende(empleadoSel)
-                        .map(d => ["", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][d])
-                        .join(", ")}
-                    </p>
+            {/* Botón cambiar profesional — solo en pasos 1 y 2 */}
+            {paso >= 1 && empleados.length > 0 && (
+              <button
+                onClick={() => setPaso(0)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-pink-200 dark:border-pink-900 bg-pink-50/50 dark:bg-pink-950/10 hover:bg-pink-50 dark:hover:bg-pink-950/20 transition text-left"
+              >
+                {empleadoActual?.imagen ? (
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                    <Image src={empleadoActual.imagen} alt={empleadoActual.nombre} fill className="object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0">
+                    {empleadoActual ? empleadoActual.nombre.charAt(0).toUpperCase() : <User className="w-4 h-4" />}
                   </div>
                 )}
-              </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-pink-700 dark:text-pink-300 truncate">
+                    {empleadoActual ? empleadoActual.nombre : "Sin preferencia"}
+                  </p>
+                  <p className="text-[10px] text-pink-400 dark:text-pink-600">Cambiar profesional</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-pink-300 flex-shrink-0" />
+              </button>
             )}
+
             </div>
           </aside>
         </div>

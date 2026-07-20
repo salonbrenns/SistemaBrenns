@@ -98,7 +98,7 @@ export default function PoliticasPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-pink-100">
+      <div className="flex gap-1 border-b border-pink-100 dark:border-gray-700">
         {TABS.map(t => {
           const Icon = t.icon
           return (
@@ -137,7 +137,7 @@ export default function PoliticasPage() {
                   type="text"
                   value={editado[docTab.versionKey] ?? "1.0"}
                   onChange={e => onChange(docTab.versionKey, e.target.value)}
-                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-pink-400"
+                  className="w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-pink-400"
                 />
               </div>
               <div>
@@ -149,7 +149,7 @@ export default function PoliticasPage() {
                   value={editado[docTab.fechaKey] ?? ""}
                   onChange={e => onChange(docTab.fechaKey, e.target.value)}
                   placeholder="19 de junio de 2026"
-                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-pink-400"
+                  className="w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-pink-400"
                 />
               </div>
             </div>
@@ -161,7 +161,7 @@ export default function PoliticasPage() {
 
             {docTab.secciones.map((s, i) => (
               <div key={s.clave} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-5 py-3 bg-pink-50 border-b border-pink-100 flex items-center gap-2">
+                <div className="px-5 py-3 bg-pink-50 dark:bg-pink-950/20 border-b border-pink-100 dark:border-pink-900/40 flex items-center gap-2">
                   <span className="text-xs font-bold text-pink-400">{String(i + 1).padStart(2, "0")}</span>
                   <span className="text-sm font-bold text-gray-800 dark:text-white">{s.titulo}</span>
                 </div>
@@ -170,7 +170,7 @@ export default function PoliticasPage() {
                     rows={4}
                     value={editado[s.clave] ?? s.default}
                     onChange={e => onChange(s.clave, e.target.value)}
-                    className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:border-pink-400 resize-y leading-relaxed"
+                    className="w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 placeholder:text-gray-400 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-pink-400 resize-y leading-relaxed"
                     placeholder={s.default}
                   />
                   <p className="text-[10px] text-gray-400 mt-1">

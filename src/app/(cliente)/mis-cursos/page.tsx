@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import AuthGuard from "@/components/ui/AuthGuard"
 import {
   GraduationCap, Clock, Calendar, BookOpen,
   CheckCircle2, AlertCircle, Loader2, Plus,
-  CreditCard, Banknote, ChevronRight, Award,
+  CreditCard, Banknote, ChevronRight, Award, CalendarCheck,
 } from "lucide-react"
 
 type PagoCurso = {
@@ -23,6 +24,8 @@ type CursoInscrito = {
   estado:            string
   fecha_inscripcion: string
   totalPagado:       number
+  diasAsistidos:     number
+  asistencias:       string[]
   pagos:             PagoCurso[]
   curso: {
     id:             number
@@ -117,10 +120,9 @@ function MisCursosContent() {
           >
             <div className="flex flex-col md:flex-row gap-0">
               {/* Imagen */}
-              <div className="w-full md:w-48 h-36 md:h-auto shrink-0 bg-rose-50 dark:bg-gray-700 flex items-center justify-center text-5xl">
+              <div className="relative w-full md:w-48 h-36 md:h-auto shrink-0 bg-rose-50 dark:bg-gray-700 flex items-center justify-center text-5xl">
                 {Array.isArray(c.imagenes) && c.imagenes.length > 0 ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={c.imagenes[0]} alt={c.titulo} className="w-full h-full object-cover" />
+                  <Image src={c.imagenes[0]} alt={c.titulo} fill className="object-cover" />
                 ) : (
                   "🎓"
                 )}
@@ -197,6 +199,28 @@ function MisCursosContent() {
                     </span>
                   )}
                 </div>
+
+                {/* Asistencias */}
+                {item.diasAsistidos > 0 && (
+                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <details className="group">
+                      <summary className="flex items-center gap-2 cursor-pointer list-none">
+                        <CalendarCheck className="w-4 h-4 text-pink-500" />
+                        <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                          Asistencias: <span className="text-pink-600">{item.diasAsistidos} día{item.diasAsistidos !== 1 ? 's' : ''}</span>
+                        </span>
+                        <ChevronRight className="w-3.5 h-3.5 text-gray-400 ml-auto group-open:rotate-90 transition-transform" />
+                      </summary>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {item.asistencias.map(fecha => (
+                          <span key={fecha} className="px-2.5 py-1 rounded-lg bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300 text-xs font-semibold">
+                            {new Date(fecha + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                        ))}
+                      </div>
+                    </details>
+                  </div>
+                )}
 
                 {/* Botón certificado */}
                 {item.estado === "COMPLETADO" && (

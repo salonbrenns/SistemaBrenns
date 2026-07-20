@@ -3,6 +3,7 @@
 // src/components/servicios/form.tsx
 import { useTransition } from 'react'
 import { useRouter }     from 'next/navigation'
+import { toast } from '@/lib/toast'
 import { Loader2 }       from 'lucide-react'
 
 interface Categoria {
@@ -62,7 +63,7 @@ export default function ServicioForm({ categorias, servicio }: Props) {
       })
 
       if (res.ok) router.push('/admin/servicios')
-      else        alert('Error al guardar el servicio')
+      else        toast.error('Error al guardar el servicio')
     })
   }
 

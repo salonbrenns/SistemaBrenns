@@ -39,6 +39,9 @@ export async function POST(req: NextRequest) {
   if (!nombre || !correo || !password)
     return NextResponse.json({ error: "Nombre, correo y contraseña son requeridos" }, { status: 400 })
 
+  if (password.length < 8)
+    return NextResponse.json({ error: "La contraseña debe tener al menos 8 caracteres" }, { status: 400 })
+
   const existe = await prisma.usuario.findUnique({ where: { correo } })
   if (existe) return NextResponse.json({ error: "Ya existe un usuario con ese correo" }, { status: 409 })
 

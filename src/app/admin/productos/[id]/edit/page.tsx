@@ -32,7 +32,7 @@ export default async function Page({
 
   return (
     <main className="space-y-6">
-      <h1 className="text-2xl font-bold">Editar Producto</h1>
+      <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300">Editar Producto</h1>
       <EditProductoForm producto={producto} marcas={marcas} categorias={categorias} />
     </main>
   )

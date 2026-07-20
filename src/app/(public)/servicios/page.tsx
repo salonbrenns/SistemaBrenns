@@ -2,8 +2,8 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import DotsLoader from '@/components/ui/DotsLoader'
 import ServicioCard from '@/components/ui/ServicioCard'
+import { SkeletonGrid } from '@/components/ui/SkeletonCard'
 import type { ServicioCardType } from '@/components/ui/ServicioCard'
 import FiltroServicios from '@/components/ui/FiltroServicios'
 import Paginacion from '@/components/ui/paginacion'
@@ -97,7 +97,7 @@ export default function ServiciosPage() {
           </p>
         )}
 
-        {cargando && <DotsLoader texto="Cargando servicios..." />}
+        {cargando && <SkeletonGrid tipo="servicio" cantidad={8} />}
 
         {!cargando && serviciosPagina.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

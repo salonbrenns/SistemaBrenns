@@ -77,10 +77,7 @@ function baseTemplate(contenido: string): string {
           <!-- Header -->
           <tr>
             <td style="background:linear-gradient(135deg,#ec4899,#be123c);padding:32px 40px;text-align:center;">
-              <div style="display:inline-flex;align-items:center;gap:10px;">
-                <div style="width:40px;height:40px;background:#fff;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;color:#ec4899;font-size:20px;line-height:40px;">B</div>
-                <span style="color:#fff;font-size:22px;font-weight:700;letter-spacing:.5px;">Salón Brenn's</span>
-              </div>
+              <span style="color:#fff;font-size:24px;font-weight:800;letter-spacing:.5px;">Salón Brenn's</span>
             </td>
           </tr>
           <!-- Contenido -->
@@ -426,6 +423,93 @@ export async function sendPagoCursoRechazado(opts: {
   return sendEmail({
     to:      opts.to,
     subject: `⚠️ Pago no verificado — ${opts.curso}`,
+    html:    baseTemplate(contenido),
+  })
+}
+
+/** Email al cliente cuando el admin le envía un aviso desde notificaciones */
+export async function sendAvisoAdmin(opts: {
+  to:       string
+  nombre:   string
+  mensaje:  string
+  servicio: string
+  fecha:    Date | string
+  hora:     string
+}) {
+  const contenido = `
+    <h2 style="margin:0 0 8px;color:#be123c;font-size:24px;">📣 Tienes un mensaje del salón</h2>
+    <p style="color:#6b7280;margin:0 0 28px;">Hola <strong>${opts.nombre}</strong>, el equipo de Brenn's te envió el siguiente aviso:</p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#fdf2f8;border-radius:12px;padding:24px;margin-bottom:28px;border-left:4px solid #ec4899;">
+      <tr>
+        <td style="color:#374151;font-size:16px;font-weight:600;padding-bottom:4px;">
+          💬 ${opts.mensaje}
+        </td>
+      </tr>
+    </table>
+
+    <p style="color:#9ca3af;font-size:13px;margin:0 0 8px;">Este aviso es sobre tu cita:</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:12px;padding:20px;margin-bottom:28px;border:1px solid #e5e7eb;">
+      <tr>
+        <td style="padding:6px 0;color:#374151;font-size:14px;">
+          <span style="color:#ec4899;font-weight:600;">📋 Servicio:</span>&nbsp; ${opts.servicio}
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;color:#374151;font-size:14px;">
+          <span style="color:#ec4899;font-weight:600;">📅 Fecha:</span>&nbsp; ${formatearFecha(opts.fecha)}
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;color:#374151;font-size:14px;">
+          <span style="color:#ec4899;font-weight:600;">🕐 Hora:</span>&nbsp; ${opts.hora}
+        </td>
+      </tr>
+    </table>
+
+    <p style="color:#6b7280;font-size:14px;margin:0;">
+      Puedes ver todos tus mensajes en <strong>Mis mensajes</strong> dentro de tu cuenta. 🌸
+    </p>`
+
+  return sendEmail({
+    to:      opts.to,
+    subject: `📣 Mensaje de Salón Brenn's — ${opts.servicio}`,
+    html:    baseTemplate(contenido),
+  })
+}
+
+/** Email de verificación de correo al registrarse */
+export async function sendVerificacionEmail(opts: {
+  to:     string
+  nombre: string
+  token:  string
+}) {
+  const url = `${process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_BASE_URL}/verificar-email?token=${opts.token}`
+
+  const contenido = `
+    <h2 style="margin:0 0 8px;color:#be123c;font-size:24px;">¡Verifica tu correo!</h2>
+    <p style="color:#6b7280;margin:0 0 28px;">
+      Hola <strong>${opts.nombre}</strong>, gracias por crear tu cuenta en Salón Brenn's.
+      Solo falta un paso: confirma que este correo es tuyo.
+    </p>
+
+    <div style="text-align:center;margin:32px 0;">
+      <a href="${url}"
+         style="background:linear-gradient(135deg,#ec4899,#be123c);color:#fff;padding:16px 40px;border-radius:50px;text-decoration:none;font-weight:700;font-size:16px;display:inline-block;">
+        Verificar mi correo
+      </a>
+    </div>
+
+    <p style="color:#9ca3af;font-size:13px;margin:0 0 8px;text-align:center;">
+      Este enlace expira en <strong>1 hora</strong>.
+    </p>
+    <p style="color:#9ca3af;font-size:12px;margin:0;text-align:center;">
+      Si no creaste esta cuenta, ignora este mensaje.
+    </p>`
+
+  return sendEmail({
+    to:      opts.to,
+    subject: "Verifica tu correo — Salón Brenn's",
     html:    baseTemplate(contenido),
   })
 }

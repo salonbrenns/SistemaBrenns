@@ -58,7 +58,7 @@ export default function CategoriaTable({ categorias, currentPage, totalPages }: 
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {categorias.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-6 text-center text-sm text-gray-500">
+                <td colSpan={4} className="px-6 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
                   No se encontraron categorías
                 </td>
               </tr>
@@ -78,8 +78,8 @@ export default function CategoriaTable({ categorias, currentPage, totalPages }: 
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                       categoria.activo
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-500'
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                     }`}>
                       {categoria.activo ? 'Activa' : 'Inactiva'}
                     </span>

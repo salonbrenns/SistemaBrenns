@@ -26,10 +26,10 @@ type Grupo = {
 }
 
 const ESTADO_COLORS: Record<string, string> = {
-  PENDIENTE:   "bg-yellow-100 text-yellow-700",
-  CONFIRMADA:  "bg-green-100 text-green-700",
-  COMPLETADA:  "bg-blue-100 text-blue-700",
-  CANCELADA:   "bg-red-100 text-red-700",
+  PENDIENTE:   "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400",
+  CONFIRMADA:  "bg-green-100  dark:bg-green-900/30  text-green-700  dark:text-green-400",
+  COMPLETADA:  "bg-blue-100   dark:bg-blue-900/30   text-blue-700   dark:text-blue-400",
+  CANCELADA:   "bg-red-100    dark:bg-red-900/30    text-red-700    dark:text-red-400",
 }
 
 export default function NotificacionesPage() {
@@ -57,20 +57,20 @@ export default function NotificacionesPage() {
   const grupos: Grupo[] = [
     {
       label: "📅 Hoy — " + format(hoy, "d 'de' MMMM", { locale: es }),
-      color: "border-pink-400 bg-pink-50",
+      color: "border-pink-400 bg-pink-50 dark:bg-pink-950/20",
       citas: citas.filter(c => isToday(parseISO(c.fecha))),
     },
     {
       label: "🔔 Mañana — " + format(manana, "d 'de' MMMM", { locale: es }),
-      color: "border-orange-300 bg-orange-50",
+      color: "border-orange-300 bg-orange-50 dark:bg-orange-950/20",
       citas: citas.filter(c => isTomorrow(parseISO(c.fecha))),
     },
     {
       label: "📆 Próximos 7 días",
-      color: "border-blue-200 bg-blue-50",
+      color: "border-blue-200 bg-blue-50 dark:bg-blue-950/20",
       citas: citas.filter(c => {
         const f = parseISO(c.fecha)
-        return !isToday(f) && !isTomorrow(f)
+        return !isToday(f) && !isTomorrow(f) && f > hoy
       }),
     },
   ]
@@ -228,7 +228,7 @@ export default function NotificacionesPage() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
             <div>
-              <h3 className="font-bold text-gray-800 text-lg">Enviar aviso al cliente</h3>
+              <h3 className="font-bold text-gray-800 dark:text-white text-lg">Enviar aviso al cliente</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Para: <strong>{nombreCliente(citaSel)}</strong> — {citaSel.servicio.nombre} a las {citaSel.hora}
               </p>
@@ -255,7 +255,7 @@ export default function NotificacionesPage() {
 
             <textarea value={mensaje} onChange={e => setMensaje(e.target.value)} rows={3}
               placeholder="Escribe el mensaje para el cliente..."
-              className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-400 resize-none" />
+              className="w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink-400 resize-none" />
 
             {error && (
               <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-700">

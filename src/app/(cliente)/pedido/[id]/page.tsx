@@ -1,11 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, Clock, CreditCard, Building2, Banknote, Package } from 'lucide-react'
 import AuthGuard from '@/components/ui/AuthGuard'
-import DotsLoader from '@/components/ui/DotsLoader'
+
+function SpinnerPage() {
+  return (
+    <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 flex items-center justify-center">
+      <div className="w-10 h-10 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin" />
+    </div>
+  )
+}
 
 interface Detalle {
   id: number
@@ -53,7 +60,9 @@ function generarReferencia(id: number) {
 export default function ConfirmacionPedido() {
   return (
     <AuthGuard>
-      <ConfirmacionContenido />
+      <Suspense fallback={<SpinnerPage />}>
+        <ConfirmacionContenido />
+      </Suspense>
     </AuthGuard>
   )
 }
@@ -78,11 +87,7 @@ function ConfirmacionContenido() {
   }, [pedidoId])
 
   if (cargando) {
-    return (
-      <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 flex items-center justify-center">
-        <DotsLoader />
-      </div>
-    )
+    return <SpinnerPage />
   }
 
   if (!pedido) {

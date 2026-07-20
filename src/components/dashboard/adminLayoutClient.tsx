@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import SideNav from './sidenav';
 import { Bars3Icon } from '@heroicons/react/24/outline';
+import ToastContainer from '@/components/ui/ToastContainer';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 export default function AdminLayoutClient({ children }: { children: React.ReactNode }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -64,6 +66,10 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
       <main className="flex-grow p-4 lg:overflow-y-auto lg:p-8 bg-white dark:bg-gray-900 transition-colors">
         <div className="mx-auto max-w-7xl">{children}</div>
       </main>
+
+      {/* Notificaciones toast */}
+      <ToastContainer />
+      <ConfirmModal />
     </div>
   );
 }

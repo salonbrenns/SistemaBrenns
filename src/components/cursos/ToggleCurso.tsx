@@ -26,7 +26,7 @@ export default function ToggleCurso({
       <button
         onClick={() => setOpen(true)}
         className={`px-2 py-1 text-xs rounded ${
-          activo ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+          activo ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
         }`}
       >
         {activo ? 'Desactivar' : 'Activar'}

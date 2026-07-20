@@ -55,7 +55,7 @@ export default function CursoDetalleClient({ curso, isLoggedIn }: { curso: Curso
 
   const handleInscripcion = () => {
     if (!isLoggedIn) {
-      router.push(`/login?next=/inscribirse?id=${curso.id}`)
+      router.push(`/login?next=${encodeURIComponent(`/inscribirse?id=${curso.id}`)}`)
       return
     }
     router.push(`/inscribirse?id=${curso.id}`)

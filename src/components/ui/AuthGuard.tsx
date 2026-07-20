@@ -2,20 +2,21 @@
 "use client"
 
 import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useRouter, usePathname, useSearchParams } from "next/navigation"
+import { useEffect, Suspense } from "react"
 
-export default function AuthGuard({ children }: { children: React.ReactNode }) {
-  // Extraemos únicamente 'status', que es lo que realmente usamos
+function AuthGuardInner({ children }: { children: React.ReactNode }) {
   const { status } = useSession()
-  const router = useRouter()
+  const router     = useRouter()
+  const pathname   = usePathname()
+  const params     = useSearchParams()
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      const ruta = window.location.pathname
-      router.push(`/login?next=${ruta}`)
+      const ruta = pathname + (params.toString() ? `?${params.toString()}` : "")
+      router.push(`/login?next=${encodeURIComponent(ruta)}`)
     }
-  }, [status, router])
+  }, [status, router, pathname, params])
 
   // Cargando sesión
   if (status === "loading") {
@@ -36,4 +37,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   // Autenticado — mostrar contenido
   return <>{children}</>
+}
+
+export default function AuthGuard({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense>
+      <AuthGuardInner>{children}</AuthGuardInner>
+    </Suspense>
+  )
 }

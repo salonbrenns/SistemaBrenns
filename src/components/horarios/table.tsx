@@ -1,6 +1,8 @@
 'use client'
 
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { toast } from '@/lib/toast'
+import { confirmDialog } from '@/lib/confirm'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -46,11 +48,13 @@ export default function HorariosTable({ horarios }: Props) {
   }
 
   const eliminar = async (id: number) => {
-    if (!confirm("¿Eliminar este horario?")) return
+    if (!(await confirmDialog("¿Eliminar este horario? No podrá recuperarse.", {
+      danger: true, confirmLabel: 'Eliminar',
+    }))) return
     setEliminando(id)
     const res = await fetch(`/api/admin/horarios/${id}`, { method: "DELETE" })
     if (res.ok) router.refresh()
-    else alert("Error al eliminar")
+    else toast.error("Error al eliminar")
     setEliminando(null)
   }
 

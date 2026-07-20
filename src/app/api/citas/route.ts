@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth"
-import { sendCitaAgendada } from "@/lib/email"
+import { sendCitaAgendada, sendCitaCancelada } from "@/lib/email"
 
 function horaAMin(hora: string): number {
   const [h, m] = hora.split(":").map(Number)
@@ -96,6 +96,59 @@ export async function POST(req: Request) {
   } catch (error: unknown) {
     console.error("Error al crear cita:", error);
     return NextResponse.json({ error: "Error al crear la cita. Intentalo de nuevo." }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  const session = await auth()
+  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+
+  const { id } = await req.json()
+  if (!id) return NextResponse.json({ error: "Falta id" }, { status: 400 })
+
+  try {
+    const cita = await prisma.cita.findUnique({
+      where: { id: Number(id) },
+      include: {
+        servicio: { select: { nombre: true } },
+        usuario:  { select: { nombre: true, correo: true } },
+      },
+    })
+
+    // Validaciones
+    if (!cita) return NextResponse.json({ error: "Cita no encontrada" }, { status: 404 })
+    if (cita.usuario_id !== Number(session.user.id))
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 })
+    if (cita.estado === "CANCELADA" || cita.estado === "COMPLETADA")
+      return NextResponse.json({ error: "La cita ya no puede cancelarse" }, { status: 400 })
+
+    // Regla de 24 horas
+    const ahora = new Date()
+    const horasRestantes = (cita.fecha.getTime() - ahora.getTime()) / (1000 * 60 * 60)
+    if (horasRestantes < 24)
+      return NextResponse.json({ error: "Solo puedes cancelar con más de 24 horas de anticipación" }, { status: 400 })
+
+    // Cancelar
+    await prisma.cita.update({
+      where: { id: Number(id) },
+      data:  { estado: "CANCELADA", estado_cita: "CANCELADA", cancelado_en: ahora, cancelado_por: "CLIENTE" },
+    })
+
+    // Email de confirmación de cancelación
+    if (cita.usuario?.correo) {
+      sendCitaCancelada({
+        to:       cita.usuario.correo,
+        nombre:   cita.usuario.nombre,
+        servicio: cita.servicio.nombre,
+        fecha:    cita.fecha,
+        hora:     cita.hora,
+      }).catch(() => {})
+    }
+
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    console.error("Error al cancelar cita:", error)
+    return NextResponse.json({ error: "Error al cancelar" }, { status: 500 })
   }
 }
 

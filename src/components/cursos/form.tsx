@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from '@/lib/toast'
 
 import { Loader2, Info } from 'lucide-react'
 import UploadCursoImages from './UploadCursoImages'
@@ -58,7 +59,7 @@ export default function CursoForm({ curso }: { curso?: Curso }) {
         }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_error) {
-        alert("Error al guardar el curso")
+        toast.error("Error al guardar el curso")
       }
     })
   }

@@ -2,6 +2,8 @@
 
 // src/components/categorias-servicios/table.tsx
 import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/20/solid'
+import { toast } from '@/lib/toast'
+import { confirmDialog } from '@/lib/confirm'
 import { useSearchParams, usePathname, useRouter } from 'next/navigation'
 import { PencilIcon, NoSymbolIcon, CheckCircleIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
@@ -68,7 +70,10 @@ export default function CategoriaServicioTable({ categorias, currentPage, totalP
       ? '¿Quieres volver a habilitar esta categoría?'
       : '¿Estás segura de deshabilitar esta categoría?'
 
-    if (!confirm(mensaje)) return
+    if (!(await confirmDialog(mensaje, {
+      danger:       !nuevoEstado,
+      confirmLabel: nuevoEstado ? 'Habilitar' : 'Deshabilitar',
+    }))) return
 
     setProcesando(id)
     try {
@@ -78,9 +83,9 @@ export default function CategoriaServicioTable({ categorias, currentPage, totalP
         body:    JSON.stringify({ activo: nuevoEstado }),
       })
       if (res.ok) router.refresh()
-      else alert('Error al actualizar el estado')
+      else toast.error('Error al actualizar el estado')
     } catch {
-      alert('Ocurrió un error inesperado')
+      toast.error('Ocurrió un error inesperado')
     } finally {
       setProcesando(null)
     }
@@ -140,7 +145,7 @@ export default function CategoriaServicioTable({ categorias, currentPage, totalP
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {categorias.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-6 text-center text-sm text-gray-500">
+                <td colSpan={5} className="px-6 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
                   No hay categorías registradas
                 </td>
               </tr>
@@ -158,15 +163,15 @@ export default function CategoriaServicioTable({ categorias, currentPage, totalP
                     {c.nombre}
                   </td>
 
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-700">
+                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400">
                       {c._count.servicios} servicio{c._count.servicios !== 1 ? 's' : ''}
                     </span>
                   </td>
 
                   <td className="px-6 py-4 text-sm">
                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      c.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                      c.activo ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                     }`}>
                       {c.activo ? 'Activa' : 'Inactiva'}
                     </span>

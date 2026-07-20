@@ -30,11 +30,8 @@ export default function BotonAccion({ tipo, href, textoLogueado, textoNoLogueado
     )
   }
 
-  // Solo pasar el pathname sin query params para no romper el parametro "next"
-  const soloPathname = href.split("?")[0]
-
   return (
-    <Link href={`/login?next=${soloPathname}`} className="block">
+    <Link href={`/login?next=${encodeURIComponent(href)}`} className="block">
       <button className="w-full h-16 text-xl font-bold text-white bg-gray-700 hover:bg-gray-800 rounded-full shadow-2xl transition-all flex items-center justify-center gap-4">
         <Icon className="w-6 h-6" />
         {textoNoLogueado}

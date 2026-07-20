@@ -2,7 +2,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ShoppingBag, Trash2, Plus, Minus, ShoppingCart } from 'lucide-react'
-import DotsLoader from '@/components/ui/DotsLoader'
 import { useCarrito } from '@/hooks/useCarrito'
 import AuthGuard from '@/components/ui/AuthGuard'
 
@@ -31,7 +30,7 @@ function CarritoContenido() {
   if (cargando) {
     return (
       <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 flex items-center justify-center">
-        <DotsLoader />
+        <div className="w-10 h-10 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin" />
       </div>
     )
   }

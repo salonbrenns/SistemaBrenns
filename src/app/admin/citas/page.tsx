@@ -22,7 +22,12 @@ export default async function CitasPage({
 
   const where: Record<string, unknown> = {}
 
-  if (estado) where.estado = estado
+  if (estado) {
+    where.estado = estado
+  } else {
+    // "Todos" solo muestra activas; CANCELADAS tienen su propio filtro
+    where.estado = { notIn: ['CANCELADA'] }
+  }
 
   if (desde || hasta) {
     where.fecha = {
@@ -30,6 +35,15 @@ export default async function CitasPage({
       ...(hasta && { lte: new Date(`${hasta}T23:59:59.999Z`) }),
     }
   }
+
+  // Auto-marcar como FINALIZADA las citas de días anteriores que siguen PENDIENTE
+  await prisma.$queryRawUnsafe(`
+    UPDATE agenda.tblcitas
+    SET estado_cita = 'FINALIZADA'
+    WHERE estado::text != 'CANCELADA'
+      AND (estado_cita IS NULL OR estado_cita::text = 'PENDIENTE')
+      AND fecha::date < CURRENT_DATE
+  `)
 
   const citasRaw = await prisma.cita.findMany({
     where,
@@ -42,11 +56,11 @@ export default async function CitasPage({
 
   const citas = citasRaw.map(c => ({
     ...c,
+    total:        Number(c.total),
     fecha:        c.fecha.toISOString(),
     createdAt:    c.createdAt.toISOString(),
     cancelado_en: c.cancelado_en ? c.cancelado_en.toISOString() : null,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    estado_cita:  (c as any).estado_cita ?? c.estado,
+    estado_cita:  c.estado_cita ?? c.estado,
     servicio: { ...c.servicio, precio: Number(c.servicio.precio) },
     usuario: c.usuario ?? null,
   }))

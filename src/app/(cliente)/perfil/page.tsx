@@ -165,7 +165,7 @@ export default function PerfilPage() {
             <div className="text-center md:text-left">
               <h1 className="text-4xl font-black text-[#3d0020] dark:text-white">{nombre}</h1>
               <p className="text-rose-500 text-xs font-black uppercase tracking-[0.2em] mt-1">
-                {user?.role === "ADMIN" ? "ADMINISTRADOR" : user?.role === "DOCENTE" ? "DOCENTE" : "MIEMBRO"}
+                {user?.role === "ADMIN" ? "ADMINISTRADOR" : "MIEMBRO"}
               </p>
               <p className="text-gray-400 text-sm mt-1">Miembro desde {fechaReg}</p>
             </div>
