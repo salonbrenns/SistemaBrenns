@@ -1,27 +1,15 @@
 // src/lib/email.ts
-// Servicio de email con nodemailer + Gmail App Password
-import nodemailer from "nodemailer"
+// Servicio de email con Resend (funciona en Vercel Hobby)
+import { Resend } from "resend"
 
-// ── Transporter singleton ─────────────────────────────────────────────────────
-function crearTransporter() {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-    console.warn("⚠️  GMAIL_USER o GMAIL_APP_PASSWORD no configurados — emails desactivados")
+const FROM = "Salón Brenn's <onboarding@resend.dev>"
+
+function getResend() {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("⚠️  RESEND_API_KEY no configurado — emails desactivados")
     return null
   }
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD,
-    },
-  })
-}
-
-// Lazy singleton — se crea la primera vez que se necesita
-let _transporter: ReturnType<typeof crearTransporter> = undefined as unknown as ReturnType<typeof crearTransporter>
-function getTransporter() {
-  if (_transporter === undefined) _transporter = crearTransporter()
-  return _transporter
+  return new Resend(process.env.RESEND_API_KEY)
 }
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
@@ -34,17 +22,20 @@ export interface EmailOptions {
 
 // ── Función base ──────────────────────────────────────────────────────────────
 export async function sendEmail(opts: EmailOptions): Promise<boolean> {
-  const transporter = getTransporter()
-  if (!transporter) return false          // silenciosamente no envía si no hay config
+  const resend = getResend()
+  if (!resend) return false
 
   try {
-    await transporter.sendMail({
-      from:    `"Salón Brenn's" <${process.env.GMAIL_USER}>`,
+    const { error } = await resend.emails.send({
+      from:    FROM,
       to:      opts.to,
       subject: opts.subject,
       html:    opts.html,
-      text:    opts.text ?? opts.html.replace(/<[^>]+>/g, ""),
     })
+    if (error) {
+      console.error("❌ Error al enviar email:", error)
+      return false
+    }
     return true
   } catch (err) {
     console.error("❌ Error al enviar email:", err)
@@ -514,5 +505,3 @@ export async function sendVerificacionEmail(opts: {
   })
 }
 
-// Exportar el transporter para compatibilidad con cron/recordatorios
-export { getTransporter as getMailTransporter }
