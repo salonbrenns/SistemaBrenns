@@ -266,11 +266,15 @@ function RecordatoriosSection() {
 
   useEffect(() => {
     fetch("/api/usuario/recordatorios")
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error("error")
+        return r.json()
+      })
       .then(d => {
         setCitas(d.citasProximas    ?? [])
         setPedidos(d.pedidosEnTransito ?? [])
       })
+      .catch(() => { /* silencioso — no hay recordatorios */ })
       .finally(() => setLoading(false))
   }, [])
 

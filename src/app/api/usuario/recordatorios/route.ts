@@ -9,9 +9,16 @@ export async function GET() {
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
 
   const userId = Number(session.user.id)
-  const ahora  = new Date()
-  const en48h  = new Date(ahora.getTime() + 48 * 60 * 60 * 1000)
 
+  // Si el userId es inválido (NaN por UUID en sesión), devolver vacío sin explotar
+  if (isNaN(userId)) {
+    return NextResponse.json({ citasProximas: [], pedidosEnTransito: [] })
+  }
+
+  const ahora = new Date()
+  const en48h = new Date(ahora.getTime() + 48 * 60 * 60 * 1000)
+
+  try {
   const [citasProximas, pedidosEnTransito] = await Promise.all([
     // Citas en las próximas 48 horas con estado PENDIENTE o CONFIRMADA
     prisma.cita.findMany({
@@ -53,4 +60,8 @@ export async function GET() {
       productos:    p.detalles.map(d => `${d.nombre_producto} ×${d.cantidad}`).join(", "),
     })),
   })
+  } catch (err) {
+    console.error("[recordatorios]", err)
+    return NextResponse.json({ citasProximas: [], pedidosEnTransito: [] })
+  }
 }
