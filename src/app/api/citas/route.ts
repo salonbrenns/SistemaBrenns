@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { servicio_id, fecha, hora, notas, empleado_id, nombre_contacto, telefono_contacto, metodo_pago } = body;
+  const { servicio_id, fecha, hora, notas, empleado_id, nombre_contacto, telefono_contacto, metodo_pago, tipo_pago, total } = body;
 
   if (!servicio_id || !fecha || !hora) {
     return NextResponse.json({ error: "Faltan datos requeridos" }, { status: 400 });
@@ -111,6 +111,8 @@ export async function POST(req: Request) {
         estado:            "CONFIRMADA",
         nombre_contacto:   nombre_contacto || null,
         telefono_contacto: telefono_contacto || null,
+        // Monto a cobrar: anticipo o pago completo
+        total:             total ? Number(total) : null,
       },
     });
 

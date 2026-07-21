@@ -20,18 +20,9 @@ export async function POST(
   }
 
   const body = await req.json()
-  const { tipoPago, metodoPago } = body as {
-    tipoPago: "ANTICIPO" | "COMPLETO"
-    metodoPago: "TRANSFERENCIA"
-  }
-
-  if (!tipoPago || !metodoPago) {
-    return NextResponse.json({ error: "Faltan tipoPago o metodoPago" }, { status: 400 })
-  }
-
-  if (metodoPago !== "TRANSFERENCIA") {
-    return NextResponse.json({ error: "Solo se acepta transferencia bancaria como método de pago" }, { status: 400 })
-  }
+  // Solo se acepta pago completo por transferencia
+  const metodoPago = "TRANSFERENCIA"
+  const tipoPago   = "COMPLETO"
 
   try {
     // 1. Verificar que el curso existe y está activo (pre-check)
@@ -48,9 +39,9 @@ export async function POST(
       return NextResponse.json({ error: "Ya estás inscrito en este curso" }, { status: 409 })
     }
 
-    // 3. Calcular monto
+    // 3. Monto = precio total completo
     const precioTotal = Number(curso.precio_total)
-    const monto = tipoPago === "ANTICIPO" ? precioTotal * 0.5 : precioTotal
+    const monto = precioTotal
 
     // 4. Crear inscripción + pago en transacción
     const resultado = await prisma.$transaction(async (tx) => {

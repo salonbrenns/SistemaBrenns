@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import {
   User, Mail, Phone, BookOpen, Clock,
-  CheckCircle2, Loader2, ArrowLeft, CreditCard, Banknote,
+  CheckCircle2, Loader2, ArrowLeft, Banknote,
   GraduationCap, AlertCircle, Calendar
 } from "lucide-react"
 import Link from "next/link"
@@ -39,16 +39,12 @@ export default function InscribirseClient({
   curso: Curso
 }) {
   const router = useRouter()
-  const [tipoPago, setTipoPago]     = useState<"ANTICIPO" | "COMPLETO">("COMPLETO")
-  const [metodoPago, setMetodoPago] = useState<"TRANSFERENCIA" | "TARJETA">("TARJETA")
-  const [loading, setLoading]       = useState(false)
-  const [error, setError]           = useState<string | null>(null)
-  const [exito, setExito]           = useState(false)
-  const [pagoInfo, setPagoInfo]     = useState<{ monto: number; metodoPago: string; tipoPago: string } | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState<string | null>(null)
+  const [exito, setExito]     = useState(false)
+  const [pagoInfo, setPagoInfo] = useState<{ monto: number } | null>(null)
 
   const cupoDisponible = curso.cupo_maximo - curso.inscritos
-  const montoAnticipo  = curso.precio_total * 0.5
-  const montoSeleccionado = tipoPago === "ANTICIPO" ? montoAnticipo : curso.precio_total
 
   const nombreCompleto = [usuario.nombre, usuario.appaterno, usuario.apmaterno]
     .filter(Boolean)
@@ -68,7 +64,7 @@ export default function InscribirseClient({
       const res = await fetch(`/api/cursos/${curso.id}/inscribir`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tipoPago, metodoPago }),
+        body: JSON.stringify({ tipoPago: "COMPLETO", metodoPago: "TRANSFERENCIA" }),
       })
 
       const data = await res.json()
@@ -77,7 +73,7 @@ export default function InscribirseClient({
         return
       }
 
-      setPagoInfo({ monto: data.monto, metodoPago, tipoPago })
+      setPagoInfo({ monto: data.monto })
       setExito(true)
     } catch {
       setError("Error de conexión. Intenta de nuevo.")
@@ -112,32 +108,26 @@ export default function InscribirseClient({
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500 dark:text-gray-400">Pago</span>
-                <span className="font-bold text-gray-900 dark:text-white">
-                  {pagoInfo.tipoPago === "ANTICIPO" ? "Anticipo 50%" : "Pago completo"}
-                </span>
+                <span className="font-bold text-gray-900 dark:text-white">Pago completo</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500 dark:text-gray-400">Método</span>
-                <span className="font-bold text-gray-900 dark:text-white">
-                  {pagoInfo.metodoPago === "TRANSFERENCIA" ? "Transferencia bancaria" : "Tarjeta"}
-                </span>
+                <span className="font-bold text-gray-900 dark:text-white">Transferencia bancaria</span>
               </div>
               <div className="border-t border-rose-100 dark:border-gray-700 pt-3 flex justify-between">
-                <span className="font-bold text-gray-700 dark:text-gray-300">Total pagado</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300">Total a pagar</span>
                 <span className="text-xl font-black text-rose-600">
                   ${pagoInfo.monto.toLocaleString("es-MX")} MXN
                 </span>
               </div>
             </div>
 
-            {pagoInfo.metodoPago === "TRANSFERENCIA" && (
-              <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-2xl p-4 mb-6 text-left">
-                <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                <p className="text-sm text-amber-800 dark:text-amber-300">
-                  Tu pago por transferencia está <strong>pendiente de verificación</strong>. Te confirmaremos cuando se acredite.
-                </p>
-              </div>
-            )}
+            <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-2xl p-4 mb-6 text-left">
+              <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-800 dark:text-amber-300">
+                Tu pago por transferencia está <strong>pendiente de verificación</strong>. Te confirmaremos cuando se acredite.
+              </p>
+            </div>
 
             <button
               onClick={() => router.push("/mis-cursos")}
@@ -219,73 +209,19 @@ export default function InscribirseClient({
                 </p>
               </div>
 
-              {/* Tipo de pago */}
-              <div className="bg-white dark:bg-gray-800 rounded-[2rem] p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
-                <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-5">Tipo de pago</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {(["COMPLETO", "ANTICIPO"] as const).map((tipo) => {
-                    const monto = tipo === "ANTICIPO" ? montoAnticipo : curso.precio_total
-                    const label = tipo === "ANTICIPO" ? "Anticipo 50%" : "Pago completo"
-                    const desc  = tipo === "ANTICIPO"
-                      ? "Pagas la mitad ahora"
-                      : "Pagas todo de una vez"
-                    return (
-                      <button
-                        key={tipo}
-                        type="button"
-                        onClick={() => setTipoPago(tipo)}
-                        className={`p-4 rounded-2xl border-2 text-left transition-all ${
-                          tipoPago === tipo
-                            ? "border-rose-500 bg-rose-50 dark:bg-rose-900/20"
-                            : "border-gray-100 dark:border-gray-700 hover:border-gray-200"
-                        }`}
-                      >
-                        <p className={`font-black text-sm ${tipoPago === tipo ? "text-rose-600" : "text-gray-700 dark:text-gray-300"}`}>
-                          {label}
-                        </p>
-                        <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">{desc}</p>
-                        <p className={`text-lg font-black mt-2 ${tipoPago === tipo ? "text-rose-600" : "text-gray-900 dark:text-white"}`}>
-                          ${monto.toLocaleString("es-MX")} MXN
-                        </p>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Método de pago */}
+              {/* Método de pago — solo transferencia */}
               <div className="bg-white dark:bg-gray-800 rounded-[2rem] p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
                 <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-5">Método de pago</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {([
-                    { value: "TARJETA",       label: "Tarjeta",      desc: "Visa / Mastercard",   Icon: CreditCard },
-                    { value: "TRANSFERENCIA", label: "Transferencia", desc: "Depósito bancario",   Icon: Banknote   },
-                  ] as const).map(({ value, label, desc, Icon }) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => setMetodoPago(value)}
-                      className={`p-4 rounded-2xl border-2 text-left flex items-start gap-3 transition-all ${
-                        metodoPago === value
-                          ? "border-rose-500 bg-rose-50 dark:bg-rose-900/20"
-                          : "border-gray-100 dark:border-gray-700 hover:border-gray-200"
-                      }`}
-                    >
-                      <Icon className={`w-5 h-5 mt-0.5 shrink-0 ${metodoPago === value ? "text-rose-500" : "text-gray-400"}`} />
-                      <div>
-                        <p className={`font-black text-sm ${metodoPago === value ? "text-rose-600" : "text-gray-700 dark:text-gray-300"}`}>
-                          {label}
-                        </p>
-                        <p className="text-gray-400 text-xs">{desc}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                {metodoPago === "TRANSFERENCIA" && (
-                  <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl text-xs text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-700">
-                    Tu inscripción quedará <strong>pendiente</strong> hasta que confirmemos tu transferencia.
+                <div className="flex items-center gap-3 p-4 rounded-2xl border-2 border-rose-500 bg-rose-50 dark:bg-rose-900/20">
+                  <Banknote className="w-5 h-5 text-rose-500 shrink-0" />
+                  <div>
+                    <p className="font-black text-sm text-rose-600">Transferencia bancaria</p>
+                    <p className="text-gray-400 text-xs">Depósito o SPEI</p>
                   </div>
-                )}
+                </div>
+                <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl text-xs text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-700">
+                  Tu inscripción quedará <strong>pendiente</strong> hasta que confirmemos tu transferencia.
+                </div>
               </div>
 
               {error && (
@@ -305,7 +241,7 @@ export default function InscribirseClient({
                 ) : (
                   <>
                     <GraduationCap className="w-5 h-5" />
-                    Inscribirme — ${montoSeleccionado.toLocaleString("es-MX")} MXN
+                    Inscribirme — ${curso.precio_total.toLocaleString("es-MX")} MXN
                   </>
                 )}
               </button>
@@ -342,25 +278,11 @@ export default function InscribirseClient({
                 )}
               </div>
 
-              <div className="border-t border-gray-100 dark:border-gray-700 pt-5 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500 dark:text-gray-400">Precio total</span>
-                  <span className="font-bold text-gray-900 dark:text-white">
-                    ${curso.precio_total.toLocaleString("es-MX")} MXN
-                  </span>
-                </div>
-                {tipoPago === "ANTICIPO" && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400">Resto a pagar</span>
-                    <span className="font-bold text-gray-900 dark:text-white">
-                      ${montoAnticipo.toLocaleString("es-MX")} MXN
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
-                  <span className="font-bold text-gray-700 dark:text-gray-300">Pagas ahora</span>
+              <div className="border-t border-gray-100 dark:border-gray-700 pt-5">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-gray-700 dark:text-gray-300">Total a pagar</span>
                   <span className="text-xl font-black text-rose-600">
-                    ${montoSeleccionado.toLocaleString("es-MX")} MXN
+                    ${curso.precio_total.toLocaleString("es-MX")} MXN
                   </span>
                 </div>
               </div>

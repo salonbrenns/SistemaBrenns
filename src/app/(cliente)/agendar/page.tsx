@@ -168,6 +168,7 @@ function AgendarContenido() {
         : `[PAGO COMPLETO: $${montoCompleto.toLocaleString()} MXN]`,
       notas,
     ].filter(Boolean).join(" ")
+    const montoAPagar = tipoPago === "ANTICIPO" ? montoAnticipo : montoCompleto
     const res = await fetch("/api/citas", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -178,6 +179,8 @@ function AgendarContenido() {
         notas:       notasPago,
         empleado_id: empleadoSel,
         metodo_pago: metodoPago,
+        tipo_pago:   tipoPago,
+        total:       montoAPagar,
       }),
     })
     const data = await res.json()
