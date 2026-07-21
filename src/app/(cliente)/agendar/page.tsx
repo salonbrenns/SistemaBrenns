@@ -45,7 +45,7 @@ function AgendarContenido() {
   const [diasBloqueados, setDiasBloqueados] = useState<string[]>([])
 
   const [tipoPago,          setTipoPago]          = useState<"ANTICIPO" | "COMPLETO" | null>(null)
-  const [metodoPagoCliente, setMetodoPagoCliente] = useState<"TARJETA" | "TRANSFERENCIA" | null>(null)
+  const [metodoPagoCliente, setMetodoPagoCliente] = useState<"TRANSFERENCIA" | null>(null)
   const [pagando,   setPagando]   = useState(false)
   const [errorPago, setErrorPago] = useState("")
   const [exito,     setExito]     = useState(false)
@@ -159,7 +159,7 @@ function AgendarContenido() {
   const montoCompleto = servicio ? Number(servicio.precio) : 0
   // montoCobrado: tipoPago === "ANTICIPO" ? montoAnticipo : montoCompleto
 
-  // Crea la cita en BD (llamado tanto por transferencia como por PayPal tras aprobación)
+  // Crea la cita en BD
   const crearCita = async (metodoPago: string) => {
     if (!fechaSel || !horaSel || !servicioId || !tipoPago) return false
     const notasPago = [
@@ -620,21 +620,16 @@ function AgendarContenido() {
                     <h2 className="text-sm font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                       <CreditCard className="w-4 h-4 text-pink-400" /> Método de pago
                     </h2>
-                    <div className="grid grid-cols-2 gap-3 mb-5">
-                      {[
-                        { id: "TRANSFERENCIA" as const, label: "Transferencia", icon: ArrowRight },
-                        { id: "TARJETA"       as const, label: "Tarjeta",       icon: CreditCard },
-                      ].map(({ id, label, icon: Icon }) => (
-                        <button key={id} type="button" onClick={() => setMetodoPagoCliente(id)}
-                          className={`p-3.5 rounded-xl border-2 flex items-center gap-3 transition-all ${
-                            metodoPagoCliente === id
-                              ? "border-pink-600 bg-pink-50 dark:bg-pink-950/30"
-                              : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-pink-300 dark:hover:border-pink-700"
-                          }`}>
-                          <Icon className={`w-5 h-5 ${metodoPagoCliente === id ? "text-pink-600" : "text-gray-400 dark:text-gray-500"}`} />
-                          <span className={`font-bold text-sm ${metodoPagoCliente === id ? "text-pink-700 dark:text-pink-300" : "text-gray-600 dark:text-gray-400"}`}>{label}</span>
-                        </button>
-                      ))}
+                    <div className="mb-5">
+                      <button type="button" onClick={() => setMetodoPagoCliente("TRANSFERENCIA")}
+                        className={`w-full p-3.5 rounded-xl border-2 flex items-center gap-3 transition-all ${
+                          metodoPagoCliente === "TRANSFERENCIA"
+                            ? "border-pink-600 bg-pink-50 dark:bg-pink-950/30"
+                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-pink-300 dark:hover:border-pink-700"
+                        }`}>
+                        <ArrowRight className={`w-5 h-5 ${metodoPagoCliente === "TRANSFERENCIA" ? "text-pink-600" : "text-gray-400 dark:text-gray-500"}`} />
+                        <span className={`font-bold text-sm ${metodoPagoCliente === "TRANSFERENCIA" ? "text-pink-700 dark:text-pink-300" : "text-gray-600 dark:text-gray-400"}`}>Transferencia bancaria</span>
+                      </button>
                     </div>
 
                     {/* Instrucciones transferencia */}
@@ -650,13 +645,7 @@ function AgendarContenido() {
                       </div>
                     )}
 
-                    {/* PayPal — próximamente */}
-                    {metodoPagoCliente === "TARJETA" && (
-                      <div className="bg-gray-50 dark:bg-gray-900 border border-gray-100 rounded-xl p-5 text-center">
-                        <p className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Pago con PayPal / Tarjeta</p>
-                        <p className="text-xs text-gray-400">Próximamente disponible. Por ahora usa transferencia.</p>
-                      </div>
-                    )}
+
                   </div>
                 )}
 

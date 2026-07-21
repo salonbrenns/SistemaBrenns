@@ -8,6 +8,7 @@ import {
   GraduationCap, Clock, Calendar, BookOpen,
   CheckCircle2, AlertCircle, Loader2, Plus,
   CreditCard, Banknote, ChevronRight, Award, CalendarCheck,
+  Wallet,
 } from "lucide-react"
 
 type PagoCurso = {
@@ -60,7 +61,14 @@ function MisCursosContent() {
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string | null>(null)
 
-  useEffect(() => {
+  // Estado para pago de saldo restante
+  const [pagoRest, setPagoRest]       = useState<{ inscripcionId: number; monto: number } | null>(null)
+  const [pagandoRest, setPagandoRest] = useState(false)
+  const [pagoMsg, setPagoMsg]         = useState<string | null>(null)
+  const [pagoError, setPagoError]     = useState<string | null>(null)
+
+  const cargarCursos = () => {
+    setLoading(true)
     fetch("/api/mis-cursos")
       .then((r) => r.json())
       .then((d) => {
@@ -69,7 +77,29 @@ function MisCursosContent() {
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
-  }, [])
+  }
+
+  useEffect(() => { cargarCursos() }, [])
+
+  const handlePagarRestante = async (inscripcionId: number, monto: number) => {
+    setPagandoRest(true)
+    setPagoError(null)
+    setPagoMsg(null)
+    try {
+      const res = await fetch(`/api/inscripciones/${inscripcionId}/pagar-restante`, {
+        method: "POST",
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Error al registrar el pago")
+      setPagoMsg(data.message)
+      setPagoRest(null)
+      cargarCursos()
+    } catch (e) {
+      setPagoError(e instanceof Error ? e.message : "Error inesperado")
+    } finally {
+      setPagandoRest(false)
+    }
+  }
 
   if (loading) return (
     <div className="flex items-center justify-center py-32">
@@ -198,6 +228,18 @@ function MisCursosContent() {
                       · Transferencia pendiente de verificar
                     </span>
                   )}
+
+                  {/* Botón pagar saldo restante */}
+                  {deuda > 0 && item.estado === "ACTIVO" && !pendiente && (
+                    <button
+                      type="button"
+                      onClick={() => { setPagoRest({ inscripcionId: item.inscripcionId, monto: deuda }); setPagoError(null); setPagoMsg(null) }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white transition-colors"
+                    >
+                      <Wallet className="w-3.5 h-3.5" />
+                      Pagar saldo restante
+                    </button>
+                  )}
                 </div>
 
                 {/* Asistencias */}
@@ -250,6 +292,68 @@ function MisCursosContent() {
           Inscribirme a otro curso
         </Link>
       </div>
+
+      {/* Mensaje de éxito global */}
+      {pagoMsg && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-xl font-semibold text-sm flex items-center gap-2 max-w-sm text-center">
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+          {pagoMsg}
+        </div>
+      )}
+
+      {/* Modal: instrucciones de pago del saldo restante */}
+      {pagoRest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-rose-100 dark:border-gray-700 p-8 max-w-md w-full">
+            <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+              <Wallet className="w-5 h-5 text-rose-500" />
+              Pagar saldo restante
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              Realiza una transferencia por{" "}
+              <span className="font-black text-rose-600">${pagoRest.monto.toLocaleString("es-MX")} MXN</span>{" "}
+              a los siguientes datos y presiona <strong>Confirmar</strong>.
+              El administrador verificará tu transferencia y confirmará el pago.
+            </p>
+
+            <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-2xl p-5 space-y-1.5 mb-6">
+              <p className="text-xs font-bold text-blue-800 dark:text-blue-300 mb-2">Datos para transferencia / SPEI</p>
+              <p className="text-sm text-blue-700 dark:text-blue-400">Banco: <strong>BBVA</strong></p>
+              <p className="text-sm text-blue-700 dark:text-blue-400">Titular: <strong>Salón Brenn&apos;s</strong></p>
+              <p className="text-sm text-blue-700 dark:text-blue-400">Concepto: <strong>tu nombre + &quot;saldo curso&quot;</strong></p>
+            </div>
+
+            {pagoError && (
+              <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm font-semibold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                {pagoError}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setPagoRest(null)}
+                disabled={pagandoRest}
+                className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-40"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePagarRestante(pagoRest.inscripcionId, pagoRest.monto)}
+                disabled={pagandoRest}
+                className="flex-1 py-3 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-black text-sm transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {pagandoRest
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Registrando...</>
+                  : <><CheckCircle2 className="w-4 h-4" /> Ya transferí, confirmar</>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

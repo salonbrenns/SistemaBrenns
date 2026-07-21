@@ -28,7 +28,7 @@ function parsearMonto(notas: string | null, precioServicio: number): { monto: nu
 const METODO_LABEL: Record<string, string> = {
   EFECTIVO:      "Efectivo",
   TRANSFERENCIA: "Transferencia",
-  TARJETA:       "Tarjeta / PayPal",
+  TARJETA:       "Tarjeta",
 }
 
 export default async function PagosPage() {

@@ -36,14 +36,12 @@ interface Pedido {
 }
 
 const ICONO_METODO: Record<string, React.ReactNode> = {
-  paypal:        <CreditCard className="w-5 h-5" />,
   tarjeta:       <CreditCard className="w-5 h-5" />,
   transferencia: <Building2  className="w-5 h-5" />,
   efectivo:      <Banknote   className="w-5 h-5" />,
 }
 
 const LABEL_METODO: Record<string, string> = {
-  paypal:        'PayPal',
   tarjeta:       'Tarjeta de crédito / débito',
   transferencia: 'Transferencia bancaria',
   efectivo:      'Pago en tienda / efectivo',
@@ -145,11 +143,8 @@ function ConfirmacionContenido() {
                   Presenta este número en sucursal. Válido 48 horas.
                 </p>
               )}
-              {metodo === 'paypal' && (
-                <p className="text-xs text-blue-600 font-semibold mt-0.5">Pago verificado por PayPal ✓</p>
-              )}
               {metodo === 'tarjeta' && (
-                <p className="text-xs text-gray-400 mt-0.5">Pago simulado aprobado ✓</p>
+                <p className="text-xs text-gray-400 mt-0.5">Pago con tarjeta registrado ✓</p>
               )}
             </div>
           </div>

@@ -1,16 +1,14 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
-  CreditCard, Banknote, Building2, Lock,
-  ChevronRight, Loader2, ShoppingBag, CheckCircle2
-
+  Banknote, Building2, Lock,
+  ChevronRight, Loader2, ShoppingBag, CheckCircle2,
 } from 'lucide-react'
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import AuthGuard from '@/components/ui/AuthGuard'
 import { useCarrito, type CartItem } from '@/hooks/useCarrito'
 
@@ -18,12 +16,6 @@ const COSTO_ENVIO        = 100
 const ENVIO_GRATIS_DESDE = 1500
 
 const METODOS = [
-  {
-    id:    'paypal',
-    label: 'PayPal',
-    icon:  CreditCard,
-    desc:  'Paga con tu cuenta PayPal o tarjeta a través de PayPal',
-  },
   {
     id:    'transferencia',
     label: 'Transferencia bancaria',
@@ -47,13 +39,7 @@ function getImagen(imagen: unknown): string | null {
 export default function CheckoutPage() {
   return (
     <AuthGuard>
-      <PayPalScriptProvider options={{
-        clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? '',
-        currency:  'MXN',
-        intent:    'capture',
-      }}>
-        <CheckoutContenido />
-      </PayPalScriptProvider>
+      <CheckoutContenido />
     </AuthGuard>
   )
 }
@@ -63,7 +49,7 @@ function CheckoutContenido() {
   const router = useRouter()
   const { items, cargando, total, totalItems } = useCarrito()
 
-  const [metodoPago, setMetodoPago] = useState('paypal')
+  const [metodoPago, setMetodoPago] = useState('transferencia')
   const [procesando, setProcesando] = useState(false)
   const [error, setError]           = useState<string | null>(null)
 
@@ -73,10 +59,6 @@ function CheckoutContenido() {
     correo:   '',
     telefono: '',
   })
-
-  // Ref para pasar el form actual a los callbacks de PayPal (evita closures stale)
-  const formRef = useRef(form)
-  useEffect(() => { formRef.current = form }, [form])
 
   useEffect(() => {
     if (!session?.user) return
@@ -92,10 +74,9 @@ function CheckoutContenido() {
   const envio      = total >= ENVIO_GRATIS_DESDE ? 0 : COSTO_ENVIO
   const totalFinal = total + envio
 
-  // ── Crear pedido manual (transferencia/efectivo) ──────────────────────────
+  // ── Crear pedido (transferencia/efectivo) ─────────────────────────────────
   const handleSubmitManual = async (e: React.SyntheticEvent) => {
     e.preventDefault()
-    if (metodoPago === 'paypal') return   // PayPal lo maneja aparte
     setError(null)
 
     if (!form.nombre.trim() || !form.correo.trim()) {
@@ -123,58 +104,6 @@ function CheckoutContenido() {
       router.push(`/pedido/${data.pedido_id}?metodo=${metodoPago}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error inesperado')
-    } finally {
-      setProcesando(false)
-    }
-  }
-
-  // ── PayPal: crear orden ───────────────────────────────────────────────────
-  const createPayPalOrder = async () => {
-    const f = formRef.current
-    if (!f.nombre.trim() || !f.correo.trim()) {
-      setError('Completa nombre y correo antes de pagar con PayPal')
-      throw new Error('Datos incompletos')
-    }
-    setError(null)
-
-    const res = await fetch('/api/paypal/create-order', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        nombre_cliente:   `${f.nombre} ${f.apellido}`.trim(),
-        correo_cliente:   f.correo,
-        telefono_cliente: f.telefono || null,
-      }),
-    })
-
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.error || 'Error al crear orden PayPal')
-    return data.orderID as string
-  }
-
-  // ── PayPal: capturar pago aprobado ────────────────────────────────────────
-  const onPayPalApprove = async (data: { orderID: string }) => {
-    setProcesando(true)
-    try {
-      const f = formRef.current
-      const res = await fetch('/api/paypal/capture-order', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderID:          data.orderID,
-          nombre_cliente:   `${f.nombre} ${f.apellido}`.trim(),
-          correo_cliente:   f.correo,
-          telefono_cliente: f.telefono || null,
-        }),
-      })
-
-      const result = await res.json()
-      if (!res.ok) throw new Error(result.error || 'Error al capturar pago')
-
-      globalThis.dispatchEvent(new Event('cart-updated'))
-      router.push(`/pedido/${result.pedido_id}?metodo=paypal`)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al procesar el pago')
     } finally {
       setProcesando(false)
     }
@@ -287,13 +216,7 @@ function CheckoutContenido() {
                         <input type="radio" name="metodo" value={m.id}
                           checked={activo} onChange={() => { setMetodoPago(m.id); setError(null) }} className="sr-only" />
                         <div className={`p-2.5 rounded-xl ${activo ? 'bg-rose-600 text-white' : 'bg-gray-100 text-gray-500 dark:text-gray-400'}`}>
-                          {m.id === 'paypal' ? (
-                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 2.79A.859.859 0 0 1 5.79 2h7.213c2.498 0 4.295.535 5.34 1.59.98.995 1.354 2.29 1.18 3.94l-.007.052v.45l.245.14c.5.285.897.65 1.186 1.092.464.706.623 1.6.474 2.663-.195 1.392-.726 2.528-1.578 3.375-.76.757-1.713 1.273-2.83 1.534-.509.12-1.074.18-1.682.18H15.1c-.418 0-.83.147-1.154.41a1.678 1.678 0 0 0-.571 1.026l-.065.374-.554 3.51-.023.117a.16.16 0 0 1-.158.134H7.076z"/>
-                            </svg>
-                          ) : (
-                            <Icon className="w-5 h-5" />
-                          )}
+                          <Icon className="w-5 h-5" />
                         </div>
                         <div className="flex-1">
                           <p className={`font-bold text-sm ${activo ? 'text-rose-700' : 'text-gray-700 dark:text-gray-300'}`}>{m.label}</p>
@@ -304,36 +227,6 @@ function CheckoutContenido() {
                     )
                   })}
                 </div>
-
-                {/* PayPal buttons */}
-                {metodoPago === 'paypal' && (
-                  <div className="mt-6">
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl p-4 mb-4">
-                      <p className="text-xs text-blue-700 dark:text-blue-300 font-semibold flex items-center gap-1.5">
-                        <Lock className="w-3.5 h-3.5" />
-                        Pago seguro procesado por PayPal. No compartimos tus datos de tarjeta.
-                      </p>
-                    </div>
-                    {procesando ? (
-                      <div className="flex items-center justify-center py-6 gap-3 text-gray-500 dark:text-gray-400">
-                        <Loader2 className="w-6 h-6 animate-spin" />
-                        <span className="font-semibold">Procesando pago...</span>
-                      </div>
-                    ) : (
-                      <PayPalButtons
-                        style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
-                        createOrder={createPayPalOrder}
-                        onApprove={onPayPalApprove}
-                        onError={(err) => {
-                          console.error('PayPal error:', err)
-                          setError('Ocurrió un error con PayPal. Intenta de nuevo.')
-                        }}
-                        onCancel={() => setError('Pago cancelado. Puedes intentarlo de nuevo cuando quieras.')}
-                        disabled={items.length === 0}
-                      />
-                    )}
-                  </div>
-                )}
 
                 {metodoPago === 'transferencia' && (
                   <div className="mt-6 p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
@@ -422,19 +315,16 @@ function CheckoutContenido() {
                   </div>
                 </div>
 
-                {/* Botón de confirmar solo para métodos manuales */}
-                {metodoPago !== 'paypal' && (
-                  <button
-                    type="submit"
-                    disabled={procesando || items.length === 0}
-                    className="w-full bg-gray-900 hover:bg-rose-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-black py-4 rounded-2xl transition-all shadow-lg active:scale-95 text-sm uppercase tracking-wide flex items-center justify-center gap-2"
-                  >
-                    {procesando
-                      ? <><Loader2 className="w-4 h-4 animate-spin" /> Procesando...</>
-                      : <><Lock className="w-4 h-4" /> Confirmar pedido</>
-                    }
-                  </button>
-                )}
+                <button
+                  type="submit"
+                  disabled={procesando || items.length === 0}
+                  className="w-full bg-gray-900 hover:bg-rose-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-black py-4 rounded-2xl transition-all shadow-lg active:scale-95 text-sm uppercase tracking-wide flex items-center justify-center gap-2"
+                >
+                  {procesando
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Procesando...</>
+                    : <><Lock className="w-4 h-4" /> Confirmar pedido</>
+                  }
+                </button>
 
                 <p className="text-center text-xs text-gray-400 flex items-center justify-center gap-1">
                   <Lock className="w-3 h-3" /> Pagos seguros y encriptados

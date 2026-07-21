@@ -22,11 +22,15 @@ export async function POST(
   const body = await req.json()
   const { tipoPago, metodoPago } = body as {
     tipoPago: "ANTICIPO" | "COMPLETO"
-    metodoPago: "TRANSFERENCIA" | "TARJETA"
+    metodoPago: "TRANSFERENCIA"
   }
 
   if (!tipoPago || !metodoPago) {
     return NextResponse.json({ error: "Faltan tipoPago o metodoPago" }, { status: 400 })
+  }
+
+  if (metodoPago !== "TRANSFERENCIA") {
+    return NextResponse.json({ error: "Solo se acepta transferencia bancaria como método de pago" }, { status: 400 })
   }
 
   try {
@@ -67,7 +71,7 @@ export async function POST(
           numero_pago:    1,
           monto:          monto,
           metodo_pago:    metodoPago,
-          estado:         metodoPago === "TRANSFERENCIA" ? "PENDIENTE" : "PAGADO",
+          estado:         "PENDIENTE",
         },
       })
 
