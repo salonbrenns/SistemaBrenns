@@ -8,7 +8,8 @@ import Breadcrumb from "@/components/Breadcrumb"
 import Image from "next/image"
 import {
   ChevronLeft, ChevronRight, Clock, Calendar,
-  CreditCard, CheckCircle, Loader2, AlertCircle, User, Banknote, ArrowRight
+  CreditCard, CheckCircle, Loader2, AlertCircle, User, Banknote, ArrowRight,
+  Upload, ImageIcon,
 } from "lucide-react"
 import {
   format, addMonths, subMonths, startOfMonth, endOfMonth,
@@ -49,6 +50,10 @@ function AgendarContenido() {
   const [pagando,   setPagando]   = useState(false)
   const [errorPago, setErrorPago] = useState("")
   const [exito,     setExito]     = useState(false)
+  const [citaIdCreado,  setCitaIdCreado]  = useState<number | null>(null)
+  const [subiendoComp,  setSubiendoComp]  = useState(false)
+  const [compSubido,    setCompSubido]    = useState(false)
+  const [errorComp,     setErrorComp]     = useState("")
 
   const [bancoCfg, setBancoCfg] = useState({
     titular: "Ruth Barrientos Angeles",
@@ -159,9 +164,9 @@ function AgendarContenido() {
   const montoCompleto = servicio ? Number(servicio.precio) : 0
   // montoCobrado: tipoPago === "ANTICIPO" ? montoAnticipo : montoCompleto
 
-  // Crea la cita en BD
-  const crearCita = async (metodoPago: string) => {
-    if (!fechaSel || !horaSel || !servicioId || !tipoPago) return false
+  // Crea la cita en BD, retorna el id de la cita creada
+  const crearCita = async (metodoPago: string): Promise<number> => {
+    if (!fechaSel || !horaSel || !servicioId || !tipoPago) throw new Error("Faltan datos")
     const notasPago = [
       tipoPago === "ANTICIPO"
         ? `[ANTICIPO 50%: $${montoAnticipo.toLocaleString()} MXN]`
@@ -185,7 +190,7 @@ function AgendarContenido() {
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error || "Error al confirmar")
-    return true
+    return data.cita?.id as number
   }
 
   const handleTransferencia = async () => {
@@ -194,12 +199,31 @@ function AgendarContenido() {
     if (!fechaSel || !horaSel) { setErrorPago("Faltan datos de la cita"); return }
     setPagando(true)
     try {
-      await crearCita("TRANSFERENCIA")
+      const id = await crearCita("TRANSFERENCIA")
+      setCitaIdCreado(id)
       setExito(true)
     } catch (err: unknown) {
       setErrorPago(err instanceof Error ? err.message : "Error al confirmar")
     } finally {
       setPagando(false)
+    }
+  }
+
+  const handleSubirComp = async (file: File) => {
+    if (!citaIdCreado) return
+    setErrorComp("")
+    setSubiendoComp(true)
+    try {
+      const fd = new FormData()
+      fd.append("file", file)
+      const res = await fetch(`/api/citas/${citaIdCreado}/comprobante`, { method: "POST", body: fd })
+      const data = await res.json()
+      if (!res.ok) { setErrorComp(data.error || "Error al subir comprobante"); return }
+      setCompSubido(true)
+    } catch {
+      setErrorComp("Error de conexión. Intenta de nuevo.")
+    } finally {
+      setSubiendoComp(false)
     }
   }
 
@@ -266,6 +290,39 @@ function AgendarContenido() {
               </div>
             </div>
           </div>
+
+          {/* Subir comprobante */}
+          {compSubido ? (
+            <div className="flex items-center gap-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-2xl p-4 mb-4">
+              <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
+              <p className="text-sm font-semibold text-green-700 dark:text-green-400">
+                ¡Comprobante recibido! Tu cita está confirmada. ✅
+              </p>
+            </div>
+          ) : (
+            <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-2xl p-4 mb-4">
+              <p className="text-sm font-bold text-rose-700 dark:text-rose-300 mb-3 flex items-center gap-2">
+                <Upload className="w-4 h-4" />
+                Sube tu comprobante para confirmar al instante
+              </p>
+              {errorComp && (
+                <p className="text-xs text-red-500 mb-2">{errorComp}</p>
+              )}
+              <label className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border-2 border-dashed border-rose-300 dark:border-rose-700 text-rose-600 dark:text-rose-400 text-sm font-semibold cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/30 transition ${subiendoComp ? "opacity-50 pointer-events-none" : ""}`}>
+                {subiendoComp
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Subiendo...</>
+                  : <><ImageIcon className="w-4 h-4" /> Seleccionar imagen del comprobante</>
+                }
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleSubirComp(f) }}
+                />
+              </label>
+              <p className="text-[11px] text-gray-400 text-center mt-1">JPG, PNG, WebP · máx. 5 MB</p>
+            </div>
+          )}
 
           <div className="flex gap-3">
             <Link href="/mis-citas" className="flex-1 text-center bg-pink-600 text-white font-bold px-4 py-3 rounded-full hover:bg-pink-700 transition text-sm">

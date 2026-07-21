@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { CreditCard, Banknote, ArrowRight, CheckCircle, Clock, XCircle, AlertCircle } from "lucide-react"
+import { CreditCard, Banknote, ArrowRight, CheckCircle, Clock, XCircle, AlertCircle, ExternalLink } from "lucide-react"
 import { Metadata } from "next"
 
 export const dynamic = "force-dynamic"
@@ -53,6 +53,7 @@ export default async function PagosPage() {
     orderBy: { fecha: "desc" },
     take: 200,
   })
+  // comprobante is included via the spread below
 
   const pagos = citasRaw.map(c => {
     const precioServicio = Number(c.servicio.precio)
@@ -82,6 +83,7 @@ export default async function PagosPage() {
       estadoPago,
       estadoCita:      c.estado,
       fecha:           c.fecha.toISOString().slice(0, 10),
+      comprobante:     (c as unknown as { comprobante?: string | null }).comprobante ?? null,
     }
   })
 
@@ -137,7 +139,7 @@ export default async function PagosPage() {
         <table className="w-full text-sm">
           <thead className="bg-rose-900 dark:bg-rose-950 text-white">
             <tr>
-              {["Cliente", "Servicio", "Anticipo / Pago", "Saldo al llegar", "Tipo", "Método", "Estado", "Fecha"].map(h => (
+              {["Cliente", "Servicio", "Anticipo / Pago", "Saldo al llegar", "Tipo", "Método", "Estado", "Fecha", "Comprobante"].map(h => (
                 <th key={h} className="text-left font-semibold px-4 py-3 text-xs uppercase tracking-wider">{h}</th>
               ))}
             </tr>
@@ -145,7 +147,7 @@ export default async function PagosPage() {
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
             {pagos.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">
+                <td colSpan={9} className="text-center py-12 text-gray-400 text-sm">
                   No hay pagos registrados aún
                 </td>
               </tr>
@@ -209,6 +211,20 @@ export default async function PagosPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs whitespace-nowrap">{p.fecha}</td>
+                  <td className="px-4 py-3">
+                    {p.comprobante ? (
+                      <a
+                        href={p.comprobante}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium whitespace-nowrap"
+                      >
+                        Ver <ExternalLink className="w-3 h-3" />
+                      </a>
+                    ) : (
+                      <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
+                    )}
+                  </td>
                 </tr>
               ))
             )}

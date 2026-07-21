@@ -28,6 +28,7 @@ model Cita {
   cancelado_por        String?
   recordatorio_alexa   Boolean?
   estado_cita          String       @default("PENDIENTE")
+  comprobante          String?      @db.Text
   empleado             Usuario?     @relation("CitaEmpleado", fields: [empleado_id], references: [id])
   servicio             Servicio     @relation(fields: [servicio_id], references: [id])
   usuario              Usuario?     @relation("CitaCliente", fields: [usuario_id], references: [id])
