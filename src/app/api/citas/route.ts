@@ -107,7 +107,7 @@ export async function POST(req: Request) {
         usuario_id:        Number(session.user.id),
         empleado_id:       empleado_id ? Number(empleado_id) : null,
         notas:             notas || null,
-        metodo_pago:       metodo_pago || "TARJETA",
+        metodo_pago:       metodo_pago || "TRANSFERENCIA",
         estado:            "CONFIRMADA",
         nombre_contacto:   nombre_contacto || null,
         telefono_contacto: telefono_contacto || null,

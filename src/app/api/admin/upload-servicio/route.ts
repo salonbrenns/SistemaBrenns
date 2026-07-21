@@ -1,7 +1,7 @@
-// src/app/api/admin/upload-servicio/route.ts
 import { NextResponse } from "next/server"
-import { auth }         from"@/lib/auth"
+import { auth } from "@/lib/auth"
 import { v2 as cloudinary } from "cloudinary"
+import { validarArchivo } from "@/lib/uploadValidation"
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -21,6 +21,11 @@ export async function POST(req: Request) {
 
     if (!file) {
       return NextResponse.json({ error: "No se recibió archivo" }, { status: 400 })
+    }
+
+    const validacion = validarArchivo(file)
+    if (!validacion.ok) {
+      return NextResponse.json({ error: validacion.error }, { status: validacion.status })
     }
 
     const bytes  = await file.arrayBuffer()

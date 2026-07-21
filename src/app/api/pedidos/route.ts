@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'El carrito está vacío' }, { status: 400 })
     }
 
-    // 2. Verificar stock suficiente para todas las variantes
+    // 2. Verificar stock (pre-check rápido para dar feedback inmediato)
     for (const item of carritoItems) {
       if (item.variante.stock < item.cantidad) {
         return NextResponse.json(
@@ -60,7 +60,22 @@ export async function POST(req: NextRequest) {
 
     // 4. una transacción: crear pedido + descontar stock + vaciar carrito
     const pedido = await prisma.$transaction(async (tx) => {
-      // 4a. Crear pedido
+      // 4a. Re-verificar stock dentro de la transacción (previene race conditions)
+      for (const item of carritoItems) {
+        const varianteActual = await tx.variante.findUnique({
+          where: { id: item.variante_id },
+          select: { stock: true },
+        })
+        if (!varianteActual || varianteActual.stock < item.cantidad) {
+          throw Object.assign(new Error("stock_insuficiente"), {
+            nombre: item.variante.producto.nombre,
+            tono:   item.variante.tono,
+            disponible: varianteActual?.stock ?? 0,
+          })
+        }
+      }
+
+      // 4b. Crear pedido
       const nuevoPedido = await tx.pedido.create({
         data: {
           usuario_id:       usuarioId,
@@ -89,7 +104,7 @@ export async function POST(req: NextRequest) {
         },
       })
 
-      // 4b. Descontar stock de cada variante
+      // 4c. Descontar stock de cada variante
       for (const item of carritoItems) {
         await tx.variante.update({
           where: { id: item.variante_id },
@@ -97,7 +112,7 @@ export async function POST(req: NextRequest) {
         })
       }
 
-      // 4c. Vaciar carrito
+      // 4d. Vaciar carrito
       await tx.carritoItem.deleteMany({ where: { usuario_id: usuarioId } })
 
       return nuevoPedido
@@ -112,6 +127,18 @@ export async function POST(req: NextRequest) {
       metodo_pago,
     })
   } catch (error) {
+    // Race condition: stock se agotó entre el pre-check y la transacción
+    if (error instanceof Error && error.message === "stock_insuficiente") {
+      const e = error as Error & { nombre?: string; tono?: string; disponible?: number }
+      return NextResponse.json(
+        {
+          error: `Stock insuficiente para "${e.nombre ?? 'producto'}"${
+            e.tono ? ` (${e.tono})` : ''
+          }. Disponible: ${e.disponible ?? 0}`,
+        },
+        { status: 409 }
+      )
+    }
     console.error('Error creando pedido:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }

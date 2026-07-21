@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { v2 as cloudinary } from "cloudinary"
+import { validarArchivo } from "@/lib/uploadValidation"
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -22,6 +23,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const file = formData.get("file") as File | null
 
   if (!file) return NextResponse.json({ error: "No se recibió archivo" }, { status: 400 })
+
+  const validacion = validarArchivo(file)
+  if (!validacion.ok) {
+    return NextResponse.json({ error: validacion.error }, { status: validacion.status })
+  }
 
   try {
     const bytes  = await file.arrayBuffer()

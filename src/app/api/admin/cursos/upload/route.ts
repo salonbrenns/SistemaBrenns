@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import cloudinary from "@/lib/cloudinary"
+import { validarArchivos } from "@/lib/uploadValidation"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -13,7 +14,12 @@ export async function POST(req: Request) {
     const files = formData.getAll("files") as File[]
 
     if (!files || files.length === 0) {
-      return NextResponse.json({ error: "No files" }, { status: 400 })
+      return NextResponse.json({ error: "No se recibieron archivos" }, { status: 400 })
+    }
+
+    const validacion = validarArchivos(files, 6)
+    if (!validacion.ok) {
+      return NextResponse.json({ error: validacion.error }, { status: validacion.status })
     }
 
     const uploads = await Promise.all(

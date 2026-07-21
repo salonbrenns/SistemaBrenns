@@ -34,13 +34,10 @@ export async function POST(
   }
 
   try {
-    // 1. Verificar que el curso existe y tiene cupo
+    // 1. Verificar que el curso existe y está activo (pre-check)
     const curso = await prisma.curso.findUnique({ where: { id: cursoId } })
     if (!curso || !curso.activo) {
       return NextResponse.json({ error: "Curso no encontrado" }, { status: 404 })
-    }
-    if (curso.inscritos >= curso.cupo_maximo) {
-      return NextResponse.json({ error: "El cupo del curso está completo" }, { status: 409 })
     }
 
     // 2. Verificar que el usuario no esté ya inscrito
@@ -57,6 +54,15 @@ export async function POST(
 
     // 4. Crear inscripción + pago en transacción
     const resultado = await prisma.$transaction(async (tx) => {
+      // 4a. Re-verificar cupo dentro de la transacción (previene race conditions)
+      const cursoActual = await tx.curso.findUnique({
+        where:  { id: cursoId },
+        select: { inscritos: true, cupo_maximo: true },
+      })
+      if (!cursoActual || cursoActual.inscritos >= cursoActual.cupo_maximo) {
+        throw new Error("cupo_agotado")
+      }
+
       const inscripcion = await tx.inscripcion.create({
         data: {
           usuario_id: usuarioId,
@@ -92,6 +98,9 @@ export async function POST(
       metodoPago,
     })
   } catch (error) {
+    if (error instanceof Error && error.message === "cupo_agotado") {
+      return NextResponse.json({ error: "El cupo del curso está completo" }, { status: 409 })
+    }
     console.error("[inscribir]", error)
     return NextResponse.json({ error: "Error al procesar la inscripción" }, { status: 500 })
   }
