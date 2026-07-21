@@ -11,8 +11,8 @@ async function resetHandler(req: NextRequest) {
     return NextResponse.json({ error: "Datos incompletos" }, { status: 400 })
   }
 
-  if (password.length < 6) {
-    return NextResponse.json({ error: "La contraseña debe tener al menos 6 caracteres" }, { status: 400 })
+  if (password.length < 8) {
+    return NextResponse.json({ error: "La contraseña debe tener al menos 8 caracteres" }, { status: 400 })
   }
 
   const registro = await prisma.tokenRecuperacion.findUnique({

@@ -26,12 +26,10 @@ export async function POST(req: Request) {
     create: { usuario_id: usuario.id, token, expira, usado: false },
   })
 
-  try {
-    await enviarCorreoRecuperacion(correo, token)
-  } catch (err) {
-    console.error("❌ Error enviando correo:", err)
-    return NextResponse.json({ error: "Error al enviar correo" }, { status: 500 })
-  }
+  // Fire-and-forget: siempre responder ok para no revelar si el correo existe
+  enviarCorreoRecuperacion(correo, token).catch(err =>
+    console.error("❌ Error enviando correo de recuperación:", err)
+  )
 
   return NextResponse.json({ ok: true })
 }

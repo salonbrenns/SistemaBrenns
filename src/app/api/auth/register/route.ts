@@ -16,6 +16,15 @@ async function registerHandler(req: NextRequest) {
       )
     }
 
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: "El formato del correo electrónico no es válido" },
+        { status: 400 }
+      )
+    }
+
     if (password.length < 8) {
       return NextResponse.json(
         { error: "La contraseña debe tener al menos 8 caracteres" },
@@ -53,7 +62,7 @@ async function registerHandler(req: NextRequest) {
 
     if (!nuevoUsuario) throw new Error("No se pudo recuperar el usuario creado")
 
-    // Generar token de verificación (24 h)
+    // Generar token de verificación (1 hora)
     const token  = crypto.randomBytes(32).toString("hex")
     const expira = new Date(Date.now() + 60 * 60 * 1000) // 1 hora
 

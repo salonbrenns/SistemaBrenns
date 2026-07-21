@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 // ─── PATRONES DE DETECCIÓN ───────────────────────────────────────────────────
 
+// Nota: OR y AND se quitaron — son palabras comunes en texto normal (notas, nombres)
+// y causaban falsos positivos. Los patrones restantes cubren ataques reales.
 const SQL_INJECTION_PATTERNS = [
   /(\%27)|(\')|(\-\-)|(\%23)|(#)/i,
-  /\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|OR|AND)\s/i,
+  /\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION)\s/i,
   /(EXEC|EXECUTE|CAST|CONVERT|CHAR|NCHAR)\s*\(/i,
 ];
 
@@ -16,6 +18,10 @@ const XSS_PATTERNS = [
 ];
 
 // ─── RATE LIMITER MANUAL (por IP) ────────────────────────────────────────────
+// ⚠️ Nota: En Vercel (serverless) este Map vive por instancia de función,
+// no persiste entre invocaciones de distintos contenedores.
+// Es una protección de última línea dentro del mismo contenedor.
+// Para rate limiting real en producción se recomienda Upstash Redis o Vercel KV.
 
 const loginAttempts = new Map<string, { count: number; firstAttempt: number }>();
 const MAX_ATTEMPTS = 5;
@@ -53,7 +59,6 @@ function raspLog(level: "INFO" | "WARNING" | "CRITICAL", message: string, detail
 
 // ─── WRAPPER PRINCIPAL ───────────────────────────────────────────────────────
 
-// Después
 export function withRasp(handler: (req: NextRequest, ...args: unknown[]) => Promise<NextResponse>) {
   return async (req: NextRequest, ...args: unknown[]) => {
     const ip = req.headers.get("x-forwarded-for") ?? "unknown";
