@@ -47,8 +47,10 @@ function AgendarContenido() {
 
   const [tipoPago,          setTipoPago]          = useState<"ANTICIPO" | "COMPLETO" | null>(null)
   const [metodoPagoCliente, setMetodoPagoCliente] = useState<"TRANSFERENCIA" | null>(null)
-  const [pagando,   setPagando]   = useState(false)
-  const [errorPago, setErrorPago] = useState("")
+  const [pagando,    setPagando]    = useState(false)
+  const [errorPago,  setErrorPago]  = useState("")
+  const [errorHora,  setErrorHora]  = useState("")   // error de hora ocupada (mostrado en paso 1)
+  const [refreshHor, setRefreshHor] = useState(0)    // contador para forzar re-fetch de horarios
   const [exito,     setExito]     = useState(false)
   const [citaIdCreado,  setCitaIdCreado]  = useState<number | null>(null)
   const [subiendoComp,  setSubiendoComp]  = useState(false)
@@ -153,7 +155,7 @@ function AgendarContenido() {
         setCargandoHor(false)
       })
       .catch(() => { setHorarios([]); setCargandoHor(false) })
-  }, [fechaSel, empleadoSel, servicioId])
+  }, [fechaSel, empleadoSel, servicioId, refreshHor])
 
   // ── NUEVO: agrupar horarios en mañana / tarde
   const horariosMañana = horarios.filter(h => parseInt(h.hora.split(":")[0]) < 12)
@@ -195,6 +197,7 @@ function AgendarContenido() {
 
   const handleTransferencia = async () => {
     setErrorPago("")
+    setErrorHora("")
     if (!tipoPago) { setErrorPago("Selecciona anticipo o pago completo"); return }
     if (!fechaSel || !horaSel) { setErrorPago("Faltan datos de la cita"); return }
     setPagando(true)
@@ -203,7 +206,16 @@ function AgendarContenido() {
       setCitaIdCreado(id)
       setExito(true)
     } catch (err: unknown) {
-      setErrorPago(err instanceof Error ? err.message : "Error al confirmar")
+      const msg = err instanceof Error ? err.message : "Error al confirmar"
+      // Si la hora ya fue tomada: volver a paso 1 y actualizar horarios disponibles
+      if (msg.toLowerCase().includes("hora") || msg.toLowerCase().includes("ocupad")) {
+        setHoraSel(null)
+        setRefreshHor(n => n + 1)   // dispara re-fetch del useEffect
+        setPaso(1)
+        setErrorHora("⚠️ Esa hora fue tomada mientras elegías. Selecciona otro horario.")
+      } else {
+        setErrorPago(msg)
+      }
     } finally {
       setPagando(false)
     }
@@ -526,6 +538,13 @@ function AgendarContenido() {
                 {/* Horarios — NUEVO: agrupados en mañana/tarde + banner sinAtencion */}
                 {fechaSel && (
                   <div className="mt-5">
+                    {/* Banner: hora tomada por otra persona */}
+                    {errorHora && (
+                      <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-xl px-4 py-3 mb-3">
+                        <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                        <p className="text-sm text-amber-700 dark:text-amber-300 font-medium">{errorHora}</p>
+                      </div>
+                    )}
                     <h3 className="text-sm font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                       <Clock className="w-4 h-4 text-pink-400" />
                       {format(fechaSel, "EEEE d 'de' MMMM", { locale: es })}
@@ -559,7 +578,7 @@ function AgendarContenido() {
                             </div>
                             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                               {horariosMañana.map(h => (
-                                <button key={h.id} disabled={!h.disponible} onClick={() => setHoraSel(h.hora)}
+                                <button key={h.id} disabled={!h.disponible} onClick={() => { setHoraSel(h.hora); setErrorHora("") }}
                                   className={`py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${
                                     !h.disponible
                                       ? "bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-300 dark:text-gray-600 cursor-not-allowed line-through"
@@ -583,7 +602,7 @@ function AgendarContenido() {
                             </div>
                             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                               {horariosTarde.map(h => (
-                                <button key={h.id} disabled={!h.disponible} onClick={() => setHoraSel(h.hora)}
+                                <button key={h.id} disabled={!h.disponible} onClick={() => { setHoraSel(h.hora); setErrorHora("") }}
                                   className={`py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${
                                     !h.disponible
                                       ? "bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-300 dark:text-gray-600 cursor-not-allowed line-through"

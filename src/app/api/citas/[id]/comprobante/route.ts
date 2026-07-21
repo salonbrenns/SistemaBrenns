@@ -40,7 +40,14 @@ export async function POST(
   if (!cita) {
     return NextResponse.json({ error: "Cita no encontrada" }, { status: 404 })
   }
-  if (cita.usuario_id !== Number(session.user.id)) {
+
+  // Verificar que la cita pertenece al usuario
+  // Primero por ID numérico (caso normal); fallback por email (sesiones antiguas con UUID)
+  const userId    = Number(session.user.id)
+  const userEmail = session.user.email ?? ""
+  const esOwner   = (!isNaN(userId) && cita.usuario_id === userId)
+                  || (!!userEmail && cita.usuario?.correo === userEmail)
+  if (!esOwner) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 })
   }
   if (cita.estado === "CANCELADA" || cita.estado === "COMPLETADA") {
