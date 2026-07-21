@@ -32,16 +32,51 @@ export async function POST(req: Request) {
     const fechaInicio = new Date(fecha + "T00:00:00");
     const fechaFin    = new Date(fecha + "T23:59:59.999");
 
-    // Duración del servicio nuevo
+    // ── 1. Validar que la fecha/hora no sea en el pasado ──────────────────
+    const fechaCita = new Date(`${fecha}T${hora}`)
+    if (fechaCita < new Date()) {
+      return NextResponse.json({ error: "No puedes agendar en una fecha u hora pasada" }, { status: 400 })
+    }
+
+    // ── 2. Validar que el día no esté bloqueado ────────────────────────────
+    const diaBloqueado = await prisma.diaBloqueado.findFirst({
+      where: { fecha: fechaInicio },
+    })
+    if (diaBloqueado) {
+      return NextResponse.json({ error: "El salón no atiende ese día" }, { status: 409 })
+    }
+
+    // ── 3. Validar que la hora no esté bloqueada ───────────────────────────
+    const horaBloqueada = await prisma.horaBloqueada.findFirst({
+      where: { fecha: fechaInicio, hora },
+    })
+    if (horaBloqueada) {
+      return NextResponse.json({ error: "Esa hora no está disponible" }, { status: 409 })
+    }
+
+    // ── 4. Límite de citas activas por usuario (máx. 5) ────────────────────
+    const citasActivas = await prisma.cita.count({
+      where: {
+        usuario_id: Number(session.user.id),
+        estado:     { in: ["PENDIENTE", "CONFIRMADA"] },
+      },
+    })
+    if (citasActivas >= 5) {
+      return NextResponse.json({
+        error: "Tienes demasiadas citas activas. Cancela alguna antes de agendar una nueva.",
+      }, { status: 400 })
+    }
+
+    // ── 5. Duración del servicio nuevo ─────────────────────────────────────
     const servicioNuevo = await prisma.servicio.findUnique({
       where: { id: Number(servicio_id) },
       select: { nombre: true, duracion: true },
     })
-    const durNuevo   = parseDurMin(servicioNuevo?.duracion ?? "1h")
+    const durNuevo    = parseDurMin(servicioNuevo?.duracion ?? "1h")
     const inicioNuevo = horaAMin(hora)
     const finNuevo    = inicioNuevo + durNuevo
 
-    // Citas activas del día
+    // ── 6. Verificar solapamiento con citas existentes ──────────────────────
     const citasDelDia = await prisma.cita.findMany({
       where: {
         fecha:  { gte: fechaInicio, lte: fechaFin },
