@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Package, ChevronDown, ChevronUp, ShoppingBag, CheckCircle2, Clock, Truck, Upload, ExternalLink } from 'lucide-react'
 import AuthGuard from '@/components/ui/AuthGuard'
+import PageLoader from '@/components/ui/PageLoader'
 
 interface Detalle {
   id: number
@@ -103,11 +104,7 @@ function MisPedidosContenido() {
   }, [])
 
   if (cargando) {
-    return (
-      <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin" />
-      </div>
-    )
+    return <PageLoader className="min-h-screen bg-[#fffafa] dark:bg-gray-950" />
   }
 
   return (

@@ -8,13 +8,11 @@ import {
   Upload, ImageIcon, Loader2, CheckCheck, ExternalLink,
 } from 'lucide-react'
 import AuthGuard from '@/components/ui/AuthGuard'
+import PageLoader from '@/components/ui/PageLoader'
+import { toast } from '@/lib/toast'
 
 function SpinnerPage() {
-  return (
-    <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 flex items-center justify-center">
-      <div className="w-10 h-10 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin" />
-    </div>
-  )
+  return <PageLoader className="min-h-screen bg-[#fffafa] dark:bg-gray-950" />
 }
 
 interface Detalle {
@@ -132,6 +130,7 @@ function ConfirmacionContenido() {
       setComprob(data.url)
       setArchivo(null)
       setPreview(null)
+      toast.success("Comprobante enviado correctamente")
     } catch (e: unknown) {
       setErrorUpload(e instanceof Error ? e.message : 'Error al subir comprobante')
     } finally {

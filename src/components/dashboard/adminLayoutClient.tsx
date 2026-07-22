@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import SideNav from './sidenav';
 import { Bars3Icon } from '@heroicons/react/24/outline';
-import ToastContainer from '@/components/ui/ToastContainer';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
 export default function AdminLayoutClient({ children }: { children: React.ReactNode }) {
@@ -67,8 +66,6 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
         <div className="mx-auto max-w-7xl">{children}</div>
       </main>
 
-      {/* Notificaciones toast */}
-      <ToastContainer />
       <ConfirmModal />
     </div>
   );

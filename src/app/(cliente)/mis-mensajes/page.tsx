@@ -7,6 +7,7 @@ import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { toast } from "@/lib/toast"
 
 type Mensaje = {
   id: number
@@ -46,6 +47,7 @@ const { status } = useSession()
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
     })
+    toast.success("Mensaje marcado como leído")
   }
 
   const noLeidos = mensajes.filter(m => !m.leido).length

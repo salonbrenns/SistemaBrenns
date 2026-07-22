@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import DotsLoader from '@/components/ui/DotsLoader'
 import AuthGuard from '@/components/ui/AuthGuard'
+import { toast } from '@/lib/toast'
 
 interface Servicio {
   nombre: string
@@ -87,6 +88,7 @@ function MisCitasContenido() {
       if (!res.ok) { setError(data.error); return }
       setCitas(prev => prev.map(c => c.id === id ? { ...c, estado: 'CANCELADA' } : c))
       setAbierto(null)
+      toast.success("Cita cancelada")
     } catch {
       setError('Error al cancelar. Intenta de nuevo.')
     } finally {
@@ -111,6 +113,7 @@ function MisCitasContenido() {
         c.id === citaId ? { ...c, comprobante: data.url, estado: 'CONFIRMADA' } : c
       ))
       setCompExito(prev => new Set([...prev, citaId]))
+      toast.success("Comprobante enviado")
     } catch {
       setErrorComp(prev => ({ ...prev, [citaId]: 'Error de conexión. Intenta de nuevo.' }))
     } finally {

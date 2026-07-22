@@ -6,6 +6,7 @@ import { TagIcon, SparklesIcon } from '@heroicons/react/24/outline';
 
 import CategoriaTable from '@/components/categorias/table';
 import CategoriaServicioTable from '@/components/categorias-servicios/table';
+import PageLoader from '@/components/ui/PageLoader';
 
 type Tab = 'productos' | 'servicios';
 
@@ -139,9 +140,7 @@ export default function CategoriasClient() {
       {/* Contenido pestaña productos */}
       {tab === 'productos' && (
         cargandoP ? (
-          <div className="flex justify-center py-20">
-            <div className="w-8 h-8 border-4 border-pink-400 border-t-transparent rounded-full animate-spin" />
-          </div>
+          <PageLoader className="py-20" />
         ) : (
           <CategoriaTable
             categorias={catProductos}
@@ -154,9 +153,7 @@ export default function CategoriasClient() {
       {/* Contenido pestaña servicios */}
       {tab === 'servicios' && (
         cargandoS ? (
-          <div className="flex justify-center py-20">
-            <div className="w-8 h-8 border-4 border-pink-400 border-t-transparent rounded-full animate-spin" />
-          </div>
+          <PageLoader className="py-20" />
         ) : (
           <CategoriaServicioTable
             categorias={catServicios}

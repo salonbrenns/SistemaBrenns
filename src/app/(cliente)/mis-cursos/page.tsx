@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import AuthGuard from "@/components/ui/AuthGuard"
+import { toast } from "@/lib/toast"
 import {
   GraduationCap, Clock, Calendar, BookOpen,
   CheckCircle2, AlertCircle, Loader2, Plus,
@@ -115,6 +116,7 @@ function MisCursosContent() {
       if (!res.ok) throw new Error(data.error || "Error al registrar el pago")
       setPagoMsg(data.message)
       setPagoRest(null)
+      toast.success("Pago registrado correctamente")
       cargarCursos()
     } catch (e) {
       setPagoError(e instanceof Error ? e.message : "Error inesperado")

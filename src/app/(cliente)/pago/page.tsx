@@ -6,6 +6,7 @@ import { useState, Suspense } from "react"
 import Breadcrumb from "@/components/Breadcrumb"
 import { CreditCard, CheckCircle, Calendar, Clock, User } from "lucide-react"
 import AuthGuard from "@/components/ui/AuthGuard"
+import PageLoader from "@/components/ui/PageLoader"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { validarInscripcion } from "@/lib/validation"
@@ -157,11 +158,7 @@ function PagoContenido() {
 
 export default function PagoPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin" />
-      </div>
-    }>
+    <Suspense fallback={<PageLoader className="min-h-screen" />}>
       <PagoContenido />
     </Suspense>
   )

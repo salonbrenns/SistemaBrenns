@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import AuthGuard from '@/components/ui/AuthGuard'
 import { useCarrito, type CartItem } from '@/hooks/useCarrito'
+import PageLoader from '@/components/ui/PageLoader'
 
 const COSTO_ENVIO        = 100
 const ENVIO_GRATIS_DESDE = 1500
@@ -132,11 +133,7 @@ function CheckoutContenido() {
   }
 
   if (cargando) {
-    return (
-      <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin" />
-      </div>
-    )
+    return <PageLoader className="min-h-screen bg-[#fffafa] dark:bg-gray-950" />
   }
 
   if (!cargando && items.length === 0) {
