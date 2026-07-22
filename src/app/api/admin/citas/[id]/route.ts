@@ -26,7 +26,21 @@ export async function PUT(
   const citaId = Number(id)
   if (!citaId) return NextResponse.json({ error: "ID inválido" }, { status: 400 })
 
-  const { estado, estado_cita, notas, hora, empleado_id } = await req.json()
+  const body = await req.json()
+
+  const ESTADOS_VALIDOS = ["PENDIENTE", "CONFIRMADA", "CANCELADA", "COMPLETADA"]
+  if (body.estado !== undefined && !ESTADOS_VALIDOS.includes(body.estado)) {
+    return NextResponse.json({ error: "Estado de cita inválido" }, { status: 400 })
+  }
+  if (body.estado_cita !== undefined && !ESTADOS_VALIDOS.includes(body.estado_cita)) {
+    return NextResponse.json({ error: "Estado de cita inválido" }, { status: 400 })
+  }
+
+  const estado     = body.estado
+  const estado_cita = body.estado_cita
+  const notas      = body.notas !== undefined ? String(body.notas).trim().slice(0, 1000) : undefined
+  const hora       = body.hora
+  const empleado_id = body.empleado_id
 
   try {
     const cita = await prisma.cita.update({
