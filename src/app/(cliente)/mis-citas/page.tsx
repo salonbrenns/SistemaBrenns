@@ -62,9 +62,10 @@ function MisCitasContenido() {
   const [error,      setError]      = useState<string | null>(null)
 
   // Estados para subir comprobante
-  const [subiendoComp, setSubiendoComp] = useState<number | null>(null)  // cita id
-  const [compExito,    setCompExito]    = useState<Set<number>>(new Set())
-  const [errorComp,    setErrorComp]    = useState<Record<number, string>>({})
+  const [subiendoComp,     setSubiendoComp]     = useState<number | null>(null)
+  const [compExito,        setCompExito]        = useState<Set<number>>(new Set())
+  const [errorComp,        setErrorComp]        = useState<Record<number, string>>({})
+  const [modalCancelar,    setModalCancelar]    = useState<number | null>(null)  // id de cita a cancelar
 
   const cargarCitas = () => {
     fetch('/api/citas')
@@ -74,7 +75,6 @@ function MisCitasContenido() {
   }
 
   const cancelarCita = async (id: number) => {
-    if (!confirm('¿Segura que quieres cancelar esta cita? Esta acción no se puede deshacer.')) return
     setCancelando(id)
     setError(null)
     try {
@@ -279,7 +279,7 @@ function MisCitasContenido() {
                   {/* Cancelar cita */}
                   {puedeCancelar(cita.fecha, cita.estado) && (
                     <button
-                      onClick={() => cancelarCita(cita.id)}
+                      onClick={() => setModalCancelar(cita.id)}
                       disabled={cancelando === cita.id}
                       className="mt-2 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 border-red-200 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition text-sm font-semibold disabled:opacity-50"
                     >
@@ -306,6 +306,45 @@ function MisCitasContenido() {
           ))}
         </div>
       </div>
+
+      {/* ── Modal de confirmación para cancelar ─────────────────────── */}
+      {modalCancelar !== null && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl p-7 w-full max-w-sm shadow-2xl border border-red-100 dark:border-red-900/30 animate-in fade-in slide-in-from-bottom-4 duration-200">
+            {/* Ícono */}
+            <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-950/40 flex items-center justify-center mx-auto mb-5">
+              <XCircle className="w-9 h-9 text-red-500" />
+            </div>
+
+            <h3 className="text-xl font-black text-gray-900 dark:text-white text-center mb-2">
+              ¿Cancelar esta cita?
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-7 leading-relaxed">
+              Esta acción <strong className="text-gray-700 dark:text-gray-300">no se puede deshacer</strong>.
+              Recibirás un correo de confirmación de cancelación.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setModalCancelar(null)}
+                className="flex-1 px-4 py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                No, mantener
+              </button>
+              <button
+                onClick={() => { cancelarCita(modalCancelar); setModalCancelar(null) }}
+                disabled={cancelando !== null}
+                className="flex-1 px-4 py-3 rounded-2xl bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-bold text-sm transition shadow-lg shadow-red-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {cancelando !== null
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Cancelando...</>
+                  : 'Sí, cancelar'
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
