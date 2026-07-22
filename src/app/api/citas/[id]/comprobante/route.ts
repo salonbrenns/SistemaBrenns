@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { v2 as cloudinary } from "cloudinary"
 import { validarArchivo } from "@/lib/uploadValidation"
-import { sendEmail } from "@/lib/email"
+import { sendEmail, sendCitaAgendada } from "@/lib/email"
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -95,11 +95,23 @@ export async function POST(
       },
     })
 
+    // Notificar al cliente que su cita quedó confirmada
+    const clienteEmail = cita.usuario?.correo || session.user.email
+    const clienteNombre = cita.usuario?.nombre || session.user.name || "Cliente"
+    if (clienteEmail) {
+      sendCitaAgendada({
+        to:       clienteEmail,
+        nombre:   clienteNombre,
+        servicio: cita.servicio.nombre,
+        fecha:    cita.fecha,
+        hora:     cita.hora,
+      }).catch(err => console.error("[comprobante] email cliente:", err))
+    }
+
     // Notificar al admin
     const fechaStr = cita.fecha.toLocaleDateString("es-MX", {
       weekday: "long", day: "numeric", month: "long", year: "numeric",
     })
-    const clienteNombre = cita.usuario?.nombre || session.user.name || "Cliente"
 
     sendEmail({
       to:      ADMIN_EMAIL,

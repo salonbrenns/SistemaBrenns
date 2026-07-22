@@ -99,6 +99,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Esa hora ya esta ocupada" }, { status: 409 });
     }
 
+    // Las citas de TRANSFERENCIA nacen PENDIENTE hasta que se suba el comprobante.
+    // El comprobante route las pasa a CONFIRMADA automáticamente.
+    const esTranferencia = (metodo_pago || "TRANSFERENCIA") === "TRANSFERENCIA"
+    const estadoInicial  = esTranferencia ? "PENDIENTE" : "CONFIRMADA"
+
     const cita = await prisma.cita.create({
       data: {
         servicio_id:       Number(servicio_id),
@@ -108,7 +113,8 @@ export async function POST(req: Request) {
         empleado_id:       empleado_id ? Number(empleado_id) : null,
         notas:             notas || null,
         metodo_pago:       metodo_pago || "TRANSFERENCIA",
-        estado:            "CONFIRMADA",
+        estado:            estadoInicial,
+        estado_cita:       estadoInicial,
         nombre_contacto:   nombre_contacto || null,
         telefono_contacto: telefono_contacto || null,
         // Monto a cobrar: anticipo o pago completo
@@ -116,8 +122,10 @@ export async function POST(req: Request) {
       },
     });
 
+    // Solo enviar correo de confirmación si no es transferencia
+    // (para transferencia el correo se envía cuando suben el comprobante)
     const clienteEmail = session.user.email
-    if (clienteEmail) {
+    if (clienteEmail && !esTranferencia) {
       sendCitaAgendada({
         to:       clienteEmail,
         nombre:   session.user.name ?? "Cliente",

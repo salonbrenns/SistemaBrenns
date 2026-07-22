@@ -250,8 +250,12 @@ function AgendarContenido() {
             <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-12 h-12 text-green-500" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-1">¡Cita confirmada!</h2>
-            <p className="text-green-600 font-semibold text-sm">Tu lugar está reservado</p>
+            <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-1">
+              {compSubido ? "¡Cita confirmada!" : "¡Cita reservada!"}
+            </h2>
+            <p className="text-green-600 font-semibold text-sm">
+              {compSubido ? "Tu cita está confirmada ✅" : "Pendiente de comprobante de pago"}
+            </p>
           </div>
 
           {/* Resumen de la cita */}
