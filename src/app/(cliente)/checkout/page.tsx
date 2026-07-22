@@ -229,13 +229,15 @@ function CheckoutContenido() {
                 </div>
 
                 {metodoPago === 'transferencia' && (
-                  <div className="mt-6 p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
-                    <p className="text-xs font-bold text-blue-700 dark:text-blue-300 mb-2">Datos para transferencia</p>
+                  <div className="mt-6 p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 space-y-1.5">
+                    <p className="text-xs font-black text-blue-700 dark:text-blue-300 mb-2">Datos para transferencia</p>
                     <div className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
-                      <p>Banco: BBVA</p>
-                      <p>Titular: Salon Brenns</p>
-                      <p>La referencia de pago se generará al confirmar tu pedido.</p>
+                      <p><span className="font-semibold">Banco:</span> BBVA</p>
+                      <p><span className="font-semibold">Titular:</span> Ruth Barrientos Angeles</p>
+                      <p><span className="font-semibold">Cuenta:</span> 154 792 8563</p>
+                      <p><span className="font-semibold">CLABE:</span> 012 290 01547928563 4</p>
                     </div>
+                    <p className="text-xs text-blue-500 dark:text-blue-500 italic mt-1">Sube tu comprobante en la pantalla de confirmación.</p>
                   </div>
                 )}
 

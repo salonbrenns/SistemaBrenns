@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
           nombre_cliente,
           correo_cliente,
           telefono_cliente: telefono_cliente || null,
+          metodo_pago:      metodo_pago || null,
           estado:           'PENDIENTE',
           detalles: {
             create: carritoItems.map((item) => {
@@ -178,6 +179,8 @@ export async function GET() {
       correo_cliente:   p.correo_cliente,
       telefono_cliente: p.telefono_cliente,
       fecha_pedido:     p.fecha_pedido.toISOString(),
+      metodo_pago:      p.metodo_pago,
+      comprobante_url:  p.comprobante_url,
       detalles: p.detalles.map((d) => ({
         id:                   d.id,
         nombre_producto:      d.nombre_producto,

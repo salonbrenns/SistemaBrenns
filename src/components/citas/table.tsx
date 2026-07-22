@@ -11,8 +11,6 @@ import { UserCircle, ShieldCheck, CheckCircle, XCircle, ClipboardCheck } from 'l
 import Paginacion from '@/components/ui/paginacion'
 import DropdownAcciones, { DropdownItem, DropdownSeparator } from '@/components/ui/DropdownAcciones'
 
-const POR_PAGINA = 10
-
 type Cita = {
   id: number
   fecha: string
@@ -53,30 +51,36 @@ export default function CitasTable({
   estadoFiltro,
   desdeFiltro,
   hastaFiltro,
+  totalCitas = 0,
+  paginaActual = 1,
+  porPagina = 15,
 }: {
   citas: Cita[]
   estadoFiltro: string
   desdeFiltro: string
   hastaFiltro: string
+  totalCitas?: number
+  paginaActual?: number
+  porPagina?: number
 }) {
   const router   = useRouter()
   const pathname = usePathname()
   const [cambiando,     setCambiando]     = useState<number | null>(null)
   const [cambiandoCita, setCambiandoCita] = useState<number | null>(null)
-  const [pagina,        setPagina]        = useState(1)
 
-  const totalPaginas = Math.ceil(citas.length / POR_PAGINA)
-  const citasPagina  = citas.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
+  const totalPaginas = Math.max(1, Math.ceil(totalCitas / porPagina))
 
   const aplicarFiltro = (updates: Record<string, string>) => {
     const params = new URLSearchParams()
-    const merged = {
+    const merged: Record<string, string> = {
       estado: estadoFiltro,
       desde:  desdeFiltro,
       hasta:  hastaFiltro,
       ...updates,
     }
-    Object.entries(merged).forEach(([k, v]) => { if (v) params.set(k, v) })
+    // Al cambiar filtros (no página), volver a página 1
+    if (!('page' in updates)) merged.page = '1'
+    Object.entries(merged).forEach(([k, v]) => { if (v && !(k === 'page' && v === '1')) params.set(k, v) })
     router.push(`${pathname}?${params.toString()}`)
   }
 
@@ -115,6 +119,8 @@ export default function CitasTable({
   }
 
   const hayFiltros = estadoFiltro || desdeFiltro || hastaFiltro
+
+  const irAPagina = (p: number) => aplicarFiltro({ page: String(p) })
 
   return (
     <div className="space-y-4">
@@ -184,7 +190,8 @@ export default function CitasTable({
 
       {/* Contador */}
       <p className="text-sm text-gray-500 dark:text-gray-400">
-        {citas.length} cita{citas.length !== 1 ? 's' : ''} encontrada{citas.length !== 1 ? 's' : ''}
+        {totalCitas} cita{totalCitas !== 1 ? 's' : ''} encontrada{totalCitas !== 1 ? 's' : ''}
+        {totalPaginas > 1 && ` · Página ${paginaActual} de ${totalPaginas}`}
       </p>
 
       {/* ── Tabla ── */}
@@ -200,14 +207,14 @@ export default function CitasTable({
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
-            {citasPagina.length === 0 ? (
+            {citas.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
                   No hay citas con los filtros aplicados
                 </td>
               </tr>
-            ) : citasPagina.map((cita, idx) => {
-              const num   = (pagina - 1) * POR_PAGINA + idx + 1
+            ) : citas.map((cita, idx) => {
+              const num   = (paginaActual - 1) * porPagina + idx + 1
               const cfg   = estadoConfig[cita.estado] || estadoConfig.PENDIENTE
               const fecha = new Date(cita.fecha).toLocaleDateString('es-MX', {
                 day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'
@@ -342,9 +349,9 @@ export default function CitasTable({
       </div>
 
       <Paginacion
-        paginaActual={pagina}
+        paginaActual={paginaActual}
         totalPaginas={totalPaginas}
-        onChange={setPagina}
+        onChange={irAPagina}
       />
     </div>
   )

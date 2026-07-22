@@ -8,17 +8,20 @@ export const metadata: Metadata = {
   description: 'Gestión de citas del salón',
 }
 
+const PAGE_SIZE = 15
+
 type EstadoCita = 'PENDIENTE' | 'CONFIRMADA' | 'CANCELADA' | 'COMPLETADA'
 
 export default async function CitasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ estado?: string; desde?: string; hasta?: string }>
+  searchParams: Promise<{ estado?: string; desde?: string; hasta?: string; page?: string }>
 }) {
-  const params = await searchParams
-  const estado = params.estado as EstadoCita | undefined
-  const desde  = params.desde || ''
-  const hasta  = params.hasta || ''
+  const params  = await searchParams
+  const estado  = params.estado as EstadoCita | undefined
+  const desde   = params.desde || ''
+  const hasta   = params.hasta || ''
+  const pageNum = Math.max(1, Number(params.page) || 1)
 
   const where: Record<string, unknown> = {}
 
@@ -45,14 +48,19 @@ export default async function CitasPage({
       AND fecha::date < CURRENT_DATE
   `)
 
-  const citasRaw = await prisma.cita.findMany({
-    where,
-    include: {
-      usuario:  { select: { nombre: true, correo: true, telefono: true } },
-      servicio: { select: { nombre: true, precio: true } },
-    },
-    orderBy: [{ fecha: 'desc' }, { hora: 'asc' }],
-  })
+  const [citasRaw, totalCitas] = await Promise.all([
+    prisma.cita.findMany({
+      where,
+      include: {
+        usuario:  { select: { nombre: true, correo: true, telefono: true } },
+        servicio: { select: { nombre: true, precio: true } },
+      },
+      orderBy: [{ fecha: 'desc' }, { hora: 'asc' }],
+      take: PAGE_SIZE,
+      skip: (pageNum - 1) * PAGE_SIZE,
+    }),
+    prisma.cita.count({ where }),
+  ])
 
   const citas = citasRaw.map(c => ({
     ...c,
@@ -79,6 +87,9 @@ export default async function CitasPage({
         estadoFiltro={estado || ''}
         desdeFiltro={desde}
         hastaFiltro={hasta}
+        totalCitas={totalCitas}
+        paginaActual={pageNum}
+        porPagina={PAGE_SIZE}
       />
     </div>
   )

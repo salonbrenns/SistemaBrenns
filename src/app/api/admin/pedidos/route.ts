@@ -3,33 +3,51 @@ import { auth } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
 import { sendPedidoEstado } from '@/lib/email'
 
-export async function GET() {
+const PAGE_SIZE = 15
+
+export async function GET(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id || session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
 
-  const pedidos = await prisma.pedido.findMany({
-    include: {
-      usuario:  { select: { nombre: true, correo: true } },
-      detalles: true,
-    },
-    orderBy: { fecha_pedido: 'desc' },
-  })
+  const { searchParams } = new URL(req.url)
+  const pageNum = Math.max(1, Number(searchParams.get('page')) || 1)
+  const estado  = searchParams.get('estado') || ''
 
-  return NextResponse.json(
-    pedidos.map((p) => ({
-      id:             p.id,
-      estado:         p.estado,
-      total:          Number(p.total),
-      nombre_cliente: p.nombre_cliente,
-      correo_cliente: p.correo_cliente,
-      fecha_pedido:   p.fecha_pedido.toISOString(),
-      usuario:        p.usuario,
-      total_items:    p.detalles.reduce((s, d) => s + d.cantidad, 0),
-      detalles:       p.detalles,
-    }))
-  )
+  const where = estado && estado !== 'TODOS' ? { estado } : {}
+
+  const [pedidosRaw, total] = await Promise.all([
+    prisma.pedido.findMany({
+      where,
+      include: {
+        usuario:  { select: { nombre: true, correo: true } },
+        detalles: true,
+      },
+      orderBy: { fecha_pedido: 'desc' },
+      take: PAGE_SIZE,
+      skip: (pageNum - 1) * PAGE_SIZE,
+    }),
+    prisma.pedido.count({ where }),
+  ])
+
+  return NextResponse.json({
+    pedidos: pedidosRaw.map((p) => ({
+      id:              p.id,
+      estado:          p.estado,
+      total:           Number(p.total),
+      nombre_cliente:  p.nombre_cliente,
+      correo_cliente:  p.correo_cliente,
+      fecha_pedido:    p.fecha_pedido.toISOString(),
+      usuario:         p.usuario,
+      total_items:     p.detalles.reduce((s, d) => s + d.cantidad, 0),
+      comprobante_url: p.comprobante_url,
+      detalles:        p.detalles,
+    })),
+    total,
+    totalPaginas: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+    paginaActual: pageNum,
+  })
 }
 
 export async function PATCH(req: NextRequest) {

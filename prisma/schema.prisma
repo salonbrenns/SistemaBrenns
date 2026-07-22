@@ -444,6 +444,8 @@ model Pedido {
   correo_cliente   String          @db.VarChar(100)
   telefono_cliente String?         @db.VarChar(20)
   fecha_pedido     DateTime        @default(now()) @db.Timestamp(6)
+  metodo_pago      String?         @db.VarChar(50)
+  comprobante_url  String?         @db.Text
   detalles         DetallePedido[]
   usuario          Usuario         @relation(fields: [usuario_id], references: [id])
 
