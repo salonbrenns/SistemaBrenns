@@ -16,6 +16,7 @@ type KPIs = {
   citasHoy: number
   citasMes: number
   pedidosMes: number
+  pedidosPendientes: number
   clientesTotal: number
 }
 
@@ -293,12 +294,13 @@ export default function DashboardPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {[
-          { label: "Citas hoy",        value: kpis?.citasHoy,      icon: <Calendar className="w-6 h-6" />,      color: "from-pink-500 to-rose-500" },
-          { label: "Citas este mes",   value: kpis?.citasMes,      icon: <CalendarCheck className="w-6 h-6" />, color: "from-purple-500 to-indigo-500" },
-          { label: "Pedidos del mes",  value: kpis?.pedidosMes,    icon: <ShoppingBag className="w-6 h-6" />,   color: "from-orange-400 to-amber-500" },
-          { label: "Clientes totales", value: kpis?.clientesTotal, icon: <Users className="w-6 h-6" />,         color: "from-emerald-400 to-teal-500" },
+          { label: "Citas hoy",              value: kpis?.citasHoy,           icon: <Calendar className="w-6 h-6" />,      color: "from-pink-500 to-rose-500" },
+          { label: "Citas este mes",         value: kpis?.citasMes,           icon: <CalendarCheck className="w-6 h-6" />, color: "from-purple-500 to-indigo-500" },
+          { label: "Pedidos del mes",        value: kpis?.pedidosMes,         icon: <ShoppingBag className="w-6 h-6" />,   color: "from-orange-400 to-amber-500" },
+          { label: "Pedidos por confirmar",  value: kpis?.pedidosPendientes,  icon: <ShoppingBag className="w-6 h-6" />,   color: "from-amber-500 to-yellow-500" },
+          { label: "Clientes totales",       value: kpis?.clientesTotal,      icon: <Users className="w-6 h-6" />,         color: "from-emerald-400 to-teal-500" },
         ].map((kpi, i) => (
           <div key={i} className={`bg-gradient-to-br ${kpi.color} rounded-2xl p-5 text-white shadow-md`}>
             <div className="flex items-center justify-between mb-3">
