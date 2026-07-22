@@ -34,6 +34,11 @@ export async function POST(req: Request) {
 
   const { usuario_id, permiso, activo } = await req.json()
 
+  const PERMISOS_VALIDOS = new Set(PERMISOS_SISTEMA.map(p => p.key))
+  if (!usuario_id || !PERMISOS_VALIDOS.has(permiso)) {
+    return NextResponse.json({ error: "Permiso inválido" }, { status: 400 })
+  }
+
   await prisma.permisoUsuario.upsert({
     where: { usuario_id_permiso: { usuario_id, permiso } },
     update: { activo },

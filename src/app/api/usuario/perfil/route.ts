@@ -39,7 +39,9 @@ async function profileHandler(req: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const { nombre, telefono } = await req.json()
+    const body = await req.json()
+    const nombre   = String(body.nombre   ?? "").trim().slice(0, 200)
+    const telefono = body.telefono ? String(body.telefono).trim().slice(0, 30) : null
 
     if (!nombre) {
       return NextResponse.json({ error: "El nombre es requerido" }, { status: 400 })
@@ -47,7 +49,7 @@ async function profileHandler(req: NextRequest) {
 
     const actualizado = await prisma.usuario.update({
       where: { id: Number(session.user.id) },
-      data: { nombre, telefono: telefono || null },
+      data: { nombre, telefono },
     })
 
     return NextResponse.json({
