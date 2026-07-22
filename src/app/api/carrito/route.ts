@@ -109,9 +109,18 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ ok: true, eliminado: true })
   }
 
+  // Obtener variante para respetar el stock disponible
+  const carritoItem = await prisma.carritoItem.findFirst({
+    where: { id, usuario_id: usuarioId },
+    select: { variante: { select: { stock: true } } },
+  })
+  const cantidadFinal = carritoItem
+    ? Math.min(cantidad, carritoItem.variante.stock)
+    : cantidad
+
   const item = await prisma.carritoItem.updateMany({
     where: { id, usuario_id: usuarioId },
-    data:  { cantidad, actualizado_en: new Date() },
+    data:  { cantidad: cantidadFinal, actualizado_en: new Date() },
   })
 
   return NextResponse.json({ ok: true, item })
