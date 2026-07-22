@@ -58,7 +58,7 @@ function TrackingTimeline({ estado }: { estado: string }) {
   const idxActual = PASOS.findIndex(p => p.key === estado)
   return (
     <div className="relative flex items-start justify-between py-4 px-2">
-      <div className="absolute top-[22px] left-6 right-6 h-0.5 bg-gray-200 z-0" />
+      <div className="absolute top-[22px] left-6 right-6 h-0.5 bg-gray-200 dark:bg-gray-700 z-0" />
       <div
         className="absolute top-[22px] left-6 h-0.5 bg-rose-400 z-0 transition-all duration-500"
         style={{ width: idxActual <= 0 ? '0%' : `calc(${(idxActual / (PASOS.length - 1)) * 100}% - 12px)` }}
@@ -179,7 +179,7 @@ function MisPedidosContenido() {
                             }
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-800 line-clamp-1">{d.nombre_producto}</p>
+                            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 line-clamp-1">{d.nombre_producto}</p>
                             {d.descripcion_variante && (
                               <p className="text-xs text-rose-500 font-semibold">{d.descripcion_variante}</p>
                             )}

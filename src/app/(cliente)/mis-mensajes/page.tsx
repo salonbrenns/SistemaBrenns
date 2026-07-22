@@ -63,7 +63,7 @@ const { status } = useSession()
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-pink-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300 flex items-center gap-2">
             <Bell className="w-6 h-6 text-pink-500" /> Mis mensajes
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Avisos del equipo de Brenn&apos;s</p>
@@ -77,11 +77,11 @@ const { status } = useSession()
 
       {mensajes.length === 0 ? (
         <div className="text-center py-20">
-          <div className="w-16 h-16 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-pink-50 dark:bg-pink-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <MessageSquare className="w-8 h-8 text-pink-300" />
           </div>
-          <p className="text-gray-400 font-medium">No tienes mensajes todavía</p>
-          <p className="text-sm text-gray-300 mt-1">Aquí verás los avisos sobre tus citas</p>
+          <p className="text-gray-400 dark:text-gray-500 font-medium">No tienes mensajes todavía</p>
+          <p className="text-sm text-gray-400 dark:text-gray-600 mt-1">Aquí verás los avisos sobre tus citas</p>
         </div>
       ) : (
         <div className="space-y-4">
