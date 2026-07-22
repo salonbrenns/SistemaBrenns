@@ -69,7 +69,7 @@ export default function FAQForm({ initialData }: FAQFormProps) {
       <div className="mb-6">
         <button
           onClick={() => router.back()}
-          className="text-sm text-gray-500 hover:text-gray-700 mb-3 flex items-center gap-1"
+          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-3 flex items-center gap-1 transition-colors"
         >
           ← Volver
         </button>
@@ -80,7 +80,7 @@ export default function FAQForm({ initialData }: FAQFormProps) {
 
       <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 space-y-5">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Pregunta <span className="text-red-500">*</span>
           </label>
           <input
@@ -90,12 +90,12 @@ export default function FAQForm({ initialData }: FAQFormProps) {
             onChange={handleChange}
             placeholder="¿Cuánto tiempo dura el envío?"
             required
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition"
+            className="w-full border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Respuesta <span className="text-red-500">*</span>
           </label>
           <textarea
@@ -105,20 +105,20 @@ export default function FAQForm({ initialData }: FAQFormProps) {
             placeholder="El envío tarda entre 3 y 5 días hábiles..."
             required
             rows={4}
-            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition resize-none"
+            className="w-full border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition resize-none"
           />
         </div>
 
         <div className="flex gap-4 items-end">
           <div className="w-32">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Orden</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Orden</label>
             <input
               type="number"
               name="orden"
               value={form.orden}
               onChange={handleChange}
               min={0}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition"
+              className="w-full border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition"
             />
           </div>
           <div className="flex items-center gap-2 pb-2.5">
@@ -130,14 +130,14 @@ export default function FAQForm({ initialData }: FAQFormProps) {
               onChange={handleChange}
               className="w-4 h-4 accent-pink-600"
             />
-            <label htmlFor="activo" className="text-sm font-medium text-gray-700">
+            <label htmlFor="activo" className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Activo (visible en el sitio)
             </label>
           </div>
         </div>
 
         {error && (
-          <p className="text-red-500 text-sm bg-red-50 border border-red-100 rounded-lg px-4 py-2">
+          <p className="text-red-500 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-lg px-4 py-2">
             {error}
           </p>
         )}
