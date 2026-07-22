@@ -60,6 +60,11 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "No puedes cambiar tu propio rol" }, { status: 403 })
   }
 
+  const ROLES_VALIDOS = ["ADMIN", "EMPLEADO", "DOCENTE", "CLIENTE"]
+  if (rol && !ROLES_VALIDOS.includes(rol)) {
+    return NextResponse.json({ error: "Rol inválido" }, { status: 400 })
+  }
+
   if (rol) {
     await prisma.$executeRaw`
       UPDATE seguridad.tblusuarios 
