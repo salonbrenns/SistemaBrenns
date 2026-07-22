@@ -78,6 +78,28 @@ function ConfirmacionContenido() {
   const [dragOver,    setDragOver]    = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const [bancoCfg, setBancoCfg] = useState({
+    banco:   'BBVA',
+    titular: 'Ruth Barrientos Angeles',
+    cuenta:  '154 792 8563',
+    clabe:   '012 290 01547928563 4',
+  })
+
+  useEffect(() => {
+    fetch('/api/config-sitio')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return
+        setBancoCfg({
+          banco:   data.banco_banco   || 'BBVA',
+          titular: data.banco_titular || 'Ruth Barrientos Angeles',
+          cuenta:  data.banco_cuenta  || '154 792 8563',
+          clabe:   data.banco_clabe   || '012 290 01547928563 4',
+        })
+      })
+      .catch(() => {/* usar defaults */})
+  }, [])
+
   useEffect(() => {
     fetch('/api/pedidos')
       .then(r => r.json())
@@ -249,20 +271,20 @@ function ConfirmacionContenido() {
                 <div className="space-y-2.5 text-sm">
                   <div className="flex justify-between">
                     <span className="text-blue-200">Banco</span>
-                    <span className="font-bold">BBVA</span>
+                    <span className="font-bold">{bancoCfg.banco}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-blue-200">Titular</span>
-                    <span className="font-bold">Ruth Barrientos Angeles</span>
+                    <span className="font-bold">{bancoCfg.titular}</span>
                   </div>
                   <div className="border-t border-blue-500/40 pt-3 mt-1 space-y-2">
                     <div>
                       <p className="text-blue-200 text-xs">Cuenta</p>
-                      <p className="font-black text-lg tracking-wider">154 792 8563</p>
+                      <p className="font-black text-lg tracking-wider">{bancoCfg.cuenta}</p>
                     </div>
                     <div>
                       <p className="text-blue-200 text-xs">CLABE interbancaria</p>
-                      <p className="font-black tracking-wider">012 290 01547928563 4</p>
+                      <p className="font-black tracking-wider">{bancoCfg.clabe}</p>
                     </div>
                   </div>
                   <div className="border-t border-blue-500/40 pt-3">

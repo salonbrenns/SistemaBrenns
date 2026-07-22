@@ -14,10 +14,24 @@ export async function POST(req: NextRequest) {
     }
     const usuarioId = Number(session.user.id)
 
-    const { metodo_pago, nombre_cliente, correo_cliente, telefono_cliente } = await req.json()
+    const body = await req.json()
+    const metodo_pago      = String(body.metodo_pago    ?? '').trim()
+    const nombre_cliente   = String(body.nombre_cliente  ?? '').trim().slice(0, 200)
+    const correo_cliente   = String(body.correo_cliente  ?? '').trim().toLowerCase().slice(0, 200)
+    const telefono_cliente = body.telefono_cliente ? String(body.telefono_cliente).trim().slice(0, 30) : null
 
     if (!metodo_pago || !nombre_cliente || !correo_cliente) {
       return NextResponse.json({ error: 'Faltan datos del pedido' }, { status: 400 })
+    }
+
+    const METODOS_VALIDOS = ['transferencia', 'efectivo', 'tarjeta']
+    if (!METODOS_VALIDOS.includes(metodo_pago)) {
+      return NextResponse.json({ error: 'Método de pago no válido' }, { status: 400 })
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(correo_cliente)) {
+      return NextResponse.json({ error: 'Correo electrónico no válido' }, { status: 400 })
     }
 
     // 1. Leer el carrito actual del usuario desde BD

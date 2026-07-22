@@ -53,12 +53,34 @@ function CheckoutContenido() {
   const [procesando, setProcesando] = useState(false)
   const [error, setError]           = useState<string | null>(null)
 
+  const [bancoCfg, setBancoCfg] = useState({
+    banco:   'BBVA',
+    titular: 'Ruth Barrientos Angeles',
+    cuenta:  '154 792 8563',
+    clabe:   '012 290 01547928563 4',
+  })
+
   const [form, setForm] = useState({
     nombre:   '',
     apellido: '',
     correo:   '',
     telefono: '',
   })
+
+  useEffect(() => {
+    fetch('/api/config-sitio')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return
+        setBancoCfg({
+          banco:   data.banco_banco   || 'BBVA',
+          titular: data.banco_titular || 'Ruth Barrientos Angeles',
+          cuenta:  data.banco_cuenta  || '154 792 8563',
+          clabe:   data.banco_clabe   || '012 290 01547928563 4',
+        })
+      })
+      .catch(() => {/* usar defaults */})
+  }, [])
 
   useEffect(() => {
     if (!session?.user) return
@@ -232,10 +254,10 @@ function CheckoutContenido() {
                   <div className="mt-6 p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 space-y-1.5">
                     <p className="text-xs font-black text-blue-700 dark:text-blue-300 mb-2">Datos para transferencia</p>
                     <div className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
-                      <p><span className="font-semibold">Banco:</span> BBVA</p>
-                      <p><span className="font-semibold">Titular:</span> Ruth Barrientos Angeles</p>
-                      <p><span className="font-semibold">Cuenta:</span> 154 792 8563</p>
-                      <p><span className="font-semibold">CLABE:</span> 012 290 01547928563 4</p>
+                      <p><span className="font-semibold">Banco:</span> {bancoCfg.banco}</p>
+                      <p><span className="font-semibold">Titular:</span> {bancoCfg.titular}</p>
+                      <p><span className="font-semibold">Cuenta:</span> {bancoCfg.cuenta}</p>
+                      <p><span className="font-semibold">CLABE:</span> {bancoCfg.clabe}</p>
                     </div>
                     <p className="text-xs text-blue-500 dark:text-blue-500 italic mt-1">Sube tu comprobante en la pantalla de confirmación.</p>
                   </div>

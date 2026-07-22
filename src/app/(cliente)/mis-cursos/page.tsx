@@ -67,6 +67,28 @@ function MisCursosContent() {
   const [pagoMsg, setPagoMsg]         = useState<string | null>(null)
   const [pagoError, setPagoError]     = useState<string | null>(null)
 
+  const [bancoCfg, setBancoCfg] = useState({
+    banco:   'BBVA',
+    titular: 'Ruth Barrientos Angeles',
+    cuenta:  '154 792 8563',
+    clabe:   '012 290 01547928563 4',
+  })
+
+  useEffect(() => {
+    fetch('/api/config-sitio')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return
+        setBancoCfg({
+          banco:   data.banco_banco   || 'BBVA',
+          titular: data.banco_titular || 'Ruth Barrientos Angeles',
+          cuenta:  data.banco_cuenta  || '154 792 8563',
+          clabe:   data.banco_clabe   || '012 290 01547928563 4',
+        })
+      })
+      .catch(() => {/* usar defaults */})
+  }, [])
+
   const cargarCursos = () => {
     setLoading(true)
     fetch("/api/mis-cursos")
@@ -318,8 +340,10 @@ function MisCursosContent() {
 
             <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-2xl p-5 space-y-1.5 mb-6">
               <p className="text-xs font-bold text-blue-800 dark:text-blue-300 mb-2">Datos para transferencia / SPEI</p>
-              <p className="text-sm text-blue-700 dark:text-blue-400">Banco: <strong>BBVA</strong></p>
-              <p className="text-sm text-blue-700 dark:text-blue-400">Titular: <strong>Salón Brenn&apos;s</strong></p>
+              <p className="text-sm text-blue-700 dark:text-blue-400">Banco: <strong>{bancoCfg.banco}</strong></p>
+              <p className="text-sm text-blue-700 dark:text-blue-400">Titular: <strong>{bancoCfg.titular}</strong></p>
+              <p className="text-sm text-blue-700 dark:text-blue-400">Cuenta: <strong>{bancoCfg.cuenta}</strong></p>
+              <p className="text-sm text-blue-700 dark:text-blue-400">CLABE: <strong>{bancoCfg.clabe}</strong></p>
               <p className="text-sm text-blue-700 dark:text-blue-400">Concepto: <strong>tu nombre + &quot;saldo curso&quot;</strong></p>
             </div>
 
