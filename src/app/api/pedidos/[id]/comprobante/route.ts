@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { v2 as cloudinary } from "cloudinary"
-import { validarArchivo } from "@/lib/uploadValidation"
+import { validarComprobante } from "@/lib/uploadValidation"
 import { sendEmail } from "@/lib/email"
 
 cloudinary.config({
@@ -65,7 +65,7 @@ export async function POST(
     return NextResponse.json({ error: "No se recibió archivo" }, { status: 400 })
   }
 
-  const validacion = validarArchivo(file)
+  const validacion = validarComprobante(file)
   if (!validacion.ok) {
     return NextResponse.json({ error: validacion.error }, { status: validacion.status })
   }

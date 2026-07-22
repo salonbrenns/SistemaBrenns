@@ -3,23 +3,49 @@
  * Centraliza la lógica para que todos los endpoints sean consistentes.
  */
 
-const TIPOS_PERMITIDOS = ["image/jpeg", "image/png", "image/webp", "image/gif"]
-const TAMANO_MAXIMO_MB = 5
-const TAMANO_MAXIMO_BYTES = TAMANO_MAXIMO_MB * 1024 * 1024
+// Imágenes solamente (para subidas de productos, perfil, etc.)
+const TIPOS_IMAGEN   = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+// Comprobantes: imágenes + PDF
+const TIPOS_COMPROBANTE = [...TIPOS_IMAGEN, "application/pdf"]
+
+const TAMANO_IMAGEN_MB       = 5
+const TAMANO_COMPROBANTE_MB  = 10
+const MB                     = 1024 * 1024
 
 export function validarArchivo(file: File): { ok: true } | { ok: false; error: string; status: number } {
-  if (!TIPOS_PERMITIDOS.includes(file.type)) {
+  if (!TIPOS_IMAGEN.includes(file.type)) {
     return {
       ok:     false,
-      error:  `Tipo de archivo no permitido. Solo se aceptan: ${TIPOS_PERMITIDOS.join(", ")}`,
+      error:  `Tipo de archivo no permitido. Solo se aceptan: JPG, PNG, WEBP o GIF`,
       status: 415,
     }
   }
 
-  if (file.size > TAMANO_MAXIMO_BYTES) {
+  if (file.size > TAMANO_IMAGEN_MB * MB) {
     return {
       ok:     false,
-      error:  `El archivo supera el límite de ${TAMANO_MAXIMO_MB} MB`,
+      error:  `El archivo supera el límite de ${TAMANO_IMAGEN_MB} MB`,
+      status: 413,
+    }
+  }
+
+  return { ok: true }
+}
+
+// Validación específica para comprobantes de pago (acepta PDF + imágenes, hasta 10 MB)
+export function validarComprobante(file: File): { ok: true } | { ok: false; error: string; status: number } {
+  if (!TIPOS_COMPROBANTE.includes(file.type)) {
+    return {
+      ok:     false,
+      error:  `Tipo de archivo no permitido. Solo se aceptan: JPG, PNG, WEBP o PDF`,
+      status: 415,
+    }
+  }
+
+  if (file.size > TAMANO_COMPROBANTE_MB * MB) {
+    return {
+      ok:     false,
+      error:  `El archivo supera el límite de ${TAMANO_COMPROBANTE_MB} MB`,
       status: 413,
     }
   }

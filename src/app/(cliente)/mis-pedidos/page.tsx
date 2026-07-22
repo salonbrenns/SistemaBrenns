@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Package, ChevronDown, ChevronUp, ShoppingBag, CheckCircle2, Clock, Truck } from 'lucide-react'
+import { Package, ChevronDown, ChevronUp, ShoppingBag, CheckCircle2, Clock, Truck, Upload, ExternalLink } from 'lucide-react'
 import AuthGuard from '@/components/ui/AuthGuard'
 
 interface Detalle {
@@ -22,6 +22,8 @@ interface Pedido {
   subtotal: number
   costo_envio: number
   fecha_pedido: string
+  metodo_pago: string | null
+  comprobante_url: string | null
   detalles: Detalle[]
 }
 
@@ -204,6 +206,28 @@ function MisPedidosContenido() {
                         <span className="text-rose-700">${pedido.total.toLocaleString('es-MX')} MXN</span>
                       </div>
                     </div>
+
+                    {/* Comprobante de transferencia */}
+                    {pedido.metodo_pago === 'transferencia' && (
+                      <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                        {pedido.comprobante_url ? (
+                          <a
+                            href={pedido.comprobante_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" /> Ver comprobante enviado
+                          </a>
+                        ) : pedido.estado === 'PENDIENTE' ? (
+                          <Link href={`/pedido/${pedido.id}?metodo=transferencia`}>
+                            <button className="inline-flex items-center gap-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-full transition-all shadow-sm">
+                              <Upload className="w-3.5 h-3.5" /> Subir comprobante de pago
+                            </button>
+                          </Link>
+                        ) : null}
+                      </div>
+                    )}
                   </div>
                 )}
 
