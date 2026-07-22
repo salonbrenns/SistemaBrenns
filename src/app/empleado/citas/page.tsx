@@ -18,7 +18,7 @@ type EstadoCita = 'PENDIENTE' | 'CONFIRMADA' | 'CANCELADA' | 'COMPLETADA'
 export default async function CitasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ estado?: string; fecha?: string; page?: string }>
+  searchParams: Promise<{ estado?: string; desde?: string; hasta?: string; page?: string }>
 }) {
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
@@ -27,7 +27,8 @@ export default async function CitasPage({
 
   const params  = await searchParams
   const estado  = params.estado as EstadoCita | undefined
-  const fecha   = params.fecha  || ''
+  const desde   = params.desde || ''
+  const hasta   = params.hasta || ''
   const pageNum = Math.max(1, Number(params.page) || 1)
 
   const where: Record<string, unknown> = {
@@ -36,10 +37,11 @@ export default async function CitasPage({
 
   if (estado) where.estado = estado
 
-  if (fecha) {
-    const fechaInicio = new Date(`${fecha}T00:00:00.000Z`)
-    const fechaFin    = new Date(`${fecha}T23:59:59.999Z`)
-    where.fecha = { gte: fechaInicio, lte: fechaFin }
+  if (desde || hasta) {
+    where.fecha = {
+      ...(desde && { gte: new Date(`${desde}T00:00:00.000Z`) }),
+      ...(hasta && { lte: new Date(`${hasta}T23:59:59.999Z`) }),
+    }
   }
 
   const [citasRaw, totalCitas] = await Promise.all([
@@ -76,8 +78,8 @@ export default async function CitasPage({
       <CitasTable
         citas={citas}
         estadoFiltro={estado ?? ''}
-        desdeFiltro={fecha ?? ''}
-        hastaFiltro={fecha ?? ''}
+        desdeFiltro={desde}
+        hastaFiltro={hasta}
         totalCitas={totalCitas}
         paginaActual={pageNum}
         porPagina={PAGE_SIZE}
