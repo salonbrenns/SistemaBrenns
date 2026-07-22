@@ -110,7 +110,7 @@ export default function NotificacionesPage() {
           <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300 flex items-center gap-2">
             <Bell className="w-6 h-6 text-pink-500" /> Notificaciones
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Recordatorios de citas próximas</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Recordatorios de citas próximas</p>
         </div>
         <button onClick={cargarCitas}
           className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-pink-200 dark:border-pink-800 text-pink-600 rounded-xl hover:bg-pink-50 dark:hover:bg-gray-700 transition text-sm font-semibold">
@@ -128,7 +128,7 @@ export default function NotificacionesPage() {
             <div className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center text-white font-bold text-xl`}>
               {count}
             </div>
-            <p className="text-sm font-semibold text-gray-600">{label}</p>
+            <p className="text-sm font-semibold text-gray-600 dark:text-gray-300">{label}</p>
           </div>
         ))}
       </div>
@@ -146,15 +146,15 @@ export default function NotificacionesPage() {
       ) : (
         grupos.map(grupo => (
           <div key={grupo.label}>
-            <h2 className="font-bold text-gray-700 mb-3 text-sm uppercase tracking-wide">{grupo.label}</h2>
+            <h2 className="font-bold text-gray-700 dark:text-gray-300 mb-3 text-sm uppercase tracking-wide">{grupo.label}</h2>
             {grupo.citas.length === 0 ? (
-              <div className={`border-l-4 ${grupo.color} rounded-xl p-4 text-sm text-gray-400`}>
+              <div className={`border-l-4 ${grupo.color} bg-white dark:bg-gray-800 rounded-xl p-4 text-sm text-gray-400 dark:text-gray-500`}>
                 Sin citas programadas
               </div>
             ) : (
               <div className="space-y-3">
                 {grupo.citas.map(cita => (
-                  <div key={cita.id} className={`border-l-4 ${grupo.color} rounded-xl p-4 shadow-sm`}>
+                  <div key={cita.id} className={`border-l-4 ${grupo.color} bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm`}>
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -163,12 +163,12 @@ export default function NotificacionesPage() {
                             {cita.estado}
                           </span>
                           {cita.metodo_pago && (
-                            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                            <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">
                               {cita.metodo_pago}
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3.5 h-3.5" />
                             {format(parseISO(cita.fecha), "EEEE d 'de' MMMM", { locale: es })}
@@ -178,7 +178,7 @@ export default function NotificacionesPage() {
                             {cita.hora}
                           </span>
                         </div>
-                        <div className="flex items-center gap-3 text-sm text-gray-600">
+                        <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
                           <span className="flex items-center gap-1">
                             <User className="w-3.5 h-3.5 text-pink-400" />
                             {nombreCliente(cita)}
