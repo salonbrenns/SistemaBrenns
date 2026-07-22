@@ -11,6 +11,12 @@ export async function POST(
     return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   }
 
+  // Solo clientes pueden inscribirse; admin/empleado gestionan desde el panel
+  const role = session.user.role as string | undefined
+  if (role && role !== "CLIENTE") {
+    return NextResponse.json({ error: "Solo clientes pueden inscribirse en cursos" }, { status: 403 })
+  }
+
   const { id } = await params
   const cursoId   = Number(id)
   const usuarioId = Number(session.user.id)

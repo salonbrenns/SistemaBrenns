@@ -16,6 +16,13 @@ export async function PUT(
     const { id } = await params
     const data   = await request.json()
 
+    if (!data.nombre?.trim())
+      return NextResponse.json({ error: "El nombre del servicio es requerido" }, { status: 400 })
+    if (!data.precio || Number(data.precio) <= 0)
+      return NextResponse.json({ error: "El precio debe ser mayor a 0" }, { status: 400 })
+    if (!data.duracion?.trim())
+      return NextResponse.json({ error: "La duración es requerida" }, { status: 400 })
+
     const servicio = await prisma.servicio.update({
       where: { id: Number(id) },
       data: {
