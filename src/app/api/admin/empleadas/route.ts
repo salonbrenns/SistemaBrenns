@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
   const existe = await prisma.usuario.findUnique({ where: { correo } })
   if (existe) return NextResponse.json({ error: "Ya existe un usuario con ese correo" }, { status: 409 })
 
-  const hash = await bcrypt.hash(password, 10)
+  const hash = await bcrypt.hash(password, 12)
 
   const empleada = await prisma.usuario.create({
     data: { nombre, correo, telefono: telefono || null, password: hash, rol: "EMPLEADO", activo: true },

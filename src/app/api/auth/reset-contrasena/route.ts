@@ -24,7 +24,7 @@ async function resetHandler(req: NextRequest) {
   if (registro.usado) return NextResponse.json({ error: "Este enlace ya fue usado" }, { status: 400 })
   if (new Date() > registro.expira) return NextResponse.json({ error: "El enlace ha expirado" }, { status: 400 })
 
-  const hash = await bcrypt.hash(password, 10)
+  const hash = await bcrypt.hash(password, 12)
 
   try {
     const actualizado = await prisma.usuario.update({
