@@ -1,184 +1,205 @@
 /**
- * seed-citas.mjs — Genera ~1000 citas de prueba
+ * seed-citas.mjs — Datos sintéticos para el modelo de predicción de
+ * cancelación de citas (Solución 2).
  *
- * Ejecutar desde la carpeta raíz del proyecto:
- *   node prisma/seed-citas.mjs
+ * Reglas de disciplina (igual que seed-ml.mjs):
+ *  - SOLO INSERTA datos nuevos, nunca modifica lo existente.
+ *  - Reutiliza los mismos usuarios sintéticos (@seed-ml.demo) del recomendador
+ *    — no se le inventa historial de citas a clientes reales.
+ *  - Semilla fija y determinista → reproducible.
+ *  - Para revertir todo: node prisma/seed-citas-cleanup.mjs
+ *
+ * A diferencia de una primera versión, aquí la probabilidad de cancelación
+ * SÍ depende de variables reales (anticipación, método de pago, día de la
+ * semana, historial del cliente, canal registrado/invitado) — sin esto,
+ * un clasificador entrenado con las citas no tendría ningún patrón que
+ * aprender (precision/recall/F1/ROC-AUC saldrían iguales a puro azar).
+ *
+ * Ejecutar:  node prisma/seed-citas.mjs
  */
+import pkg from '@prisma/client';
+const { PrismaClient } = pkg;
+const prisma = new PrismaClient();
 
-import { PrismaClient } from "@prisma/client"
-
-const prisma = new PrismaClient()
-
-// ── Config ────────────────────────────────────────────────────────────────────
-const TOTAL_CITAS = 1000
-
-// Cada servicio dura ~2h → slots disponibles (formato HH:MM)
-const SLOTS = ["09:00", "11:00", "13:00", "15:00", "17:00"]
-
-// Distribución de estados (pasadas y futuras)
-const ESTADOS_PASADOS  = ["COMPLETADA", "COMPLETADA", "COMPLETADA", "CANCELADA"]
-const ESTADOS_FUTUROS  = ["PENDIENTE", "PENDIENTE", "CONFIRMADA"]
-
-// Métodos de pago
-const METODOS = ["TARJETA", "TRANSFERENCIA", "EFECTIVO", null]
-
-// Notas de ejemplo
-const NOTAS = [
-  "Primer visita",
-  "Alergia a productos con fragancia",
-  "Prefiere productos naturales",
-  "Cliente frecuente — trato preferente",
-  "Viene con su madre",
-  "Solicita manicura francesa",
-  "Prefiere colores nude",
-  null, null, null,
-]
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function pick(arr) {
-  return arr[Math.floor(Math.random() * arr.length)]
+// ---------- RNG determinista (mismo patrón que seed-ml.mjs, semilla distinta) ----------
+let _seed = 20260722;
+function rand() {
+  _seed = (_seed * 1103515245 + 12345) % 2147483648;
+  return _seed / 2147483648;
 }
+const randInt = (min, max) => Math.floor(rand() * (max - min + 1)) + min;
+const pick = (arr) => arr[Math.floor(rand() * arr.length)];
+const pickPonderado = (opciones) => {
+  // opciones: [[valor, peso], ...]
+  const total = opciones.reduce((s, [, w]) => s + w, 0);
+  let r = rand() * total;
+  for (const [valor, peso] of opciones) {
+    if (r < peso) return valor;
+    r -= peso;
+  }
+  return opciones[opciones.length - 1][0];
+};
+
+const SLOTS = ['09:00', '11:00', '13:00', '15:00', '17:00'];
+const NUM_CITAS_PASADAS = 900;   // ya "resueltas": CONFIRMADA o CANCELADA
+const NUM_CITAS_FUTURAS = 150;   // aún abiertas: PENDIENTE/CONFIRMADA (para demo del panel)
+const PCT_INVITADOS = 0.08;      // % de citas walk-in sin cuenta
+
+const NOTAS = [
+  'Primera visita', 'Alergia a productos con fragancia', 'Prefiere productos naturales',
+  'Cliente frecuente', 'Solicita manicura francesa', 'Prefiere colores nude',
+  null, null, null, null,
+];
+const NOMBRES_INV = ['Karla', 'Fernando', 'Itzel', 'Ricardo', 'Brenda', 'Omar'];
+const APELLIDOS_INV = ['Domínguez', 'Salazar', 'Cordero', 'Ibarra'];
 
 function addDays(date, days) {
-  const d = new Date(date)
-  d.setDate(d.getDate() + days)
-  return d
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+function esDiaHabil(date) {
+  const d = date.getDay();
+  return d >= 1 && d <= 6; // lunes a sábado
+}
+function siguienteDiaHabil(date) {
+  let d = new Date(date);
+  while (!esDiaHabil(d)) d = addDays(d, 1);
+  return d;
 }
 
-function randomDateBetween(start, end) {
-  const ms = start.getTime() + Math.random() * (end.getTime() - start.getTime())
-  return new Date(ms)
-}
-
-// Lunes=1 … Viernes=5, excluir domingos (0) y sábados (6)
-function isWeekday(date) {
-  const d = date.getDay()
-  return d >= 1 && d <= 6  // lunes a sábado
-}
-
-function nextWeekday(date) {
-  let d = new Date(date)
-  while (!isWeekday(d)) d = addDays(d, 1)
-  return d
-}
-
-// ── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
-  console.log("🔍 Cargando datos existentes...")
+  console.log('== Seed citas: predicción de cancelación ==');
 
-  const [clientes, servicios, empleados] = await Promise.all([
-    prisma.$queryRawUnsafe(`SELECT id, nombre FROM seguridad.tblusuarios WHERE rol::text = 'CLIENTE'`),
-    prisma.$queryRawUnsafe(`SELECT id, nombre, precio FROM catalogos.tblservicios WHERE activo = true`),
-    prisma.$queryRawUnsafe(`SELECT id, nombre FROM seguridad.tblusuarios WHERE rol::text = 'EMPLEADO'`),
-  ])
+  const clientes = await prisma.$queryRawUnsafe(`
+    SELECT id, nombre, correo FROM seguridad.tblusuarios WHERE correo LIKE '%@seed-ml.demo'
+  `);
+  const servicios = await prisma.$queryRawUnsafe(`
+    SELECT id, nombre, precio FROM catalogos.tblservicios WHERE activo = true
+  `);
+  const empleados = await prisma.$queryRawUnsafe(`
+    SELECT id FROM seguridad.tblusuarios WHERE rol::text = 'EMPLEADO'
+  `);
+  if (clientes.length === 0) throw new Error('No hay usuarios @seed-ml.demo. Corre primero prisma/seed-ml.mjs.');
+  if (servicios.length === 0) throw new Error('No hay servicios activos.');
+  console.log(`Clientes sintéticos: ${clientes.length} · Servicios: ${servicios.length} · Empleados: ${empleados.length}`);
 
-  if (clientes.length === 0)  throw new Error("❌ No hay clientes en la base de datos.")
-  if (servicios.length === 0) throw new Error("❌ No hay servicios activos.")
+  const hoy = new Date();
+  const empleadoUnico = empleados.length > 0 ? empleados[0].id : null;
 
-  console.log(`✅ ${clientes.length} clientes, ${servicios.length} servicios, ${empleados.length} empleados`)
+  // ---------- 1) Armar el "esqueleto" de cada cita (todo lo que se conoce al agendar) ----------
+  const total = NUM_CITAS_PASADAS + NUM_CITAS_FUTURAS;
+  const citas = [];
+  for (let i = 0; i < total; i++) {
+    const esPasada = i < NUM_CITAS_PASADAS;
+    const esInvitado = rand() < PCT_INVITADOS;
 
-  const hoy       = new Date()
-  const hace6M    = addDays(hoy, -180)  // 6 meses atrás
-  const en3M      = addDays(hoy, 90)    // 3 meses adelante
+    let fecha = esPasada
+      ? addDays(hoy, -randInt(1, 270))
+      : addDays(hoy, randInt(1, 45));
+    fecha = siguienteDiaHabil(fecha);
+    fecha.setHours(12, 0, 0, 0);
 
-  // Mapa para evitar conflictos de horario por empleado y fecha
-  // clave: `empleadoId-fecha-hora`
-  const ocupados = new Set()
+    const anticipacion = randInt(0, 35); // días entre agendar y la cita
+    const createdAt = addDays(fecha, -anticipacion);
 
-  const lote = []
+    const cliente = esInvitado ? null : pick(clientes);
+    const servicio = pick(servicios);
+    const hora = pick(SLOTS);
 
-  let intentos = 0
-  while (lote.length < TOTAL_CITAS && intentos < TOTAL_CITAS * 5) {
-    intentos++
+    // Método de pago: depende del canal (igual que el código real: cliente
+    // registrado agenda con tarjeta/transferencia; invitado paga en el salón).
+    const metodo_pago = esInvitado
+      ? pickPonderado([['EFECTIVO', 0.6], ['TARJETA', 0.4]])
+      : pickPonderado([['TARJETA', 0.65], ['TRANSFERENCIA', 0.35]]);
 
-    const cliente  = pick(clientes)
-    const servicio = pick(servicios)
-    const empleado = empleados.length > 0 ? pick(empleados) : null
-    const slot     = pick(SLOTS)
-
-    // Fecha aleatoria entre hace 6 meses y 3 meses en el futuro
-    let fecha = randomDateBetween(hace6M, en3M)
-    fecha = nextWeekday(fecha)
-
-    const fechaStr = fecha.toISOString().slice(0, 10) // "YYYY-MM-DD"
-
-    // Evitar conflictos de empleado+fecha+hora
-    const claveEmp = empleado ? `${empleado.id}-${fechaStr}-${slot}` : null
-    if (claveEmp && ocupados.has(claveEmp)) continue
-    if (claveEmp) ocupados.add(claveEmp)
-
-    const esPasada  = fecha < hoy
-    const estado    = esPasada ? pick(ESTADOS_PASADOS) : pick(ESTADOS_FUTUROS)
-    const estadoCita = esPasada
-      ? (estado === "CANCELADA" ? "CANCELADA" : "FINALIZADA")
-      : "PENDIENTE"
-
-    const cancelado_por = estado === "CANCELADA"
-      ? (Math.random() > 0.4 ? "CLIENTE" : "ADMIN")
-      : null
-    const cancelado_en  = cancelado_por ? fecha : null
-
-    lote.push({
-      usuario_id:        cliente.id,
-      servicio_id:       servicio.id,
-      empleado_id:       empleado?.id ?? null,
-      fecha:             new Date(`${fechaStr}T12:00:00.000Z`),
-      hora:              slot,
-      estado,
-      estado_cita:       estadoCita,
-      metodo_pago:       pick(METODOS),
-      notas:             pick(NOTAS),
-      total:             servicio.precio,
-      nombre_contacto:   cliente.nombre,
-      cancelado_por,
-      cancelado_en,
-      recordatorio_enviado: esPasada,
-    })
+    citas.push({
+      usuario_id: cliente?.id ?? null,
+      nombre_contacto: cliente ? null : `${pick(NOMBRES_INV)} ${pick(APELLIDOS_INV)}`,
+      telefono_contacto: cliente ? null : `000${randInt(1000000, 9999999)}`, // prefijo 000 = marca de invitado sintético
+      servicio_id: servicio.id,
+      empleado_id: empleadoUnico,
+      fecha,
+      hora,
+      createdAt,
+      anticipacion,
+      metodo_pago,
+      esPasada,
+      esInvitado,
+      notas: pick(NOTAS),
+    });
   }
 
-  console.log(`📝 Insertando ${lote.length} citas en lotes de 100...`)
+  // ---------- 2) Asignar estado en orden CRONOLÓGICO por cliente ----------
+  // (para que la "tasa histórica de cancelación" de cada cliente se calcule
+  // solo con SUS citas anteriores, nunca mirando el futuro — evita fuga de datos)
+  const historial = new Map(); // usuario_id -> { citas, canceladas }
+  const ordenCronologico = citas
+    .map((c, idx) => idx)
+    .sort((a, b) => citas[a].fecha - citas[b].fecha);
 
-  // Insertar en lotes de 50 usando SQL raw para evitar problemas de enum cross-schema
-  const BATCH = 50
-  for (let i = 0; i < lote.length; i += BATCH) {
-    const chunk = lote.slice(i, i + BATCH)
+  const TASA_GLOBAL_BASE = 0.20;
 
-    // Construir VALUES parametrizados
+  for (const idx of ordenCronologico) {
+    const c = citas[idx];
+
+    if (!c.esPasada) {
+      // Futuras: aún no hay resultado. Estado inicial igual que la lógica real
+      // (TRANSFERENCIA -> PENDIENTE, si no -> CONFIRMADA). No entran a entrenar.
+      c.estado = c.metodo_pago === 'TRANSFERENCIA' ? 'PENDIENTE' : 'CONFIRMADA';
+      continue;
+    }
+
+    const h = c.usuario_id != null ? historial.get(c.usuario_id) : null;
+    const tasaCliente = h && h.citas > 0 ? h.canceladas / h.citas : TASA_GLOBAL_BASE;
+
+    let p = TASA_GLOBAL_BASE;
+    p += c.anticipacion <= 1 ? -0.06 : c.anticipacion >= 20 ? 0.12 : 0;
+    p += c.metodo_pago === 'TARJETA' ? -0.10 : c.metodo_pago === 'EFECTIVO' ? 0.05 : 0;
+    p += c.fecha.getDay() === 1 ? 0.06 : 0; // lunes: un poco más de cancelaciones
+    p += c.esInvitado ? 0.05 : 0.5 * (tasaCliente - TASA_GLOBAL_BASE); // historial solo aplica a clientes registrados
+    p = Math.min(0.85, Math.max(0.03, p));
+
+    const cancelada = rand() < p;
+    c.estado = cancelada ? 'CANCELADA' : 'CONFIRMADA';
+    c.cancelado_por = cancelada ? (rand() < 0.6 ? 'CLIENTE' : 'ADMIN') : null;
+    c.cancelado_en = cancelada ? addDays(c.createdAt, randInt(0, c.anticipacion)) : null;
+
+    if (c.usuario_id != null) {
+      if (!h) historial.set(c.usuario_id, { citas: 1, canceladas: cancelada ? 1 : 0 });
+      else { h.citas++; if (cancelada) h.canceladas++; }
+    }
+  }
+
+  // ---------- 3) Insertar ----------
+  console.log(`Insertando ${citas.length} citas...`);
+  const BATCH = 50;
+  for (let i = 0; i < citas.length; i += BATCH) {
+    const chunk = citas.slice(i, i + BATCH);
     const values = chunk.map((_, j) => {
-      const base = j * 12
-      return `($${base+1},$${base+2},$${base+3},$${base+4},$${base+5},$${base+6},$${base+7},$${base+8},$${base+9},$${base+10},$${base+11},$${base+12})`
-    }).join(",")
-
+      const b = j * 12;
+      return `($${b + 1},$${b + 2},$${b + 3},$${b + 4},$${b + 5},$${b + 6},$${b + 7},$${b + 8},$${b + 9},$${b + 10},$${b + 11},$${b + 12})`;
+    }).join(',');
     const params = chunk.flatMap(c => [
-      c.usuario_id,
-      c.servicio_id,
-      c.empleado_id,
-      c.fecha,
-      c.hora,
-      c.estado,
-      c.estado_cita,
-      c.metodo_pago,
-      c.notas,
-      c.total,
-      c.nombre_contacto,
-      c.cancelado_por,
-    ])
-
+      c.usuario_id, c.servicio_id, c.empleado_id, c.fecha, c.hora, c.createdAt,
+      c.estado, c.metodo_pago, c.notas, c.nombre_contacto, c.telefono_contacto,
+      c.cancelado_por ?? null,
+    ]);
     await prisma.$queryRawUnsafe(`
       INSERT INTO agenda.tblcitas
-        (usuario_id, servicio_id, empleado_id, fecha, hora, estado, estado_cita,
-         metodo_pago, notas, total, nombre_contacto, cancelado_por)
+        (usuario_id, servicio_id, empleado_id, fecha, hora, "createdAt",
+         estado, metodo_pago, notas, nombre_contacto, telefono_contacto, cancelado_por)
       VALUES ${values}
-      ON CONFLICT DO NOTHING
-    `, ...params)
-
-    process.stdout.write(`  ${Math.min(i + BATCH, lote.length)}/${lote.length}\r`)
+    `, ...params);
+    process.stdout.write(`  ${Math.min(i + BATCH, citas.length)}/${citas.length}\r`);
   }
 
-  const [{ count }] = await prisma.$queryRawUnsafe(`SELECT COUNT(*)::int as count FROM agenda.tblcitas`)
-  console.log(`\n✅ Listo. Total de citas en la base de datos: ${count}`)
+  const canceladas = citas.filter(c => c.estado === 'CANCELADA').length;
+  const pasadasResueltas = citas.filter(c => c.esPasada).length;
+  console.log(`\nListo. Citas pasadas (con resultado): ${pasadasResueltas} · Canceladas: ${canceladas} (${(100 * canceladas / pasadasResueltas).toFixed(1)}%)`);
+  console.log(`Citas futuras (pendientes, para demo del panel): ${citas.length - pasadasResueltas}`);
 }
 
 main()
-  .catch(err => { console.error("❌ Error:", err.message); process.exit(1) })
-  .finally(() => prisma.$disconnect())
+  .catch((e) => { console.error(e); process.exit(1); })
+  .finally(() => prisma.$disconnect());
