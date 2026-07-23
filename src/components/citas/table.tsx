@@ -11,6 +11,10 @@ import {
 } from '@heroicons/react/24/outline'
 import { UserCircle, ShieldCheck } from 'lucide-react'
 
+export type RiesgoCita =
+  | { cita_id: number; aplica: true; probabilidad: number; nivel: 'BAJO' | 'MEDIO' | 'ALTO' }
+  | { cita_id: number; aplica: false; motivo?: string }
+
 type Cita = {
   id: number
   fecha: string
@@ -23,11 +27,30 @@ type Cita = {
   metodo_pago: string | null
   cancelado_por: string | null
   cancelado_en: string | null
-  usuario: { nombre: string; correo: string; telefono: string | null } | null
+  usuario: { id?: number; nombre: string; correo: string; telefono: string | null } | null
   servicio: { nombre: string; precio: number }
+  // Opcional: otras pantallas (ej. empleado/citas) reusan esta misma tabla
+  // sin calcular el riesgo de cancelación — ahí simplemente no se muestra
+  // la columna con datos ni el botón de recordatorio.
+  riesgo?: RiesgoCita | null
 }
 
 const ESTADOS = ['PENDIENTE', 'CONFIRMADA', 'COMPLETADA', 'CANCELADA']
+
+// Mensaje sugerido al cliente según el nivel de riesgo de cancelación.
+// Reutiliza el mismo endpoint /api/admin/mensajes que ya usa la página de
+// Notificaciones (crea un AvisoAdmin visible en el perfil del cliente).
+const MENSAJE_RECORDATORIO: Record<'ALTO' | 'MEDIO', string> = {
+  ALTO:  'Notamos que tu cita se acerca — ¿nos confirmas tu asistencia? Si necesitas reagendar, avísanos con tiempo 💅',
+  MEDIO: 'Recordatorio de tu próxima cita — ¡te esperamos! Si no puedes asistir, coméntanos para reagendar.',
+}
+
+// Riesgo de cancelación (Solución 2: modelo_citas.pkl, servido por ml-service)
+const riesgoConfig: Record<'BAJO' | 'MEDIO' | 'ALTO', { label: string; color: string }> = {
+  BAJO:  { label: 'Bajo',  color: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'   },
+  MEDIO: { label: 'Medio', color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400' },
+  ALTO:  { label: 'Alto',  color: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'           },
+}
 
 // Confirmación de pago
 const estadoConfig: Record<string, { label: string; color: string }> = {
@@ -61,6 +84,10 @@ export default function CitasTable({
   const pathname = usePathname()
   const [cambiando, setCambiando] = useState<number | null>(null)
   const [cambiandoCita, setCambiandoCita] = useState<number | null>(null)
+  const [enviandoAviso, setEnviandoAviso] = useState<number | null>(null)
+  const [avisoEnviado, setAvisoEnviado] = useState<number | null>(null)
+  const [citaParaRecordatorio, setCitaParaRecordatorio] = useState<Cita | null>(null)
+  const [mensajeRecordatorio, setMensajeRecordatorio] = useState('')
 
   const aplicarFiltro = (updates: Record<string, string>) => {
     const params = new URLSearchParams()
@@ -96,6 +123,37 @@ export default function CitasTable({
     })
     router.refresh()
     setCambiandoCita(null)
+  }
+
+  const abrirRecordatorio = (cita: Cita) => {
+    if (!cita.riesgo?.aplica) return
+    const nivel = cita.riesgo.nivel
+    if (nivel !== 'ALTO' && nivel !== 'MEDIO') return
+    setCitaParaRecordatorio(cita)
+    setMensajeRecordatorio(MENSAJE_RECORDATORIO[nivel])
+  }
+
+  const confirmarRecordatorio = async () => {
+    const cita = citaParaRecordatorio
+    if (!cita || !mensajeRecordatorio.trim()) return
+
+    setEnviandoAviso(cita.id)
+    try {
+      await fetch('/api/admin/mensajes', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cita_id:    cita.id,
+          usuario_id: cita.usuario?.id ?? null,
+          mensaje:    mensajeRecordatorio.trim(),
+        }),
+      })
+      setAvisoEnviado(cita.id)
+      setTimeout(() => setAvisoEnviado(prev => (prev === cita.id ? null : prev)), 3000)
+      setCitaParaRecordatorio(null)
+    } finally {
+      setEnviandoAviso(null)
+    }
   }
 
   const hayFiltros = estadoFiltro || desdeFiltro || hastaFiltro
@@ -175,7 +233,7 @@ export default function CitasTable({
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-rose-900 dark:bg-rose-950">
             <tr>
-              {['Cliente', 'Servicio', 'Fecha / Hora', 'Conf. Pago', 'Estado Cita', 'Notas', 'Acciones'].map(h => (
+              {['Cliente', 'Servicio', 'Fecha / Hora', 'Conf. Pago', 'Estado Cita', 'Riesgo', 'Notas', 'Acciones'].map(h => (
                 <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                   {h}
                 </th>
@@ -185,7 +243,7 @@ export default function CitasTable({
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
             {citas.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+                <td colSpan={8} className="px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
                   No hay citas con los filtros aplicados
                 </td>
               </tr>
@@ -266,6 +324,40 @@ export default function CitasTable({
                     })() : <span className="text-gray-400">—</span>}
                   </td>
 
+                  {/* Riesgo de cancelación (Solución 2: modelo_citas.pkl) */}
+                  <td className="px-4 py-4">
+                    {cita.riesgo?.aplica ? (() => {
+                      const riesgo = cita.riesgo
+                      const cfgRiesgo = riesgoConfig[riesgo.nivel]
+                      const puedeRecordar = riesgo.nivel === 'ALTO' || riesgo.nivel === 'MEDIO'
+                      return (
+                        <div className="flex flex-col items-start gap-1">
+                          <span
+                            title={`Probabilidad estimada: ${(riesgo.probabilidad * 100).toFixed(1)}%`}
+                            className={`inline-block px-2 py-1 rounded-full text-xs font-bold ${cfgRiesgo.color}`}
+                          >
+                            {cfgRiesgo.label} · {(riesgo.probabilidad * 100).toFixed(0)}%
+                          </span>
+                          {puedeRecordar && (
+                            avisoEnviado === cita.id ? (
+                              <span className="text-[11px] text-green-600 dark:text-green-400 font-semibold flex items-center gap-1">
+                                <CheckCircleIcon className="h-3 w-3" /> Enviado
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => abrirRecordatorio(cita)}
+                                title={cita.usuario ? 'Ver y enviar recordatorio al cliente' : 'Cita de invitado: el aviso quedará guardado en el sistema, no llega a un perfil'}
+                                className="text-[11px] font-semibold text-pink-600 dark:text-pink-400 hover:underline"
+                              >
+                                🔔 Recordar
+                              </button>
+                            )
+                          )}
+                        </div>
+                      )
+                    })() : <span className="text-gray-400">—</span>}
+                  </td>
+
                   {/* Notas */}
                   <td className="px-4 py-4 max-w-[140px]">
                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{cita.notas || '—'}</p>
@@ -311,6 +403,60 @@ export default function CitasTable({
           </tbody>
         </table>
       </div>
+
+      {/* Modal: previsualizar y enviar recordatorio (Riesgo Alto/Medio) */}
+      {citaParaRecordatorio && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div>
+              <h3 className="font-bold text-gray-800 dark:text-white text-lg">Enviar recordatorio</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Para: <strong>{citaParaRecordatorio.usuario?.nombre || citaParaRecordatorio.nombre_contacto || 'Sin nombre'}</strong>
+                {' '}— {citaParaRecordatorio.servicio.nombre} a las {citaParaRecordatorio.hora}
+              </p>
+              {citaParaRecordatorio.riesgo?.aplica && (
+                <p className="text-xs text-gray-400 mt-1">
+                  Riesgo de cancelación: {riesgoConfig[citaParaRecordatorio.riesgo.nivel].label} · {(citaParaRecordatorio.riesgo.probabilidad * 100).toFixed(0)}%
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
+                Mensaje que se enviará (puedes editarlo):
+              </label>
+              <textarea
+                value={mensajeRecordatorio}
+                onChange={e => setMensajeRecordatorio(e.target.value)}
+                rows={4}
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm bg-white dark:bg-gray-900 dark:text-white focus:outline-none focus:border-pink-400 resize-none"
+              />
+            </div>
+
+            {!citaParaRecordatorio.usuario && (
+              <p className="text-xs text-orange-500 bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800 rounded-xl px-3 py-2">
+                ⚠️ Este cliente no tiene cuenta registrada. El mensaje quedará guardado en el sistema, pero no llegará a ningún perfil.
+              </p>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setCitaParaRecordatorio(null)}
+                className="flex-1 border-2 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 font-bold py-2.5 rounded-full hover:bg-gray-50 dark:hover:bg-gray-900 transition text-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarRecordatorio}
+                disabled={!mensajeRecordatorio.trim() || enviandoAviso === citaParaRecordatorio.id}
+                className="flex-1 bg-pink-600 text-white font-bold py-2.5 rounded-full hover:bg-pink-700 transition disabled:opacity-40 text-sm"
+              >
+                {enviandoAviso === citaParaRecordatorio.id ? 'Enviando…' : 'Enviar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
