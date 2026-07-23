@@ -38,7 +38,18 @@ export async function GET() {
         estado: { in: ["PAGADO", "ENVIADO"] },
       },
       include: {
-        detalles: { select: { nombre_producto: true, cantidad: true } },
+        detalles: {
+          select: {
+            cantidad: true,
+            variante: {
+              select: {
+                tono: true,
+                presentacion: true,
+                producto: { select: { nombre: true } },
+              },
+            },
+          },
+        },
       },
       orderBy: { fecha_pedido: "desc" },
     }),
@@ -57,7 +68,7 @@ export async function GET() {
       estado:       p.estado,
       total:        Number(p.total),
       fecha_pedido: p.fecha_pedido.toISOString(),
-      productos:    p.detalles.map(d => `${d.nombre_producto} ×${d.cantidad}`).join(", "),
+      productos:    p.detalles.map(d => `${d.variante.producto.nombre} ×${d.cantidad}`).join(", "),
     })),
   })
   } catch (err) {

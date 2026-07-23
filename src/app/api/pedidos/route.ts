@@ -102,19 +102,12 @@ export async function POST(req: NextRequest) {
           metodo_pago:      metodo_pago || null,
           estado:           'PENDIENTE',
           detalles: {
-            create: carritoItems.map((item) => {
-              const atributos = [item.variante.tono, item.variante.presentacion]
-                .filter(Boolean)
-                .join(' / ')
-              return {
-                variante_id:          item.variante_id,
-                nombre_producto:      item.variante.producto.nombre,
-                descripcion_variante: atributos || null,
-                precio_unitario:      Number(item.variante.precio_venta),
-                cantidad:             item.cantidad,
-                subtotal:             Number(item.variante.precio_venta) * item.cantidad,
-              }
-            }),
+            create: carritoItems.map((item) => ({
+              variante_id:     item.variante_id,
+              precio_unitario: Number(item.variante.precio_venta),
+              cantidad:        item.cantidad,
+              subtotal:        Number(item.variante.precio_venta) * item.cantidad,
+            })),
           },
         },
       })
@@ -197,8 +190,8 @@ export async function GET() {
       comprobante_url:  p.comprobante_url,
       detalles: p.detalles.map((d) => ({
         id:                   d.id,
-        nombre_producto:      d.nombre_producto,
-        descripcion_variante: d.descripcion_variante,
+        nombre_producto:      d.variante.producto.nombre,
+        descripcion_variante: [d.variante.tono, d.variante.presentacion].filter(Boolean).join(' / ') || null,
         precio_unitario:      Number(d.precio_unitario),
         cantidad:             d.cantidad,
         subtotal:             Number(d.subtotal),
