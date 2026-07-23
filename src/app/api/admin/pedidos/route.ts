@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
 import { sendPedidoEstado } from '@/lib/email'
+import type { Prisma } from '@prisma/client'
 
 const PAGE_SIZE = 15
 
@@ -15,14 +16,24 @@ export async function GET(req: NextRequest) {
   const pageNum = Math.max(1, Number(searchParams.get('page')) || 1)
   const estado  = searchParams.get('estado') || ''
 
-  const where = estado && estado !== 'TODOS' ? { estado } : {}
+  const where: Prisma.PedidoWhereInput = estado && estado !== 'TODOS'
+    ? { estado: estado as Prisma.PedidoWhereInput['estado'] }
+    : {}
 
   const [pedidosRaw, total] = await Promise.all([
     prisma.pedido.findMany({
       where,
       include: {
-        usuario:  { select: { nombre: true, correo: true } },
-        detalles: true,
+        usuario: { select: { nombre: true, correo: true } },
+        detalles: {
+          include: {
+            variante: {
+              include: {
+                producto: { select: { nombre: true } },
+              },
+            },
+          },
+        },
       },
       orderBy: { fecha_pedido: 'desc' },
       take: PAGE_SIZE,
@@ -42,7 +53,14 @@ export async function GET(req: NextRequest) {
       usuario:         p.usuario,
       total_items:     p.detalles.reduce((s, d) => s + d.cantidad, 0),
       comprobante_url: p.comprobante_url,
-      detalles:        p.detalles,
+      detalles:        p.detalles.map((d) => ({
+        id:                   d.id,
+        cantidad:             d.cantidad,
+        precio_unitario:      Number(d.precio_unitario),
+        subtotal:             Number(d.subtotal),
+        nombre_producto:      d.variante.producto.nombre,
+        descripcion_variante: [d.variante.tono, d.variante.presentacion].filter(Boolean).join(' / ') || null,
+      })),
     })),
     total,
     totalPaginas: Math.max(1, Math.ceil(total / PAGE_SIZE)),
@@ -65,7 +83,22 @@ export async function PATCH(req: NextRequest) {
   const pedido = await prisma.pedido.update({
     where:   { id: Number(id) },
     data:    { estado },
-    include: { detalles: { select: { nombre_producto: true, cantidad: true } } },
+    include: {
+      detalles: {
+        select: {
+          cantidad: true,
+          variante: {
+            select: {
+              tono: true,
+              presentacion: true,
+              producto: {
+                select: { nombre: true },
+              },
+            },
+          },
+        },
+      },
+    },
   })
 
   if (estado === 'CANCELADO') {
@@ -85,7 +118,7 @@ export async function PATCH(req: NextRequest) {
       nombre:    pedido.nombre_cliente,
       pedidoId:  pedido.id,
       estado:    estadoEmail as 'EN_PREPARACION' | 'EN_CAMINO' | 'ENTREGADO',
-      productos: pedido.detalles.map(d => `${d.nombre_producto} x${d.cantidad}`).join(', '),
+      productos: pedido.detalles.map(d => `${d.variante.producto.nombre} x${d.cantidad}`).join(', '),
     }).catch(err => console.error('Email pedido estado:', err))
   }
 

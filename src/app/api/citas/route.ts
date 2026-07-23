@@ -30,7 +30,7 @@ export async function POST(req: Request) {
   const nombre_contacto  = body.nombre_contacto  ? String(body.nombre_contacto).trim().slice(0, 100)  : null
   const telefono_contacto = body.telefono_contacto ? String(body.telefono_contacto).trim().slice(0, 30) : null
   const metodo_pago      = body.metodo_pago
-  const tipo_pago        = body.tipo_pago
+
   const total            = body.total
 
   if (!servicio_id || !fecha || !hora) {

@@ -104,7 +104,7 @@ function MisCursosContent() {
 
   useEffect(() => { cargarCursos() }, [])
 
-  const handlePagarRestante = async (inscripcionId: number, monto: number) => {
+  const handlePagarRestante = async (inscripcionId: number, _monto: number) => {
     setPagandoRest(true)
     setPagoError(null)
     setPagoMsg(null)

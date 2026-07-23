@@ -25,7 +25,6 @@ export async function POST(
     return NextResponse.json({ error: "ID de curso inválido" }, { status: 400 })
   }
 
-  const body = await req.json()
   // Solo se acepta pago completo por transferencia
   const metodoPago = "TRANSFERENCIA"
   const tipoPago   = "COMPLETO"
