@@ -8,11 +8,15 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false, // TypeScript sí debe fallar si hay errores reales
   },
- images: {
+  images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
       },
     ],
   },

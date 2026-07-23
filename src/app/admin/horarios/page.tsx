@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
+import { toast } from "@/lib/toast"
+import { confirmDialog } from "@/lib/confirm"
 import {
   Clock, Plus, Trash2, Loader2, Check, Users,
   Calendar, ChevronDown, ChevronUp, X, AlertCircle
@@ -478,13 +480,17 @@ export default function HorariosPage() {
   }
 
   const eliminar = async (id: number) => {
-    if (!confirm("¿Eliminar este horario?")) return
+    if (!(await confirmDialog("¿Eliminar este horario? No podrá recuperarse.", {
+      danger: true, confirmLabel: "Eliminar",
+    }))) return
     await fetch(`/api/admin/horarios/${id}`, { method: "DELETE" })
     await cargar()
   }
 
   const cargarHorarioEstandar = async () => {
-    if (!confirm("¿Cargar horario estándar (Lun-Sáb, 10:00–17:30) para todos los días?\nSolo se agregarán las horas que falten.")) return
+    if (!(await confirmDialog("Se cargará el horario estándar (Lun–Sáb, 10:00–17:30) para todos los días.\nSolo se agregarán las horas que falten.", {
+      danger: false, title: "Cargar horario estándar", confirmLabel: "Cargar",
+    }))) return
     setCargandoEstandar(true)
     for (const dia of DIAS_ESTANDAR) {
       for (const hora of HORAS_ESTANDAR) {
@@ -503,7 +509,7 @@ export default function HorariosPage() {
 
   const copiarDesdeDia = async (diaOrigen: number) => {
     const origen = horarios.filter(h => h.diaSemana === diaOrigen)
-    if (origen.length === 0) { alert("El día seleccionado no tiene horarios"); return }
+    if (origen.length === 0) { toast.warning("El día seleccionado no tiene horarios"); return }
     setCopiando(true)
     for (const h of origen) {
       const existe = horarios.find(x => x.diaSemana === diaActivo && x.hora === h.hora)

@@ -39,22 +39,17 @@ async function profileHandler(req: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const { nombre, correo, telefono } = await req.json()
+    const body = await req.json()
+    const nombre   = String(body.nombre   ?? "").trim().slice(0, 200)
+    const telefono = body.telefono ? String(body.telefono).trim().slice(0, 30) : null
 
-    if (!nombre || !correo) {
-      return NextResponse.json({ error: "Nombre y correo son requeridos" }, { status: 400 })
-    }
-
-    if (correo !== session.user.email) {
-      const existente = await prisma.usuario.findUnique({ where: { correo } })
-      if (existente && existente.id !== Number(session.user.id)) {
-        return NextResponse.json({ error: "Este correo ya está en uso" }, { status: 409 })
-      }
+    if (!nombre) {
+      return NextResponse.json({ error: "El nombre es requerido" }, { status: 400 })
     }
 
     const actualizado = await prisma.usuario.update({
       where: { id: Number(session.user.id) },
-      data: { nombre, correo, telefono: telefono || null },
+      data: { nombre, telefono },
     })
 
     return NextResponse.json({

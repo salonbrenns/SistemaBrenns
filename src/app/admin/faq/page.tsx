@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { confirmDialog } from "@/lib/confirm";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 interface FAQ {
@@ -29,7 +30,9 @@ export default function AdminFAQPage() {
     cargarFaqs();
   }, []);
   const eliminar = async (id: number) => {
-    if (!confirm("¿Estás seguro de eliminar esta pregunta?")) return;
+    if (!(await confirmDialog("¿Eliminar esta pregunta? Los clientes ya no la verán.", {
+      danger: true, confirmLabel: "Eliminar",
+    }))) return;
     setEliminando(id);
     try {
       await fetch(`/api/admin/faq/${id}`, { method: "DELETE" });
@@ -64,7 +67,7 @@ export default function AdminFAQPage() {
         </div>
         <Link
           href="/admin/faq/nueva"
-          className="bg-rose-700 hover:bg-rose-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+          className="bg-rose-700 hover:bg-rose-800 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2"
         >
           + Nueva pregunta
         </Link>
@@ -75,7 +78,7 @@ export default function AdminFAQPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-600" />
         </div>
       ) : faqs.length === 0 ? (
-        <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300">
+        <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-600">
           <p className="text-gray-400 text-lg">No hay preguntas registradas</p>
           <Link
             href="/admin/faq/nueva"
@@ -108,8 +111,8 @@ export default function AdminFAQPage() {
                       onClick={() => toggleActivo(faq)}
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                         faq.activo
-                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                          : "bg-gray-100 text-gray-500 dark:text-gray-400 hover:bg-gray-200"
+                          ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
                       }`}
                     >
                       {faq.activo ? "Activo" : "Inactivo"}

@@ -12,7 +12,7 @@ import Breadcrumb from "@/components/Breadcrumb"
 import EditarPerfilModal from "@/components/ui/EditarPerfilModal"
 import { useFavoritos } from "@/hooks/useFavoritos"
 import Image from "next/image"
-import Toast from "@/components/ui/Toast"
+import { toast as showToast } from "@/lib/toast"
 
 interface CustomUser {
   id?: number | string
@@ -60,7 +60,6 @@ export default function PerfilPage() {
   const [totalCursos,  setTotalCursos]  = useState<number | null>(null)
   const { favoritos } = useFavoritos()
   const [fotoSubiendo, setFotoSubiendo] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "warning" } | null>(null)
   const [fechaRegistro, setFechaRegistro] = useState<string | null>(null)
 
   const user = session?.user as CustomUser | undefined
@@ -128,9 +127,9 @@ export default function PerfilPage() {
       if (user?.id) localStorage.setItem(fotoKey(user.id), uploadData.url)
       setDatosLocales(prev => ({ ...prev, image: uploadData.url }))
       await update({ image: uploadData.url })
-      setToast({ message: "Foto actualizada", type: "success" })
+      showToast.success("Foto actualizada")
     } catch {
-      setToast({ message: "Error al subir foto", type: "error" })
+      showToast.error("Error al subir foto")
     } finally {
       setFotoSubiendo(false)
     }
@@ -165,7 +164,7 @@ export default function PerfilPage() {
             <div className="text-center md:text-left">
               <h1 className="text-4xl font-black text-[#3d0020] dark:text-white">{nombre}</h1>
               <p className="text-rose-500 text-xs font-black uppercase tracking-[0.2em] mt-1">
-                {user?.role === "ADMIN" ? "ADMINISTRADOR" : user?.role === "DOCENTE" ? "DOCENTE" : "MIEMBRO"}
+                {user?.role === "ADMIN" ? "ADMINISTRADOR" : "MIEMBRO"}
               </p>
               <p className="text-gray-400 text-sm mt-1">Miembro desde {fechaReg}</p>
             </div>
@@ -250,7 +249,6 @@ export default function PerfilPage() {
       </div>
 
       {modalAbierto && <EditarPerfilModal onClose={() => setModalAbierto(false)} onActualizado={setDatosLocales} />}
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </main>
   )
 }
@@ -266,11 +264,15 @@ function RecordatoriosSection() {
 
   useEffect(() => {
     fetch("/api/usuario/recordatorios")
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error("error")
+        return r.json()
+      })
       .then(d => {
         setCitas(d.citasProximas    ?? [])
         setPedidos(d.pedidosEnTransito ?? [])
       })
+      .catch(() => { /* silencioso — no hay recordatorios */ })
       .finally(() => setLoading(false))
   }, [])
 

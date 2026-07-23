@@ -8,12 +8,11 @@ export default async function InscribirsePage({
 }: {
   searchParams: Promise<{ id?: string }>
 }) {
+  const params  = await searchParams
   const session = await auth()
   if (!session?.user) {
-    redirect("/login?next=/inscribirse")
+    redirect(`/login?next=${encodeURIComponent(`/inscribirse?id=${params.id ?? ""}`)}`)
   }
-
-  const params    = await searchParams
   const cursoId   = Number(params.id)
   const usuarioId = Number(session.user.id)
 

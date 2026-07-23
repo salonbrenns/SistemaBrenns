@@ -41,7 +41,10 @@ export async function PUT(
         if (!inscripcion) return
 
         const [usuario, curso] = await Promise.all([
-          prisma.usuario.findUnique({ where: { id: inscripcion.usuario_id } }),
+          prisma.usuario.findUnique({
+            where:  { id: inscripcion.usuario_id },
+            select: { correo: true, nombre: true, appaterno: true },
+          }),
           prisma.curso.findUnique({ where: { id: inscripcion.curso_id } }),
         ])
         if (!usuario?.correo || !curso) return

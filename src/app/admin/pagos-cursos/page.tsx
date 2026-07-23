@@ -70,8 +70,7 @@ export default async function PagosCursosPage({
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Cursos</p>
-        <h1 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300 flex items-center gap-2">
           <CreditCard className="w-6 h-6 text-amber-500" /> Pagos de cursos
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">

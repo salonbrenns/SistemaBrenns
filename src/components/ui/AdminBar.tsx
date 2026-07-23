@@ -14,13 +14,13 @@ export default function AdminBar() {
 
   // Solo mostrar si es admin/empleado/docente y está en una página pública
   const rol = (session?.user as { rol?: string })?.rol
-  const esStaff = rol === 'ADMIN' || rol === 'EMPLEADO' || rol === 'DOCENTE'
+  const esStaff = rol === 'ADMIN' || rol === 'EMPLEADO'
   const enPaginaPublica = PAGINAS_PUBLICAS.some(p => pathname === p || pathname.startsWith('/producto') || pathname.startsWith('/servicio') || pathname.startsWith('/curso') || pathname.startsWith('/mis-pedidos') || pathname.startsWith('/pedido'))
 
   if (!esStaff || !enPaginaPublica) return null
 
-  const panelHref = rol === 'EMPLEADO' ? '/empleado/citas' : rol === 'DOCENTE' ? '/docente' : '/admin/dashboard'
-  const rolLabel  = rol === 'ADMIN' ? 'Administrador' : rol === 'EMPLEADO' ? 'Empleado' : 'Docente'
+  const panelHref = rol === 'EMPLEADO' ? '/empleado/citas' : '/admin/dashboard'
+  const rolLabel  = rol === 'ADMIN' ? 'Administrador' : 'Empleado'
 
   return (
     <div className="bg-gray-900 text-white text-xs py-2 px-4 flex items-center justify-between gap-4 sticky top-0 z-[100]">

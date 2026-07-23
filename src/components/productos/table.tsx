@@ -4,6 +4,7 @@ import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/20/solid'
 import { useSearchParams, usePathname, useRouter } from 'next/navigation'
 import { CreateProducto, UpdateProducto, ToggleProducto } from './buttons'
 import Image from 'next/image'
+import Link from 'next/link'
 
 // ✅ Tipo correcto en lugar de any
 interface Producto {
@@ -149,7 +150,7 @@ export default function ProductoTable({ productos, currentPage, totalPages }: Pr
                     <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{p.categoria?.nombre || 'Sin categoría'}</td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-700 dark:text-gray-300">{p.stock_total}</td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex px-2 py-1 text-xs rounded-full ${p.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                      <span className={`inline-flex px-2 py-1 text-xs rounded-full ${p.activo ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
                         {p.activo ? 'Activo' : 'Inactivo'}
                       </span>
                     </td>
@@ -168,24 +169,24 @@ export default function ProductoTable({ productos, currentPage, totalPages }: Pr
       </div>
 
       <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
-        <a href={createPageURL(currentPage - 1)}
+        <Link href={createPageURL(currentPage - 1)}
           className={`px-3 py-1 rounded border border-gray-200 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 ${currentPage <= 1 ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
           Anterior
-        </a>
+        </Link>
         {generatePagination().map((page, i) =>
           typeof page === 'string'
             ? <span key={i} className="px-2 text-gray-400">...</span>
             : (
-              <a key={i} href={createPageURL(page)}
+              <Link key={i} href={createPageURL(page)}
                 className={`px-3 py-1 rounded border text-sm ${currentPage === page ? 'bg-rose-900 text-white border-rose-900' : 'border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
                 {page}
-              </a>
+              </Link>
             )
         )}
-        <a href={createPageURL(currentPage + 1)}
+        <Link href={createPageURL(currentPage + 1)}
           className={`px-3 py-1 rounded border border-gray-200 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 ${currentPage >= totalPages ? 'pointer-events-none opacity-50' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
           Siguiente
-        </a>
+        </Link>
       </div>
     </div>
   )

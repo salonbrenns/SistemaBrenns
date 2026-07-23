@@ -5,8 +5,11 @@ import Link from "next/link"
 import {
   Users, GraduationCap, CheckCircle2,
   CreditCard, Banknote, ArrowRight,
+  ChevronLeft, ChevronRight,
 } from "lucide-react"
 import AccionesInscrito from "@/app/admin/cursos/[id]/inscritos/AccionesInscrito"
+
+const POR_PAGINA = 10
 
 export const dynamic = "force-dynamic"
 
@@ -33,7 +36,7 @@ function formatDate(d: Date | string | null) {
 export default async function InscripcionesGlobalPage({
   searchParams,
 }: {
-  searchParams: Promise<{ curso?: string; estado?: string }>
+  searchParams: Promise<{ curso?: string; estado?: string; page?: string }>
 }) {
   const session = await auth()
   if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "EMPLEADO")) notFound()
@@ -41,6 +44,7 @@ export default async function InscripcionesGlobalPage({
   const sp = await searchParams
   const cursoFiltro  = sp.curso  ? Number(sp.curso)  : undefined
   const estadoFiltro = sp.estado ?? "TODOS"
+  const pagina       = Math.max(1, Number(sp.page ?? "1"))
 
   // Todos los cursos para el filtro
   const cursos = await prisma.curso.findMany({ orderBy: { titulo: "asc" } })
@@ -64,25 +68,29 @@ export default async function InscripcionesGlobalPage({
     prisma.curso.findMany({ where: { id: { in: cursoIds } } }),
   ])
 
-  const rows = inscripciones.map(insc => ({
+  const rowsTodos = inscripciones.map(insc => ({
     insc,
     usuario:    usuarios.find(u => u.id === insc.usuario_id),
     curso:      cursosInscritos.find(c => c.id === insc.curso_id),
     pagosCurso: pagos.filter(p => p.inscripcion_id === insc.id),
   }))
 
-  // KPIs
-  const total      = rows.length
-  const activos    = rows.filter(r => r.insc.estado === "ACTIVO").length
-  const completados= rows.filter(r => r.insc.estado === "COMPLETADO").length
-  const pendPagos  = pagos.filter(p => p.estado === "PENDIENTE").length
+  // KPIs (sobre todos los resultados sin paginar)
+  const total       = rowsTodos.length
+  const activos     = rowsTodos.filter(r => r.insc.estado === "ACTIVO").length
+  const completados = rowsTodos.filter(r => r.insc.estado === "COMPLETADO").length
+  const pendPagos   = pagos.filter(p => p.estado === "PENDIENTE").length
+
+  // Paginación
+  const totalPags  = Math.max(1, Math.ceil(total / POR_PAGINA))
+  const paginaReal = Math.min(pagina, totalPags)
+  const rows       = rowsTodos.slice((paginaReal - 1) * POR_PAGINA, paginaReal * POR_PAGINA)
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Cursos</p>
-        <h1 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300 flex items-center gap-2">
           <Users className="w-6 h-6 text-rose-500" /> Inscripciones
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -158,7 +166,7 @@ export default async function InscripcionesGlobalPage({
       </div>
 
       {/* Tabla */}
-      {rows.length === 0 ? (
+      {rowsTodos.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
           <GraduationCap className="w-12 h-12 text-gray-200 dark:text-gray-600 mb-4" />
           <p className="text-gray-400 font-medium">Sin inscripciones con estos filtros</p>
@@ -235,7 +243,36 @@ export default async function InscripcionesGlobalPage({
                 )
               })}
             </tbody>
-             </table>
+          </table>
+        </div>
+      )}
+
+      {/* Paginación */}
+      {totalPags > 1 && (
+        <div className="flex justify-center items-center gap-2 flex-wrap">
+          <Link
+            href={`/admin/inscripciones?${cursoFiltro ? `curso=${cursoFiltro}&` : ""}${estadoFiltro !== "TODOS" ? `estado=${estadoFiltro}&` : ""}page=${paginaReal - 1}`}
+            aria-disabled={paginaReal <= 1}
+            className={`flex items-center gap-1 px-4 py-2 rounded-xl border text-sm font-semibold transition ${paginaReal <= 1 ? "pointer-events-none opacity-40" : "hover:bg-rose-50 hover:border-rose-300"}`}
+          >
+            <ChevronLeft className="w-4 h-4" /> Anterior
+          </Link>
+          {Array.from({ length: totalPags }, (_, i) => i + 1).map(p => (
+            <Link
+              key={p}
+              href={`/admin/inscripciones?${cursoFiltro ? `curso=${cursoFiltro}&` : ""}${estadoFiltro !== "TODOS" ? `estado=${estadoFiltro}&` : ""}page=${p}`}
+              className={`w-9 h-9 rounded-xl border text-sm font-bold text-center flex items-center justify-center transition ${paginaReal === p ? "bg-rose-700 text-white border-rose-700" : "hover:bg-rose-50 hover:border-rose-300"}`}
+            >
+              {p}
+            </Link>
+          ))}
+          <Link
+            href={`/admin/inscripciones?${cursoFiltro ? `curso=${cursoFiltro}&` : ""}${estadoFiltro !== "TODOS" ? `estado=${estadoFiltro}&` : ""}page=${paginaReal + 1}`}
+            aria-disabled={paginaReal >= totalPags}
+            className={`flex items-center gap-1 px-4 py-2 rounded-xl border text-sm font-semibold transition ${paginaReal >= totalPags ? "pointer-events-none opacity-40" : "hover:bg-rose-50 hover:border-rose-300"}`}
+          >
+            Siguiente <ChevronRight className="w-4 h-4" />
+          </Link>
         </div>
       )}
     </div>

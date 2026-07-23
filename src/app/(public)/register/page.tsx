@@ -1,13 +1,12 @@
 "use client"
 import React, { useState, useEffect, Suspense } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { validarRegistro } from "@/lib/validation"
 import { Eye, EyeOff,Loader2, Sparkles } from "lucide-react"
 
 function RegisterContenido() {
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -94,18 +93,8 @@ function RegisterContenido() {
       const data = await res.json()
       if (!res.ok) throw new Error(data?.error || "Error en el registro")
 
-      const { signIn } = await import("next-auth/react")
-      const result = await signIn("credentials", { 
-        correo: email, 
-        password, 
-        redirect: false 
-      })
-
-      if (result?.error) throw new Error(result.error)
-
-      const next = searchParams?.get("next")
-      router.push(next ? decodeURIComponent(next) : "/perfil")
-      router.refresh()
+      // Redirigir a página de verificación — el email ya no puede hacer login hasta verificar
+      router.push("/verificar-email")
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Error inesperado")
     } finally {
@@ -176,7 +165,7 @@ function RegisterContenido() {
                     value={name}
                     onChange={handleNameChange(setName)}
                     placeholder="Brenda"
-                    className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none"
+                    className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:ring-pink-500/20 outline-none"
                   />
                 </div>
                 <div>
@@ -186,7 +175,7 @@ function RegisterContenido() {
                     value={appaterno}
                     onChange={handleNameChange(setAppaterno)}
                     placeholder="García"
-                    className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none"
+                    className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:ring-pink-500/20 outline-none"
                   />
                 </div>
                 <div>
@@ -196,7 +185,7 @@ function RegisterContenido() {
                     value={apmaterno}
                     onChange={handleNameChange(setApmaterno)}
                     placeholder="Hernández"
-                    className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none"
+                    className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:ring-pink-500/20 outline-none"
                   />
                 </div>
 
@@ -207,18 +196,36 @@ function RegisterContenido() {
                     <select
                       value={countryCode}
                       onChange={(e) => setCountryCode(e.target.value)}
-                      className="w-24 px-2 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 bg-white text-base outline-none cursor-pointer"
+                      className="w-32 px-2 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 bg-white dark:bg-gray-800 dark:text-white text-sm outline-none cursor-pointer"
                     >
                       <option value="+52">🇲🇽 +52</option>
                       <option value="+1">🇺🇸 +1</option>
+                      <option value="+1">🇨🇦 +1</option>
+                      <option value="+54">🇦🇷 +54</option>
+                      <option value="+56">🇨🇱 +56</option>
                       <option value="+57">🇨🇴 +57</option>
+                      <option value="+51">🇵🇪 +51</option>
+                      <option value="+58">🇻🇪 +58</option>
+                      <option value="+593">🇪🇨 +593</option>
+                      <option value="+502">🇬🇹 +502</option>
+                      <option value="+503">🇸🇻 +503</option>
+                      <option value="+504">🇭🇳 +504</option>
+                      <option value="+505">🇳🇮 +505</option>
+                      <option value="+506">🇨🇷 +506</option>
+                      <option value="+507">🇵🇦 +507</option>
+                      <option value="+53">🇨🇺 +53</option>
+                      <option value="+1">🇩🇴 +1</option>
+                      <option value="+591">🇧🇴 +591</option>
+                      <option value="+595">🇵🇾 +595</option>
+                      <option value="+598">🇺🇾 +598</option>
+                      <option value="+34">🇪🇸 +34</option>
                     </select>
                     <input
                       type="tel"
                       value={telefono}
                       onChange={handlePhoneChange}
                       placeholder="5512345678"
-                      className="flex-1 px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none text-lg"
+                      className="flex-1 px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:border-pink-500 focus:ring-2 focus:ring-pink-100 dark:focus:ring-pink-500/20 outline-none text-lg"
                     />
                   </div>
                 </div>
@@ -232,7 +239,7 @@ function RegisterContenido() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 outline-none"
+                  className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:ring-pink-500/20 outline-none"
                 />
               </div>
             </div>

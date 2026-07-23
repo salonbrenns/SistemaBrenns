@@ -1,6 +1,7 @@
 // src/app/api/categorias-servicios/route.ts
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
 
 // GET - listar todas (útil para selects)
 export async function GET() {
@@ -16,8 +17,12 @@ export async function GET() {
   }
 }
 
-// POST - crear nueva
+// POST - crear nueva (solo ADMIN)
 export async function POST(request: Request) {
+  const session = await auth()
+  if (session?.user?.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
   try {
     const { nombre } = await request.json()
 

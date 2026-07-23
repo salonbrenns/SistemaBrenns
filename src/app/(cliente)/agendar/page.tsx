@@ -8,7 +8,8 @@ import Breadcrumb from "@/components/Breadcrumb"
 import Image from "next/image"
 import {
   ChevronLeft, ChevronRight, Clock, Calendar,
-  CreditCard, CheckCircle, Loader2, AlertCircle, User, Banknote, ArrowRight
+  CreditCard, CheckCircle, Loader2, AlertCircle, User, Banknote, ArrowRight,
+  Upload, ImageIcon,
 } from "lucide-react"
 import {
   format, addMonths, subMonths, startOfMonth, endOfMonth,
@@ -28,7 +29,7 @@ function AgendarContenido() {
   const searchParams = useSearchParams()
   const servicioId = searchParams.get("servicioId")
 
-  const [paso,        setPaso]        = useState<1 | 2>(1)
+  const [paso,        setPaso]        = useState<0 | 1 | 2>(0)
   const [servicio,    setServicio]    = useState<Servicio | null>(null)
   const [cargandoSrv, setCargandoSrv] = useState(true)
   const [empleados,   setEmpleados]   = useState<Empleado[]>([])
@@ -45,10 +46,41 @@ function AgendarContenido() {
   const [diasBloqueados, setDiasBloqueados] = useState<string[]>([])
 
   const [tipoPago,          setTipoPago]          = useState<"ANTICIPO" | "COMPLETO" | null>(null)
-  const [metodoPagoCliente, setMetodoPagoCliente] = useState<"TARJETA" | "TRANSFERENCIA" | null>(null)
-  const [pagando,   setPagando]   = useState(false)
-  const [errorPago, setErrorPago] = useState("")
+  const [metodoPagoCliente, setMetodoPagoCliente] = useState<"TRANSFERENCIA" | null>(null)
+  const [pagando,    setPagando]    = useState(false)
+  const [errorPago,  setErrorPago]  = useState("")
+  const [errorHora,  setErrorHora]  = useState("")   // error de hora ocupada (mostrado en paso 1)
+  const [refreshHor, setRefreshHor] = useState(0)    // contador para forzar re-fetch de horarios
   const [exito,     setExito]     = useState(false)
+  const [citaIdCreado,  setCitaIdCreado]  = useState<number | null>(null)
+  const [subiendoComp,  setSubiendoComp]  = useState(false)
+  const [compSubido,    setCompSubido]    = useState(false)
+  const [errorComp,     setErrorComp]     = useState("")
+
+  const [bancoCfg, setBancoCfg] = useState({
+    titular: "Ruth Barrientos Angeles",
+    banco:   "BBVA",
+    cuenta:  "154 792 8563",
+    clabe:   "012 290 01547928563 4",
+    celular: "77 1748 2746",
+    anticipoPct: 50,
+  })
+
+  useEffect(() => {
+    fetch("/api/config-sitio")
+      .then(r => r.json())
+      .then(data => {
+        if (data) setBancoCfg({
+          titular:     data.banco_titular     || "Ruth Barrientos Angeles",
+          banco:       data.banco_banco       || "BBVA",
+          cuenta:      data.banco_cuenta      || "154 792 8563",
+          clabe:       data.banco_clabe       || "012 290 01547928563 4",
+          celular:     data.banco_celular     || "77 1748 2746",
+          anticipoPct: Number(data.anticipo_porcentaje) || 50,
+        })
+      })
+      .catch(() => {})
+  }, [])
 
   // ── Helpers de calendario
   const diasDelMes = eachDayOfInterval({ start: startOfMonth(mesActual), end: endOfMonth(mesActual) })
@@ -81,6 +113,16 @@ function AgendarContenido() {
     setEmpleadoSel(id)
     setFechaSel(null)
     setHoraSel(null)
+    setErrorHora("")
+    setHorarios([])
+    setSinAtencion(false)
+  }
+
+  // ── NUEVO: al cambiar fecha limpiar la hora previamente seleccionada y recrear la lista desde cero
+  const handleSelFecha = (dia: Date) => {
+    setFechaSel(dia)
+    setHoraSel(null)
+    setErrorHora("")
     setHorarios([])
     setSinAtencion(false)
   }
@@ -123,26 +165,28 @@ function AgendarContenido() {
         setCargandoHor(false)
       })
       .catch(() => { setHorarios([]); setCargandoHor(false) })
-  }, [fechaSel, empleadoSel, servicioId])
+  }, [fechaSel, empleadoSel, servicioId, refreshHor])
 
-  // ── NUEVO: agrupar horarios en mañana / tarde
-  const horariosMañana = horarios.filter(h => parseInt(h.hora.split(":")[0]) < 12)
-  const horariosTarde  = horarios.filter(h => parseInt(h.hora.split(":")[0]) >= 12)
-  const horasLibres    = horarios.filter(h => h.disponible).length
+  // ── Agrupar horarios: solo mostrar los disponibles
+  const horasDisponibles = horarios.filter(h => h.disponible)
+  const horariosMañana   = horasDisponibles.filter(h => parseInt(h.hora.split(":")[0]) < 12)
+  const horariosTarde    = horasDisponibles.filter(h => parseInt(h.hora.split(":")[0]) >= 12)
+  const horasLibres      = horasDisponibles.length
 
-  const montoAnticipo = servicio ? Number(servicio.precio) * 0.5 : 0
+  const montoAnticipo = servicio ? Number(servicio.precio) * (bancoCfg.anticipoPct / 100) : 0
   const montoCompleto = servicio ? Number(servicio.precio) : 0
   // montoCobrado: tipoPago === "ANTICIPO" ? montoAnticipo : montoCompleto
 
-  // Crea la cita en BD (llamado tanto por transferencia como por PayPal tras aprobación)
-  const crearCita = async (metodoPago: string) => {
-    if (!fechaSel || !horaSel || !servicioId || !tipoPago) return false
+  // Crea la cita en BD, retorna el id de la cita creada
+  const crearCita = async (metodoPago: string): Promise<number> => {
+    if (!fechaSel || !horaSel || !servicioId || !tipoPago) throw new Error("Faltan datos")
     const notasPago = [
       tipoPago === "ANTICIPO"
         ? `[ANTICIPO 50%: $${montoAnticipo.toLocaleString()} MXN]`
         : `[PAGO COMPLETO: $${montoCompleto.toLocaleString()} MXN]`,
       notas,
     ].filter(Boolean).join(" ")
+    const montoAPagar = tipoPago === "ANTICIPO" ? montoAnticipo : montoCompleto
     const res = await fetch("/api/citas", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -153,70 +197,226 @@ function AgendarContenido() {
         notas:       notasPago,
         empleado_id: empleadoSel,
         metodo_pago: metodoPago,
+        tipo_pago:   tipoPago,
+        total:       montoAPagar,
       }),
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error || "Error al confirmar")
-    return true
+    return data.cita?.id as number
   }
 
   const handleTransferencia = async () => {
     setErrorPago("")
+    setErrorHora("")
     if (!tipoPago) { setErrorPago("Selecciona anticipo o pago completo"); return }
     if (!fechaSel || !horaSel) { setErrorPago("Faltan datos de la cita"); return }
+
+    const horaSigueDisponible = horarios.some(h => h.hora === horaSel && h.disponible)
+    if (!horaSigueDisponible) {
+      setCargandoHor(true)
+      setHoraSel(null)
+      setHorarios([])
+      setSinAtencion(false)
+      setRefreshHor(n => n + 1)
+      setPaso(1)
+      setErrorHora("⚠️ Esa hora ya no está disponible. Selecciona otro horario.")
+      return
+    }
+
     setPagando(true)
     try {
-      await crearCita("TRANSFERENCIA")
+      const id = await crearCita("TRANSFERENCIA")
+      setCitaIdCreado(id)
       setExito(true)
     } catch (err: unknown) {
-      setErrorPago(err instanceof Error ? err.message : "Error al confirmar")
+      const msg = err instanceof Error ? err.message : "Error al confirmar"
+      // Si la hora ya fue tomada: limpiar el estado local y forzar una recarga fresca de disponibilidad
+      if (msg.toLowerCase().includes("hora") || msg.toLowerCase().includes("ocupad")) {
+        setCargandoHor(true)
+        setHoraSel(null)
+        setHorarios([])
+        setSinAtencion(false)
+        setRefreshHor(n => n + 1)
+        setPaso(1)
+        setErrorHora("⚠️ Esa hora fue tomada mientras elegías. Selecciona otro horario.")
+      } else {
+        setErrorPago(msg)
+      }
     } finally {
       setPagando(false)
     }
   }
 
+  const handleSubirComp = async (file: File) => {
+    if (!citaIdCreado) return
+    setErrorComp("")
+    setSubiendoComp(true)
+    try {
+      const fd = new FormData()
+      fd.append("file", file)
+      const res = await fetch(`/api/citas/${citaIdCreado}/comprobante`, { method: "POST", body: fd })
+      const data = await res.json()
+      if (!res.ok) { setErrorComp(data.error || "Error al subir comprobante"); return }
+      setCompSubido(true)
+    } catch {
+      setErrorComp("Error de conexión. Intenta de nuevo.")
+    } finally {
+      setSubiendoComp(false)
+    }
+  }
+
   // ── Pantalla éxito
   if (exito) {
-    const esTransferencia = metodoPagoCliente === "TRANSFERENCIA"
+    const montoAPagar = tipoPago === "ANTICIPO" ? montoAnticipo : montoCompleto
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white dark:from-gray-900 dark:to-gray-950 flex items-center justify-center py-20">
-        <div className="text-center max-w-md px-6">
-          <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 ${esTransferencia ? "bg-amber-100 dark:bg-amber-900/30" : "bg-green-100 dark:bg-green-900/30"}`}>
-            {esTransferencia
-              ? <AlertCircle className="w-14 h-14 text-amber-500" />
-              : <CheckCircle className="w-14 h-14 text-green-500" />
-            }
-          </div>
-          <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-1">
-            {esTransferencia ? "¡Cita en espera!" : "¡Cita confirmada!"}
-          </h2>
-          {esTransferencia && (
-            <p className="text-amber-600 font-semibold text-sm mb-4">
-              Pendiente de verificar tu transferencia
-            </p>
-          )}
-          <p className="text-gray-600 dark:text-gray-400 mb-2"><strong>{servicio?.nombre}</strong></p>
-          <p className="text-gray-500 dark:text-gray-400 mb-1">{fechaSel && format(fechaSel, "EEEE d 'de' MMMM, yyyy", { locale: es })}</p>
-          <p className="text-pink-600 font-bold text-xl mb-2">{horaSel}</p>
-          {empleadoActual && (
-            <p className="text-gray-500 dark:text-gray-400 mb-2 text-sm">Con: {empleadoActual.nombre}</p>
-          )}
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            {tipoPago === "ANTICIPO"
-              ? `Anticipo: $${montoAnticipo.toLocaleString()} MXN`
-              : `Pago completo: $${montoCompleto.toLocaleString()} MXN`}
-          </p>
-          {esTransferencia && (
-            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl px-4 py-3 mb-6 text-left">
-              <p className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-1">¿Qué sigue?</p>
-              <p className="text-xs text-amber-700 dark:text-amber-400">
-                Envía tu comprobante de transferencia por WhatsApp al número del salón. Una vez verificado, tu cita quedará confirmada.
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-rose-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 py-10 px-4">
+        <div className="max-w-4xl mx-auto">
+
+          {/* ── Header ── */}
+          <div className="flex items-center gap-4 mb-8">
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg ${
+              compSubido
+                ? "bg-green-500 shadow-green-500/30"
+                : "bg-gradient-to-br from-pink-500 to-rose-600 shadow-pink-500/30"
+            }`}>
+              <CheckCircle className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight">
+                {compSubido ? "¡Cita confirmada!" : "¡Cita reservada!"}
+              </h1>
+              <p className={`text-sm font-semibold mt-0.5 ${compSubido ? "text-green-600 dark:text-green-400" : "text-pink-500 dark:text-pink-400"}`}>
+                {compSubido ? "Tu pago fue recibido y tu cita está confirmada ✅" : "Pendiente de comprobante de pago"}
               </p>
             </div>
-          )}
-          <div className="flex gap-4 justify-center mt-4">
-            <Link href="/mis-citas" className="bg-pink-600 text-white font-bold px-8 py-3 rounded-full hover:bg-pink-700 transition">Ver mis citas</Link>
-            <Link href="/servicios" className="border-2 border-pink-200 text-pink-600 font-bold px-8 py-3 rounded-full hover:bg-pink-50 transition">Ver servicios</Link>
+          </div>
+
+          {/* ── Cuerpo 2 columnas ── */}
+          <div className="grid lg:grid-cols-5 gap-5">
+
+            {/* Columna izquierda (3/5): resumen + datos bancarios */}
+            <div className="lg:col-span-3 space-y-4">
+
+              {/* Tarjeta resumen de cita */}
+              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-pink-100 dark:border-gray-700 overflow-hidden shadow-sm">
+                <div className="bg-gradient-to-r from-pink-600 to-rose-500 px-5 py-3">
+                  <p className="text-white/80 text-xs font-semibold uppercase tracking-widest">Tu cita</p>
+                </div>
+                <div className="p-5 grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Servicio</p>
+                    <p className="font-black text-gray-800 dark:text-white text-base">{servicio?.nombre}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Fecha</p>
+                    <p className="font-semibold text-gray-700 dark:text-gray-300 text-sm capitalize">
+                      {fechaSel && format(fechaSel, "EEEE d 'de' MMMM, yyyy", { locale: es })}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Hora</p>
+                    <p className="font-black text-pink-600 text-2xl">{horaSel}</p>
+                  </div>
+                  {empleadoActual && (
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Especialista</p>
+                      <p className="font-semibold text-gray-700 dark:text-gray-300">{empleadoActual.nombre}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Datos bancarios */}
+              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-blue-100 dark:border-blue-900/40 overflow-hidden shadow-sm">
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-500 px-5 py-3 flex items-center justify-between">
+                  <p className="text-white/90 text-xs font-semibold uppercase tracking-widest flex items-center gap-2">
+                    <Banknote className="w-3.5 h-3.5" />
+                    {tipoPago === "ANTICIPO" ? `Anticipo (${bancoCfg.anticipoPct}%) por transferencia` : "Pago completo por transferencia"}
+                  </p>
+                  <span className="text-white font-black text-base">${montoAPagar.toLocaleString()} MXN</span>
+                </div>
+                <div className="p-5">
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                    {[
+                      { label: "Banco",    value: bancoCfg.banco },
+                      { label: "Titular",  value: bancoCfg.titular },
+                      { label: "Cuenta",   value: bancoCfg.cuenta },
+                      { label: "CLABE",    value: bancoCfg.clabe },
+                      ...(bancoCfg.celular ? [{ label: "Celular", value: bancoCfg.celular }] : []),
+                      { label: "Concepto", value: `tu nombre + ${fechaSel ? format(fechaSel, "d/MM") : ""}` },
+                    ].map(item => (
+                      <div key={item.label}>
+                        <p className="text-[11px] text-gray-400 uppercase tracking-wide font-semibold">{item.label}</p>
+                        <p className="font-bold text-gray-800 dark:text-gray-200 mt-0.5">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Columna derecha (2/5): comprobante + acciones */}
+            <div className="lg:col-span-2 space-y-4 flex flex-col">
+
+              {/* Subir / éxito comprobante */}
+              {compSubido ? (
+                <div className="flex-1 flex flex-col items-center justify-center bg-green-50 dark:bg-green-900/20 border-2 border-green-300 dark:border-green-700 rounded-2xl p-6 text-center gap-3">
+                  <div className="w-14 h-14 rounded-full bg-green-100 dark:bg-green-800/40 flex items-center justify-center">
+                    <CheckCircle className="w-8 h-8 text-green-500" />
+                  </div>
+                  <p className="font-black text-green-800 dark:text-green-300 text-base">¡Pago recibido!</p>
+                  <p className="text-sm text-green-700 dark:text-green-400">
+                    Tu cita está confirmada. Recibirás un correo de confirmación.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex-1 bg-white dark:bg-gray-800 rounded-2xl border-2 border-dashed border-rose-200 dark:border-rose-800 p-6 flex flex-col">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center flex-shrink-0">
+                      <Upload className="w-5 h-5 text-rose-500" />
+                    </div>
+                    <div>
+                      <p className="font-black text-gray-800 dark:text-white text-sm">Sube tu comprobante</p>
+                      <p className="text-[11px] text-gray-400">Confirma tu cita al instante</p>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 leading-relaxed">
+                    Transfiere <strong className="text-gray-700 dark:text-gray-300">${montoAPagar.toLocaleString()} MXN</strong> y adjunta el comprobante para que tu cita quede confirmada de inmediato.
+                  </p>
+
+                  {errorComp && (
+                    <p className="text-xs text-red-500 mb-3 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">{errorComp}</p>
+                  )}
+
+                  <label className={`mt-auto flex flex-col items-center justify-center gap-2 w-full py-5 rounded-xl bg-rose-50 dark:bg-rose-900/20 border-2 border-dashed border-rose-300 dark:border-rose-700 text-rose-600 dark:text-rose-400 cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/30 transition ${subiendoComp ? "opacity-50 pointer-events-none" : ""}`}>
+                    {subiendoComp
+                      ? <><Loader2 className="w-6 h-6 animate-spin" /><span className="text-sm font-semibold">Subiendo...</span></>
+                      : <><ImageIcon className="w-7 h-7" /><span className="text-sm font-semibold">Seleccionar imagen del comprobante</span></>
+                    }
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={e => { const f = e.target.files?.[0]; if (f) handleSubirComp(f) }}
+                    />
+                  </label>
+                  <p className="text-[11px] text-gray-400 text-center mt-2">JPG, PNG, WebP · máx. 5 MB</p>
+                </div>
+              )}
+
+              {/* Botones */}
+              <div className="flex flex-col gap-2">
+                <Link href="/mis-citas" className="text-center bg-pink-600 text-white font-bold px-4 py-3.5 rounded-2xl hover:bg-pink-700 active:bg-pink-800 transition text-sm shadow-lg shadow-pink-500/20">
+                  Ver mis citas
+                </Link>
+                <Link href="/servicios" className="text-center border-2 border-pink-200 dark:border-pink-900 text-pink-600 dark:text-pink-400 font-bold px-4 py-3 rounded-2xl hover:bg-pink-50 dark:hover:bg-pink-950/20 transition text-sm">
+                  Ver servicios
+                </Link>
+              </div>
+
+            </div>
           </div>
         </div>
       </div>
@@ -246,19 +446,73 @@ function AgendarContenido() {
         ]} />
 
         {/* Pasos */}
-        <div className="flex items-center justify-center gap-4 my-8">
-          {[{ n: 1, label: "Fecha y hora" }, { n: 2, label: "Pago" }].map(({ n, label }) => (
+        <div className="flex items-center justify-center gap-3 my-8">
+          {[{ n: 0, label: "Profesional" }, { n: 1, label: "Fecha y hora" }, { n: 2, label: "Pago" }].map(({ n, label }, i) => (
             <div key={n} className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition ${
-                paso >= n ? "bg-pink-600 text-white" : "bg-gray-200 text-gray-500 dark:text-gray-400"
-              }`}>{n}</div>
+                paso >= n ? "bg-pink-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+              }`}>{i + 1}</div>
               <span className={`text-sm font-medium hidden sm:block ${paso >= n ? "text-pink-600" : "text-gray-400"}`}>{label}</span>
-              {n < 2 && <ChevronRight className="w-4 h-4 text-gray-300" />}
+              {i < 2 && <ChevronRight className="w-4 h-4 text-gray-300" />}
             </div>
           ))}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
+
+          {/* ── PASO 0: Seleccionar profesional ── */}
+          {paso === 0 && (
+            <div className="lg:col-span-2">
+              <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Seleccionar profesional</h1>
+              <div className="space-y-3">
+
+                {/* Sin preferencia */}
+                <button
+                  onClick={() => { handleSelEmpleado(null); setPaso(1) }}
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-pink-400 dark:hover:border-pink-600 hover:shadow-md transition-all text-left group"
+                >
+                  <div className="w-16 h-16 rounded-full bg-pink-50 dark:bg-pink-950/30 border-2 border-pink-100 dark:border-pink-900 flex items-center justify-center flex-shrink-0">
+                    <User className="w-7 h-7 text-pink-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-gray-800 dark:text-white text-base">Sin preferencia</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-0.5">Disponibilidad máxima</p>
+                  </div>
+                  <span className="flex-shrink-0 text-sm font-semibold border-2 border-gray-200 dark:border-gray-600 rounded-full px-5 py-1.5 text-gray-600 dark:text-gray-400 group-hover:border-pink-500 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-all">
+                    Seleccionar
+                  </span>
+                </button>
+
+                {/* Empleadas */}
+                {empleados.map(emp => (
+                  <button
+                    key={emp.id}
+                    onClick={() => { handleSelEmpleado(emp.id); setPaso(1) }}
+                    className="w-full flex items-center gap-4 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-pink-400 dark:hover:border-pink-600 hover:shadow-md transition-all text-left group"
+                  >
+                    <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border-2 border-gray-100 dark:border-gray-700">
+                      {emp.imagen ? (
+                        <div className="relative w-full h-full">
+                          <Image src={emp.imagen} alt={emp.nombre} fill className="object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white text-2xl font-black">
+                          {emp.nombre.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-800 dark:text-white text-base">{emp.nombre}</p>
+                      <p className="text-sm text-pink-500 dark:text-pink-400 mt-0.5">Especialista</p>
+                    </div>
+                    <span className="flex-shrink-0 text-sm font-semibold border-2 border-gray-200 dark:border-gray-600 rounded-full px-5 py-1.5 text-gray-600 dark:text-gray-400 group-hover:border-pink-500 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-all">
+                      Seleccionar
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* ── PASO 1 ── */}
           {paso === 1 && (
@@ -310,7 +564,7 @@ function AgendarContenido() {
                         <button
                           key={dia.toISOString()}
                           disabled={!disponible}
-                          onClick={() => setFechaSel(dia)}
+                          onClick={() => handleSelFecha(dia)}
                           title={bloqueado ? "Día sin servicio" : sinEmp ? "Especialista no disponible" : undefined}
                           className={`aspect-square flex items-center justify-center rounded-lg text-sm font-bold transition-all relative ${
                             selected
@@ -358,6 +612,13 @@ function AgendarContenido() {
                 {/* Horarios — NUEVO: agrupados en mañana/tarde + banner sinAtencion */}
                 {fechaSel && (
                   <div className="mt-5">
+                    {/* Banner: hora tomada por otra persona */}
+                    {errorHora && (
+                      <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-xl px-4 py-3 mb-3">
+                        <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                        <p className="text-sm text-amber-700 dark:text-amber-300 font-medium">{errorHora}</p>
+                      </div>
+                    )}
                     <h3 className="text-sm font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                       <Clock className="w-4 h-4 text-pink-400" />
                       {format(fechaSel, "EEEE d 'de' MMMM", { locale: es })}
@@ -391,11 +652,9 @@ function AgendarContenido() {
                             </div>
                             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                               {horariosMañana.map(h => (
-                                <button key={h.id} disabled={!h.disponible} onClick={() => setHoraSel(h.hora)}
+                                <button key={h.id} onClick={() => { setHoraSel(h.hora); setErrorHora("") }}
                                   className={`py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${
-                                    !h.disponible
-                                      ? "bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-300 dark:text-gray-600 cursor-not-allowed line-through"
-                                      : horaSel === h.hora
+                                    horaSel === h.hora
                                       ? "bg-pink-600 text-white border-pink-600 shadow-md"
                                       : "bg-white dark:bg-gray-800 border-pink-100 dark:border-gray-600 hover:border-pink-300 dark:hover:border-pink-500 text-gray-700 dark:text-gray-200"
                                   }`}>
@@ -415,11 +674,9 @@ function AgendarContenido() {
                             </div>
                             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                               {horariosTarde.map(h => (
-                                <button key={h.id} disabled={!h.disponible} onClick={() => setHoraSel(h.hora)}
+                                <button key={h.id} onClick={() => { setHoraSel(h.hora); setErrorHora("") }}
                                   className={`py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${
-                                    !h.disponible
-                                      ? "bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-300 dark:text-gray-600 cursor-not-allowed line-through"
-                                      : horaSel === h.hora
+                                    horaSel === h.hora
                                       ? "bg-pink-600 text-white border-pink-600 shadow-md"
                                       : "bg-white dark:bg-gray-800 border-pink-100 dark:border-gray-600 hover:border-pink-300 dark:hover:border-pink-500 text-gray-700 dark:text-gray-200"
                                   }`}>
@@ -486,10 +743,10 @@ function AgendarContenido() {
                   <h2 className="text-sm font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-2">
                     <Banknote className="w-4 h-4 text-pink-400" /> ¿Cuánto deseas pagar hoy?
                   </h2>
-                  <p className="text-xs text-gray-400 mb-4">Se requiere al menos el 50% para confirmar tu cita.</p>
+                  <p className="text-xs text-gray-400 mb-4">Se requiere al menos el {bancoCfg.anticipoPct}% para confirmar tu cita.</p>
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { id: "ANTICIPO" as const, label: "Anticipo 50%", monto: `$${montoAnticipo.toLocaleString()} MXN`, desc: "Resto al llegar" },
+                      { id: "ANTICIPO" as const, label: `Anticipo ${bancoCfg.anticipoPct}%`, monto: `$${montoAnticipo.toLocaleString()} MXN`, desc: "Resto al llegar" },
                       { id: "COMPLETO" as const, label: "Pago completo", monto: `$${montoCompleto.toLocaleString()} MXN`, desc: "Todo liquidado" },
                     ].map(op => (
                       <button key={op.id} type="button" onClick={() => setTipoPago(op.id)}
@@ -512,48 +769,32 @@ function AgendarContenido() {
                     <h2 className="text-sm font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                       <CreditCard className="w-4 h-4 text-pink-400" /> Método de pago
                     </h2>
-                    <div className="grid grid-cols-2 gap-3 mb-5">
-                      {[
-                        { id: "TRANSFERENCIA" as const, label: "Transferencia", icon: ArrowRight },
-                        { id: "TARJETA"       as const, label: "Tarjeta",       icon: CreditCard },
-                      ].map(({ id, label, icon: Icon }) => (
-                        <button key={id} type="button" onClick={() => setMetodoPagoCliente(id)}
-                          className={`p-3.5 rounded-xl border-2 flex items-center gap-3 transition-all ${
-                            metodoPagoCliente === id
-                              ? "border-pink-600 bg-pink-50 dark:bg-pink-950/30"
-                              : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-pink-300 dark:hover:border-pink-700"
-                          }`}>
-                          <Icon className={`w-5 h-5 ${metodoPagoCliente === id ? "text-pink-600" : "text-gray-400 dark:text-gray-500"}`} />
-                          <span className={`font-bold text-sm ${metodoPagoCliente === id ? "text-pink-700 dark:text-pink-300" : "text-gray-600 dark:text-gray-400"}`}>{label}</span>
-                        </button>
-                      ))}
+                    <div className="mb-5">
+                      <button type="button" onClick={() => setMetodoPagoCliente("TRANSFERENCIA")}
+                        className={`w-full p-3.5 rounded-xl border-2 flex items-center gap-3 transition-all ${
+                          metodoPagoCliente === "TRANSFERENCIA"
+                            ? "border-pink-600 bg-pink-50 dark:bg-pink-950/30"
+                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-pink-300 dark:hover:border-pink-700"
+                        }`}>
+                        <ArrowRight className={`w-5 h-5 ${metodoPagoCliente === "TRANSFERENCIA" ? "text-pink-600" : "text-gray-400 dark:text-gray-500"}`} />
+                        <span className={`font-bold text-sm ${metodoPagoCliente === "TRANSFERENCIA" ? "text-pink-700 dark:text-pink-300" : "text-gray-600 dark:text-gray-400"}`}>Transferencia bancaria</span>
+                      </button>
                     </div>
 
                     {/* Instrucciones transferencia */}
                     {metodoPagoCliente === "TRANSFERENCIA" && (
-                      <div className="space-y-3">
-                        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-xl p-4 space-y-1.5">
-                          <p className="font-bold text-blue-800 dark:text-blue-300 text-sm mb-2">Datos para transferencia / SPEI</p>
-                          <p className="text-xs text-blue-700 dark:text-blue-400">Banco: <strong>BBVA</strong></p>
-                          <p className="text-xs text-blue-700 dark:text-blue-400">Titular: <strong>Brenn&apos;s Salón</strong></p>
-                          <p className="text-xs text-blue-700 dark:text-blue-400">CLABE: <strong>012 345 678 901 234 5</strong></p>
-                          <p className="text-xs text-blue-700 dark:text-blue-400">Concepto: <strong>tu nombre + fecha de cita</strong></p>
-                        </div>
-                        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 rounded-xl px-4 py-3">
-                          <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
-                            Después de transferir, envía tu comprobante por WhatsApp. Tu cita quedará en <strong>espera</strong> hasta que lo verifiquemos.
-                          </p>
-                        </div>
+                      <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-xl p-4 space-y-1.5">
+                        <p className="font-bold text-blue-800 dark:text-blue-300 text-sm mb-2">Datos para transferencia / SPEI</p>
+                        <p className="text-xs text-blue-700 dark:text-blue-400">Banco: <strong>{bancoCfg.banco}</strong></p>
+                        <p className="text-xs text-blue-700 dark:text-blue-400">Titular: <strong>{bancoCfg.titular}</strong></p>
+                        <p className="text-xs text-blue-700 dark:text-blue-400">Cuenta: <strong>{bancoCfg.cuenta}</strong></p>
+                        <p className="text-xs text-blue-700 dark:text-blue-400">CLABE: <strong>{bancoCfg.clabe}</strong></p>
+                        {bancoCfg.celular && <p className="text-xs text-blue-700 dark:text-blue-400">Celular: <strong>{bancoCfg.celular}</strong></p>}
+                        <p className="text-xs text-blue-700 dark:text-blue-400">Concepto: <strong>tu nombre + fecha de cita</strong></p>
                       </div>
                     )}
 
-                    {/* PayPal — próximamente */}
-                    {metodoPagoCliente === "TARJETA" && (
-                      <div className="bg-gray-50 dark:bg-gray-900 border border-gray-100 rounded-xl p-5 text-center">
-                        <p className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Pago con PayPal / Tarjeta</p>
-                        <p className="text-xs text-gray-400">Próximamente disponible. Por ahora usa transferencia.</p>
-                      </div>
-                    )}
+
                   </div>
                 )}
 
@@ -572,7 +813,7 @@ function AgendarContenido() {
                     className="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-3.5 rounded-full shadow-lg transition flex items-center justify-center gap-3 disabled:opacity-40 disabled:cursor-not-allowed text-sm mt-4">
                     {pagando
                       ? <><Loader2 className="w-4 h-4 animate-spin" /> Registrando cita...</>
-                      : <><CheckCircle className="w-4 h-4" /> Registrar cita (enviaré comprobante)</>
+                      : <><CheckCircle className="w-4 h-4" /> Confirmar cita</>
                     }
                   </button>
                 )}
@@ -629,7 +870,10 @@ function AgendarContenido() {
                     </div>
                   )}
 
-                  {!fechaSel && (
+                  {paso === 0 && (
+                    <p className="text-xs text-gray-400 text-center pt-1">Elige un profesional para continuar</p>
+                  )}
+                  {paso >= 1 && !fechaSel && (
                     <p className="text-xs text-gray-400 text-center pt-1">Selecciona fecha y hora para continuar</p>
                   )}
                 </div>
@@ -641,64 +885,31 @@ function AgendarContenido() {
               )}
             </div>
 
-            {/* ── Especialista ── */}
-            {empleados.length > 0 && paso === 1 && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-pink-50 p-5">
-                <h2 className="text-sm font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <User className="w-4 h-4 text-pink-400" /> Especialista
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => handleSelEmpleado(null)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 text-sm font-semibold transition-all ${
-                      empleadoSel === null
-                        ? "border-pink-600 bg-pink-600 text-white shadow-md"
-                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:border-pink-300"
-                    }`}
-                  >
-                    <div className="w-5 h-5 rounded-full bg-white/30 flex items-center justify-center">
-                      <User className="w-3 h-3" />
-                    </div>
-                    Sin preferencia
-                  </button>
-                  {empleados.map(emp => (
-                    <button
-                      key={emp.id}
-                      onClick={() => handleSelEmpleado(emp.id)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 text-sm font-semibold transition-all ${
-                        empleadoSel === emp.id
-                          ? "border-pink-600 bg-pink-600 text-white shadow-md"
-                          : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-pink-300"
-                      }`}
-                    >
-                      {emp.imagen ? (
-                        <div className="relative w-5 h-5 rounded-full overflow-hidden flex-shrink-0">
-                          <Image src={emp.imagen} alt={emp.nombre} fill className="object-cover" />
-                        </div>
-                      ) : (
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
-                          empleadoSel === emp.id ? "bg-white/20 text-white" : "bg-gradient-to-br from-pink-400 to-rose-500 text-white"
-                        }`}>
-                          {emp.nombre.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      {emp.nombre.split(" ")[0]}
-                    </button>
-                  ))}
-                </div>
-                {empleadoSel && empleadoActual && (
-                  <div className="mt-3 flex items-center gap-2 bg-pink-50 dark:bg-pink-950/20 rounded-xl px-4 py-2.5 border border-pink-100 dark:border-pink-900">
-                    <Calendar className="w-3.5 h-3.5 text-pink-400 flex-shrink-0" />
-                    <p className="text-xs text-pink-700 dark:text-pink-300 font-medium">
-                      <span className="font-bold">{empleadoActual.nombre.split(" ")[0]}</span> atiende los:{" "}
-                      {diasAtiende(empleadoSel)
-                        .map(d => ["", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][d])
-                        .join(", ")}
-                    </p>
+            {/* Botón cambiar profesional — solo en pasos 1 y 2 */}
+            {paso >= 1 && empleados.length > 0 && (
+              <button
+                onClick={() => setPaso(0)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-pink-200 dark:border-pink-900 bg-pink-50/50 dark:bg-pink-950/10 hover:bg-pink-50 dark:hover:bg-pink-950/20 transition text-left"
+              >
+                {empleadoActual?.imagen ? (
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                    <Image src={empleadoActual.imagen} alt={empleadoActual.nombre} fill className="object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0">
+                    {empleadoActual ? empleadoActual.nombre.charAt(0).toUpperCase() : <User className="w-4 h-4" />}
                   </div>
                 )}
-              </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-pink-700 dark:text-pink-300 truncate">
+                    {empleadoActual ? empleadoActual.nombre : "Sin preferencia"}
+                  </p>
+                  <p className="text-[10px] text-pink-400 dark:text-pink-600">Cambiar profesional</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-pink-300 flex-shrink-0" />
+              </button>
             )}
+
             </div>
           </aside>
         </div>

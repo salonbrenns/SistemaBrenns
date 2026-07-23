@@ -28,6 +28,7 @@ model Cita {
   cancelado_por        String?
   recordatorio_alexa   Boolean?
   estado_cita          String       @default("PENDIENTE")
+  comprobante          String?      @db.Text
   empleado             Usuario?     @relation("CitaEmpleado", fields: [empleado_id], references: [id])
   servicio             Servicio     @relation(fields: [servicio_id], references: [id])
   usuario              Usuario?     @relation("CitaCliente", fields: [usuario_id], references: [id])
@@ -250,6 +251,7 @@ model Curso {
   fecha_fin      DateTime? @db.Date
   created_at     DateTime  @default(now())
   imagenes       Json?
+  inscripciones  Inscripcion[]
 
   @@map("tblcursos")
   @@schema("cursos")
@@ -261,6 +263,8 @@ model Inscripcion {
   curso_id          Int
   fecha_inscripcion DateTime @default(now())
   estado            String   @default("ACTIVO") @db.VarChar(50)
+  curso             Curso    @relation(fields: [curso_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  pagos             PagoCurso[]
 
   @@map("tblinscripciones")
   @@schema("cursos")
@@ -274,8 +278,21 @@ model PagoCurso {
   metodo_pago    String?  @db.VarChar(50)
   estado         String   @default("PAGADO") @db.VarChar(50)
   fecha_pago     DateTime @default(now())
+  inscripcion    Inscripcion @relation(fields: [inscripcion_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@map("tblpagos_curso")
+  @@schema("cursos")
+}
+
+model Asistencia {
+  id             Int      @id @default(autoincrement())
+  inscripcion_id Int
+  fecha          DateTime @db.Date
+  presente       Boolean  @default(true)
+  created_at     DateTime @default(now()) @db.Timestamp(6)
+
+  @@unique([inscripcion_id, fecha], map: "uq_asistencia")
+  @@map("tblasistencias")
   @@schema("cursos")
 }
 
@@ -332,8 +349,22 @@ model Usuario {
   favoritosCursos    FavoritoCurso[]
   favoritosServicios FavoritoServicio[]
   pedidos            Pedido[]
+  correo_verificado  Boolean  @default(true)
+  tokenVerificacion  TokenVerificacion?
 
   @@map("tblusuarios")
+  @@schema("seguridad")
+}
+
+model TokenVerificacion {
+  id         Int      @id @default(autoincrement())
+  usuario_id Int      @unique
+  token      String   @unique
+  expira     DateTime
+  createdAt  DateTime @default(now())
+  usuario    Usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+
+  @@map("tbltoken_verificacion")
   @@schema("seguridad")
 }
 
@@ -391,16 +422,14 @@ model PermisoUsuario {
 }
 
 model DetallePedido {
-  id                   Int      @id @default(autoincrement())
-  pedido_id            Int
-  nombre_producto      String   @db.VarChar(150)
-  precio_unitario      Decimal  @db.Decimal(10, 2)
-  cantidad             Int
-  subtotal             Decimal  @db.Decimal(10, 2)
-  variante_id          Int
-  descripcion_variante String?  @db.VarChar(150)
-  variante             Variante @relation(fields: [variante_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detalle_variante")
-  pedido               Pedido   @relation(fields: [pedido_id], references: [id])
+  id              Int      @id @default(autoincrement())
+  pedido_id       Int
+  precio_unitario Decimal  @db.Decimal(10, 2)
+  cantidad        Int
+  subtotal        Decimal  @db.Decimal(10, 2)
+  variante_id     Int
+  variante        Variante @relation(fields: [variante_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detalle_variante")
+  pedido          Pedido   @relation(fields: [pedido_id], references: [id])
 
   @@map("tbldetalle_pedidos")
   @@schema("ventas")
@@ -417,6 +446,8 @@ model Pedido {
   correo_cliente   String          @db.VarChar(100)
   telefono_cliente String?         @db.VarChar(20)
   fecha_pedido     DateTime        @default(now()) @db.Timestamp(6)
+  metodo_pago      String?         @db.VarChar(50)
+  comprobante_url  String?         @db.Text
   detalles         DetallePedido[]
   usuario          Usuario         @relation(fields: [usuario_id], references: [id])
 

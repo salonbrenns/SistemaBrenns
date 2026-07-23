@@ -1,18 +1,19 @@
 // src/app/(frontend)/pago/page.tsx
 "use client"
 
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { useState, Suspense } from "react"
 import Breadcrumb from "@/components/Breadcrumb"
 import { CreditCard, CheckCircle, Calendar, Clock, User } from "lucide-react"
 import AuthGuard from "@/components/ui/AuthGuard"
+import PageLoader from "@/components/ui/PageLoader"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { validarInscripcion } from "@/lib/validation"
-import DotsLoader from "@/components/ui/DotsLoader"
 
 function PagoContenido() {
   const searchParams = useSearchParams()
+  const router = useRouter()
 
   const cita = {
     servicio:    searchParams.get("servicio")  || "Servicio seleccionado",
@@ -41,8 +42,7 @@ function PagoContenido() {
       setFieldErrors(validacion.errores)
       return
     }
-    alert("¡Cita agendada con éxito! Te esperamos en Brenn's")
-    window.location.href = "/servicios"
+    router.push("/mis-citas")
   }
 
   return (
@@ -129,7 +129,7 @@ function PagoContenido() {
                 <h2 className="text-lg font-bold text-pink-600 mb-4">Resumen de Cita</h2>
                 <div className="space-y-4">
                   <div className="p-4 bg-pink-50 dark:bg-gray-800 rounded-2xl">
-                    <h3 className="font-bold text-gray-800 text-sm mb-1">{cita.servicio}</h3>
+                    <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm mb-1">{cita.servicio}</h3>
                     <p className="text-pink-600 font-extrabold text-xl">${cita.precio} MXN</p>
                   </div>
                   <div className="space-y-3 px-1 text-sm text-gray-600 dark:text-gray-400">
@@ -158,11 +158,7 @@ function PagoContenido() {
 
 export default function PagoPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <DotsLoader />
-      </div>
-    }>
+    <Suspense fallback={<PageLoader className="min-h-screen" />}>
       <PagoContenido />
     </Suspense>
   )

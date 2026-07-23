@@ -1,12 +1,19 @@
 // src/app/api/categorias-servicios/[id]/route.ts
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
 
-// PUT - actualizar nombre
+async function isAdmin() {
+  const session = await auth()
+  return session?.user?.role === 'ADMIN'
+}
+
+// PUT - actualizar nombre (solo ADMIN)
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!await isAdmin()) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   try {
     const { id } = await params
     const { nombre } = await request.json()
@@ -37,11 +44,12 @@ export async function PUT(
   }
 }
 
-// PATCH - toggle activo
+// PATCH - toggle activo (solo ADMIN)
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!await isAdmin()) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   try {
     const { id } = await params
     const { activo } = await request.json()

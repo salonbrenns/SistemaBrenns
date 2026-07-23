@@ -16,6 +16,7 @@ import {
   CogIcon,
   ChevronDownIcon,
   ClockIcon,
+  UserCircleIcon,
 } from '@heroicons/react/24/outline'
 
 export default function NavLinks({
@@ -42,6 +43,7 @@ export default function NavLinks({
       { name: 'Citas',          href: '/empleado/citas',          icon: CalendarDaysIcon },
       { name: 'Mi horario',     href: '/empleado/mi-horario',     icon: ClockIcon       },
       { name: 'Notificaciones', href: '/empleado/notificaciones', icon: BellIcon        },
+      { name: 'Mi cuenta',     href: '/empleado/mi-cuenta',     icon: UserCircleIcon  },
     ]
 
     return (
@@ -94,12 +96,13 @@ export default function NavLinks({
       title: "Agenda y Citas",
       icon: CalendarDaysIcon,
       links: [
-        { name: 'Agendar',         href: '/admin/agendar'         },
-        { name: 'Citas',           href: '/admin/citas'           },
-        { name: 'Horarios',        href: '/admin/horarios'        },
-        { name: 'Días Bloqueados', href: '/admin/dias-bloqueados' },
-        { name: 'Mi horario',      href: '/admin/mi-horario'      },
-        { name: 'Empleadas',       href: '/admin/empleadas'       },
+        { name: 'Agendar',           href: '/admin/agendar'         },
+        { name: 'Citas',             href: '/admin/citas'           },
+        { name: 'Pagos de servicios',href: '/admin/pagos'           },
+        { name: 'Horarios',          href: '/admin/horarios'        },
+        { name: 'Días Bloqueados',   href: '/admin/dias-bloqueados' },
+        { name: 'Mi horario',        href: '/admin/mi-horario'      },
+        { name: 'Empleadas',         href: '/admin/empleadas'       },
       ],
     },
     {
@@ -116,22 +119,23 @@ export default function NavLinks({
       title: "Ventas y Marketing",
       icon: SparklesIcon,
       links: [
-        { name: 'Pedidos',            href: '/admin/pedidos'    },
-        { name: 'Proyección',         href: '/admin/proyeccion'  },
-        { name: 'Promociones',        href: '/admin/promociones' },
-        { name: 'Pagos de servicios', href: '/admin/pagos'       },
-        { name: 'Reportes',           href: '/admin/reportes'    },
+        { name: 'Pedidos',    href: '/admin/pedidos'    },
+        { name: 'Proyección', href: '/admin/proyeccion'  },
+        { name: 'Promociones',href: '/admin/promociones' },
+        { name: 'Reportes',   href: '/admin/reportes'    },
       ],
     },
     {
       title: "Configuración",
       icon: CogIcon,
       links: [
+        { name: 'Mi cuenta',       href: '/admin/mi-cuenta'      },
         { name: 'Configuración',   href: '/admin/configuracion'  },
         { name: 'Notificaciones',  href: '/admin/notificaciones' },
         { name: 'Roles',           href: '/admin/roles'          },
-        { name: 'Políticas',  href: '/admin/politicas'  },
-        { name: 'FAQs',       href: '/admin/faq'        },
+        { name: 'Políticas',       href: '/admin/politicas'      },
+        { name: 'FAQs',            href: '/admin/faq'            },
+        { name: 'Alexa Skill',     href: '/admin/alexa'          },
       ],
     },
   ]

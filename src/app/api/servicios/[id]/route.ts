@@ -1,6 +1,7 @@
 // src/app/api/servicios/[id]/route.ts
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { auth } from "@/lib/auth"
 
 // --- FUNCIÓN GET (La que ya tenías) ---
 export async function GET(
@@ -44,6 +45,10 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth()
+  if (session?.user?.role !== "ADMIN") {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+  }
   try {
     const { id } = await params
     const body = await request.json()

@@ -95,7 +95,7 @@ export default function FiltroServicios({
           {categoriasSeleccionadas.map(c => (
             <span
               key={c}
-              className="inline-flex items-center gap-1 bg-pink-100 text-pink-700 text-xs font-semibold px-3 py-1 rounded-full"
+              className="inline-flex items-center gap-1 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 text-xs font-semibold px-3 py-1 rounded-full"
             >
               {c}
               <button onClick={() => toggleCategoria(c)}>

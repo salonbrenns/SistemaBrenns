@@ -1,9 +1,9 @@
 'use client'
 
 // src/components/servicios/edit-form.tsx
-import { useTransition } from 'react'
-import { useRouter }     from 'next/navigation'
-import { Loader2, Info } from 'lucide-react'
+import { useTransition, useState } from 'react'
+import { useRouter }               from 'next/navigation'
+import { Loader2, Info, AlertCircle } from 'lucide-react'
 import ImageUploadServicio from '@/components/servicios/ImageUploadServicio'
 
 interface Categoria {
@@ -25,9 +25,9 @@ interface Servicio {
 }
 
 const inputClass =
-  'w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition'
+  'w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition'
 const labelClass =
-  'text-xs font-semibold text-gray-500 uppercase tracking-wider'
+  'text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider'
 
 export default function EditServicioForm({
   servicio,
@@ -38,6 +38,7 @@ export default function EditServicioForm({
 }) {
   const router                       = useRouter()
   const [isPending, startTransition] = useTransition()
+  const [errorMsg, setErrorMsg]      = useState<string | null>(null)
 
   // Convertir imagen string a array para el componente
   const initialImages = servicio.imagen ? [servicio.imagen] : []
@@ -98,7 +99,7 @@ export default function EditServicioForm({
             })
 
             if (res.ok) router.push('/admin/servicios')
-            else        alert('Error al actualizar el servicio')
+            else        setErrorMsg('Error al actualizar el servicio. Intenta de nuevo.')
           })
         }}
       >
@@ -199,11 +200,11 @@ export default function EditServicioForm({
                 <div className="w-10 h-5 bg-gray-200 rounded-full peer-checked:bg-pink-600 transition-colors" />
                 <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5" />
               </div>
-              <span className="text-sm text-gray-600 font-medium">Activo</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">Activo</span>
             </label>
           </div>
 
-          <div className="w-px bg-pink-100 my-6" />
+          <div className="w-px bg-pink-100 dark:bg-gray-700 my-6" />
 
           {/* ── Columna derecha: imagen ── */}
           <div className="w-64 flex-shrink-0 p-8 flex flex-col items-center gap-4">
@@ -217,11 +218,17 @@ export default function EditServicioForm({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 px-8 py-4 bg-gray-50 border-t border-gray-100">
+        {errorMsg && (
+          <div className="flex items-center gap-2 mx-8 mb-0 mt-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" /> {errorMsg}
+          </div>
+        )}
+
+        <div className="flex justify-end gap-3 px-8 py-4 bg-gray-50 dark:bg-gray-900/40 border-t border-gray-100 dark:border-gray-700">
           <button
             type="button"
             onClick={() => router.push('/admin/servicios')}
-            className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-100 transition"
+            className="px-5 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
           >
             Cancelar
           </button>

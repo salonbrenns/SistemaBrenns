@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: 'Gestión de citas del salón',
 }
 
+const PAGE_SIZE = 15
+
 type EstadoCita = 'PENDIENTE' | 'CONFIRMADA' | 'CANCELADA' | 'COMPLETADA'
 
 const ML_URL = process.env.ML_SERVICE_URL ?? 'http://127.0.0.1:8000'
@@ -47,16 +49,22 @@ async function consultarRiesgoLote(citaIds: number[]): Promise<Map<number, Riesg
 export default async function CitasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ estado?: string; desde?: string; hasta?: string }>
+  searchParams: Promise<{ estado?: string; desde?: string; hasta?: string; page?: string }>
 }) {
-  const params = await searchParams
-  const estado = params.estado as EstadoCita | undefined
-  const desde  = params.desde || ''
-  const hasta  = params.hasta || ''
+  const params  = await searchParams
+  const estado  = params.estado as EstadoCita | undefined
+  const desde   = params.desde || ''
+  const hasta   = params.hasta || ''
+  const pageNum = Math.max(1, Number(params.page) || 1)
 
   const where: Record<string, unknown> = {}
 
-  if (estado) where.estado = estado
+  if (estado) {
+    where.estado = estado
+  } else {
+    // "Todos" solo muestra activas; CANCELADAS tienen su propio filtro
+    where.estado = { notIn: ['CANCELADA'] }
+  }
 
   if (desde || hasta) {
     where.fecha = {
@@ -65,14 +73,28 @@ export default async function CitasPage({
     }
   }
 
-  const citasRaw = await prisma.cita.findMany({
-    where,
-    include: {
-      usuario:  { select: { id: true, nombre: true, correo: true, telefono: true } },
-      servicio: { select: { nombre: true, precio: true } },
-    },
-    orderBy: [{ fecha: 'desc' }, { hora: 'asc' }],
-  })
+  // Auto-marcar como FINALIZADA las citas de días anteriores que siguen PENDIENTE
+  await prisma.$queryRawUnsafe(`
+    UPDATE agenda.tblcitas
+    SET estado_cita = 'FINALIZADA'
+    WHERE estado::text != 'CANCELADA'
+      AND (estado_cita IS NULL OR estado_cita::text = 'PENDIENTE')
+      AND fecha::date < CURRENT_DATE
+  `)
+
+  const [citasRaw, totalCitas] = await Promise.all([
+    prisma.cita.findMany({
+      where,
+      include: {
+        usuario:  { select: { id: true, nombre: true, correo: true, telefono: true } },
+        servicio: { select: { nombre: true, precio: true } },
+      },
+      orderBy: [{ fecha: 'desc' }, { hora: 'asc' }],
+      take: PAGE_SIZE,
+      skip: (pageNum - 1) * PAGE_SIZE,
+    }),
+    prisma.cita.count({ where }),
+  ])
 
   // Riesgo de cancelación (Solución 2): solo tiene sentido para citas futuras
   // aún no resueltas — mismo criterio que usa el modelo en desarrollo_citas.ipynb.
@@ -84,11 +106,11 @@ export default async function CitasPage({
 
   const citas = citasRaw.map(c => ({
     ...c,
+    total:        Number(c.total),
     fecha:        c.fecha.toISOString(),
     createdAt:    c.createdAt.toISOString(),
     cancelado_en: c.cancelado_en ? c.cancelado_en.toISOString() : null,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    estado_cita:  (c as any).estado_cita ?? c.estado,
+    estado_cita:  c.estado_cita ?? c.estado,
     servicio: { ...c.servicio, precio: Number(c.servicio.precio) },
     usuario: c.usuario ?? null,
     riesgo: riesgos.get(c.id) ?? null,
@@ -108,6 +130,9 @@ export default async function CitasPage({
         estadoFiltro={estado || ''}
         desdeFiltro={desde}
         hastaFiltro={hasta}
+        totalCitas={totalCitas}
+        paginaActual={pageNum}
+        porPagina={PAGE_SIZE}
       />
     </div>
   )

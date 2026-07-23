@@ -3,11 +3,11 @@
 import { useState, useEffect, useMemo, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { SearchX } from 'lucide-react'
-import DotsLoader from '@/components/ui/DotsLoader'
 import ProductoCard, { type ProductoCardType } from '@/components/ui/ProductoCard'
 import ProductosFiltros from '@/components/ui/ProductosFiltros'
 import Paginacion from '@/components/ui/paginacion'
 import { usePromociones } from "@/hooks/usePromociones"
+import PageLoader from "@/components/ui/PageLoader"
 
 const POR_PAGINA = 12
 
@@ -134,7 +134,7 @@ function ProductosContent() {
           </p>
         )}
 
-        {cargando && <DotsLoader texto="Cargando productos..." />}
+        {cargando && <PageLoader className="py-20" />}
 
         {!cargando && productosPagina.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -184,11 +184,7 @@ function ProductosContent() {
 
 export default function ProductosPage() {
   return (
-    <Suspense fallback={
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <DotsLoader />
-      </div>
-    }>
+    <Suspense fallback={<PageLoader className="min-h-screen" />}>
       <ProductosContent />
     </Suspense>
   )

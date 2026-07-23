@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import NavLinks from './nav-links';
 import { ArrowLeftEndOnRectangleIcon } from '@heroicons/react/24/outline';
 import { signOut } from 'next-auth/react';
@@ -22,7 +23,7 @@ function ThemeToggle({ mobile }: { mobile: boolean }) {
     return (
       <button
         onClick={() => setTheme(next.value)}
-        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
       >
         <current.Icon className="h-5 w-5" />
         <span>{current.label}</span>
@@ -68,9 +69,19 @@ export default function SideNav({
   return (
     <div className={mobile ? 'p-3 space-y-4' : 'flex h-full flex-col border-r border-pink-200 bg-pink-900 text-white'}>
       {!mobile && (
-        <Link href="/admin/dashboard" className="flex h-24 items-center justify-center p-4">
-          <div className="text-2xl font-bold tracking-wide">Brenn&apos;s Beauty</div>
-        </Link>
+        <>
+          <Link href="/admin/dashboard" className="flex items-center px-6 pt-5 pb-4">
+            <Image
+              src="/logo/logosinfondo.png"
+              alt="Brenn's Beauty"
+              width={80}
+              height={44}
+              className="object-contain drop-shadow-lg"
+              priority
+            />
+          </Link>
+          <div className="mx-4 border-b border-pink-800/40" />
+        </>
       )}
 
       <div className={mobile ? 'space-y-2' : 'flex grow flex-col justify-between px-3 py-4'}>

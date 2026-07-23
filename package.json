@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "next dev ",
     "build": "next build",
     "start": "next start",
@@ -13,7 +14,6 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.2.2",
-    "@paypal/react-paypal-js": "^8.8.3",
     "@prisma/client": "^6.19.2",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -46,6 +46,7 @@
     "react-hook-form": "^7.66.1",
     "react-icons": "^5.5.0",
     "recharts": "^3.9.0",
+    "resend": "^4.8.0",
     "tailwind-merge": "^3.4.0",
     "use-debounce": "^10.1.0",
     "zod": "^4.1.12",

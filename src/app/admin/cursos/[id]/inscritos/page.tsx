@@ -7,6 +7,7 @@ import {
   CheckCircle2, AlertCircle, CreditCard, Banknote,
 } from "lucide-react"
 import AccionesInscrito from "./AccionesInscrito"
+import AsistenciaPanel from "@/components/cursos/AsistenciaPanel"
 
 function badge(estado: string) {
   if (estado === "PAGADO")
@@ -100,6 +101,9 @@ export default async function InscritosPage({
           </div>
         ))}
       </div>
+
+      {/* Panel de asistencia */}
+      <AsistenciaPanel cursoId={cursoId} />
 
       {/* Tabla */}
       {rows.length === 0 ? (

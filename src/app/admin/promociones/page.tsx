@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { confirmDialog } from "@/lib/confirm"
 import { Tag, Plus, Percent, Calendar, ToggleLeft, ToggleRight,
          Trash2, Edit, X, Save, Loader2, Search, Package } from "lucide-react"
 
@@ -84,7 +85,9 @@ export default function PromocionesPage() {
   }
 
   const handleEliminar = async (id: number) => {
-    if (!confirm("¿Eliminar esta promoción?")) return
+    if (!(await confirmDialog("¿Eliminar esta promoción? Ya no se podrá aplicar el descuento.", {
+      danger: true, confirmLabel: "Eliminar",
+    }))) return
     await fetch(`/api/admin/promociones/${id}`, { method: "DELETE" })
     await cargar()
   }
@@ -175,7 +178,7 @@ export default function PromocionesPage() {
                       <td className="px-4 py-3 font-semibold text-gray-800 dark:text-white">{p.nombre}</td>
                       <td className="px-4 py-3">
                         <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                          p.tipo === "PRODUCTO" ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"
+                          p.tipo === "PRODUCTO" ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400" : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
                         }`}>{p.tipo}</span>
                       </td>
                       <td className="px-4 py-3">
@@ -308,7 +311,7 @@ export default function PromocionesPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-bold text-gray-800 dark:text-white">Productos incluidos</h2>
               {idsSeleccionados.length > 0 && (
-                <span className="bg-pink-100 text-pink-700 text-xs font-bold px-2.5 py-1 rounded-full">
+                <span className="bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 text-xs font-bold px-2.5 py-1 rounded-full">
                   {idsSeleccionados.length} seleccionados
                 </span>
               )}

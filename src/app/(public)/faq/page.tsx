@@ -34,7 +34,7 @@ export default function FAQComponent() {
 
   return (
     <section className="max-w-3xl mx-auto px-4 py-12">
-      <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
+      <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-2">
         Preguntas frecuentes
       </h2>
       <p className="text-center text-gray-500 dark:text-gray-400 mb-10 text-sm">
@@ -49,9 +49,9 @@ export default function FAQComponent() {
           >
             <button
               onClick={() => toggle(faq.id)}
-              className="w-full flex justify-between items-center px-6 py-4 text-left hover:bg-gray-50 dark:bg-gray-900 transition-colors"
+              className="w-full flex justify-between items-center px-6 py-4 text-left bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
-              <span className="font-medium text-gray-800 text-sm">{faq.pregunta}</span>
+              <span className="font-medium text-gray-800 dark:text-gray-100 text-sm">{faq.pregunta}</span>
               <span
                 className={`text-pink-500 text-xl transition-transform duration-200 ${
                   abierto === faq.id ? "rotate-45" : ""
@@ -61,7 +61,7 @@ export default function FAQComponent() {
               </span>
             </button>
             {abierto === faq.id && (
-              <div className="px-6 pb-4 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100">
+              <div className="px-6 pb-4 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100 dark:border-gray-700">
                 <p className="pt-3">{faq.respuesta}</p>
               </div>
             )}

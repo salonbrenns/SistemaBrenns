@@ -117,12 +117,12 @@ export default function ProductosFiltros({
       {(marcasSeleccionadas.length > 0 || categoriasSeleccionadas.length > 0) && (
         <div className="flex flex-wrap gap-2">
           {marcasSeleccionadas.map(m => (
-            <span key={m} className="inline-flex items-center gap-1 bg-rose-100 text-rose-700 text-xs font-semibold px-3 py-1 rounded-full">
+            <span key={m} className="inline-flex items-center gap-1 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 text-xs font-semibold px-3 py-1 rounded-full">
               {m} <button onClick={() => toggleMarca(m)}><X className="w-3 h-3" /></button>
             </span>
           ))}
           {categoriasSeleccionadas.map(c => (
-            <span key={c} className="inline-flex items-center gap-1 bg-pink-100 text-pink-700 text-xs font-semibold px-3 py-1 rounded-full">
+            <span key={c} className="inline-flex items-center gap-1 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 text-xs font-semibold px-3 py-1 rounded-full">
               {c} <button onClick={() => toggleCategoria(c)}><X className="w-3 h-3" /></button>
             </span>
           ))}

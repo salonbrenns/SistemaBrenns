@@ -41,6 +41,7 @@ export default function ReportesPage() {
     fetch("/api/admin/reportes")
       .then(r => r.json())
       .then(d => { setData(d); setCarg(false) })
+      .catch(() => setCarg(false))
   }, [])
 
   if (cargando) return (

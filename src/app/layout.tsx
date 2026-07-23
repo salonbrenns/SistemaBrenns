@@ -1,6 +1,7 @@
 // src/app/layout.tsx
 import "./globals.css"
 import Providers from "@/components/ui/providers"
+import ToastContainer from "@/components/ui/ToastContainer"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased">
         <Providers>
           {children}
+          <ToastContainer />
         </Providers>
       </body>
     </html>

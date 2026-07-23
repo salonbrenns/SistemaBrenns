@@ -35,6 +35,6 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ ok: true })
   } catch (e) {
     console.error("ERROR config-sitio PATCH:", e)
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+    return NextResponse.json({ error: "Error al guardar configuración" }, { status: 500 })
   }
 }

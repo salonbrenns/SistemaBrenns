@@ -13,7 +13,7 @@ export async function GET() {
   const manana  = new Date(hoy.getTime() + 86_400_000)
   const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1)
 
-  const [citasHoy, citasMes, pedidosMes, clientesTotal] = await Promise.all([
+  const [citasHoy, citasMes, pedidosMes, pedidosPendientes, clientesTotal] = await Promise.all([
     prisma.cita.count({
       where: { fecha: { gte: hoy, lt: manana } },
     }),
@@ -22,6 +22,9 @@ export async function GET() {
     }),
     prisma.pedido.count({
       where: { fecha_pedido: { gte: inicioMes } },
+    }),
+    prisma.pedido.count({
+      where: { estado: 'PENDIENTE' },
     }),
     prisma.$queryRaw<[{ count: bigint }]>`
       SELECT COUNT(*)::bigint AS count
@@ -34,6 +37,7 @@ export async function GET() {
     citasHoy,
     citasMes,
     pedidosMes,
+    pedidosPendientes,
     clientesTotal: Number(clientesTotal[0].count),
   })
 }

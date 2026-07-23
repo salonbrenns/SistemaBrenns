@@ -2,9 +2,9 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ShoppingBag, Trash2, Plus, Minus, ShoppingCart } from 'lucide-react'
-import DotsLoader from '@/components/ui/DotsLoader'
 import { useCarrito } from '@/hooks/useCarrito'
 import AuthGuard from '@/components/ui/AuthGuard'
+import PageLoader from '@/components/ui/PageLoader'
 
 const ENVIO_GRATIS_DESDE = 1500
 const COSTO_ENVIO        = 100
@@ -30,9 +30,7 @@ function CarritoContenido() {
 
   if (cargando) {
     return (
-      <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 flex items-center justify-center">
-        <DotsLoader />
-      </div>
+      <PageLoader className="min-h-screen bg-[#fffafa] dark:bg-gray-950" />
     )
   }
 

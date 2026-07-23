@@ -22,7 +22,7 @@ export async function GET() {
 
   const citasMes = await prisma.cita.groupBy({
     by: ["fecha"],
-    where: { estado: "COMPLETADO", fecha: { gte: doce } },
+    where: { estado: "COMPLETADA", fecha: { gte: doce } },
     _sum: { total: true },
     _count: { id: true },
   })
@@ -46,7 +46,7 @@ export async function GET() {
   // Top 5 servicios más solicitados
   const topServicios = await prisma.cita.groupBy({
     by: ["servicio_id"],
-    where: { estado: { notIn: ["CANCELADO"] }, fecha: { gte: inicioAnio } },
+    where: { estado: { notIn: ["CANCELADA"] }, fecha: { gte: inicioAnio } },
     _count: { id: true },
     orderBy: { _count: { id: "desc" } },
     take: 5,
@@ -65,7 +65,7 @@ export async function GET() {
   // Top 3 empleadas por citas completadas (este año)
   const topEmpleadas = await prisma.cita.groupBy({
     by: ["empleado_id"],
-    where: { estado: "COMPLETADO", fecha: { gte: inicioAnio }, empleado_id: { not: null } },
+    where: { estado: "COMPLETADA", fecha: { gte: inicioAnio }, empleado_id: { not: null } },
     _count: { id: true },
     _sum: { total: true },
     orderBy: { _count: { id: "desc" } },
@@ -88,9 +88,9 @@ export async function GET() {
 
   // Resumen general
   const [totalCitasAnio, totalIngresosAnio, citasHoy, clientesTotal] = await Promise.all([
-    prisma.cita.count({ where: { estado: { notIn: ["CANCELADO"] }, fecha: { gte: inicioAnio } } }),
-    prisma.cita.aggregate({ where: { estado: "COMPLETADO", fecha: { gte: inicioAnio } }, _sum: { total: true } }),
-    prisma.cita.count({ where: { fecha: { gte: new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()), lte: new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 23, 59, 59) }, estado: { notIn: ["CANCELADO"] } } }),
+    prisma.cita.count({ where: { estado: { notIn: ["CANCELADA"] }, fecha: { gte: inicioAnio } } }),
+    prisma.cita.aggregate({ where: { estado: "COMPLETADA", fecha: { gte: inicioAnio } }, _sum: { total: true } }),
+    prisma.cita.count({ where: { fecha: { gte: new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()), lte: new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 23, 59, 59) }, estado: { notIn: ["CANCELADA"] } } }),
     prisma.$queryRaw<[{ count: bigint }]>`
       SELECT COUNT(*)::bigint AS count
       FROM seguridad.tblusuarios

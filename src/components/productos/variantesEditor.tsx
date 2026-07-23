@@ -19,8 +19,8 @@ const varianteVacia = (): VarianteForm => ({
 })
 
 const inputClass =
-  'w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition'
-const labelClass = 'text-[11px] font-semibold text-gray-500 uppercase tracking-wider'
+  'w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition'
+const labelClass = 'text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider'
 
 interface Props {
   readonly initialVariantes?: readonly VarianteForm[];
@@ -80,10 +80,10 @@ export default function VariantesEditor({ initialVariantes }: Props) {
 
       <div className="space-y-2">
         {variantes.map((v, i) => (
-          <div key={v.id ?? `nueva-${i}`} className="border border-gray-200 rounded-xl overflow-hidden">
+          <div key={v.id ?? `nueva-${i}`} className="border border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden">
 
             {/* ── Cabecera: fila flex — botón acordeón y botón eliminar son hermanos ── */}
-            <div className="flex items-center bg-gray-50 hover:bg-rose-50 transition-colors">
+            <div className="flex items-center bg-gray-50 dark:bg-gray-700 hover:bg-rose-50 dark:hover:bg-gray-600 transition-colors">
 
               {/* Botón acordeón ocupa el espacio disponible */}
               <button
@@ -93,9 +93,9 @@ export default function VariantesEditor({ initialVariantes }: Props) {
               >
                 <div className="flex items-center gap-3">
                   <span className={`w-2 h-2 rounded-full flex-shrink-0 ${v.activo ? 'bg-green-400' : 'bg-gray-300'}`} />
-                  <span className="text-sm font-semibold text-gray-700">{etiqueta(v)}</span>
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-100">{etiqueta(v)}</span>
                   {v.precio_venta && (
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-400 dark:text-gray-400">
                       ${Number(v.precio_venta).toLocaleString('es-MX')} · {v.stock} uds.
                     </span>
                   )}
@@ -229,7 +229,7 @@ export default function VariantesEditor({ initialVariantes }: Props) {
                       <div className="w-9 h-5 bg-gray-200 rounded-full peer-checked:bg-rose-500 transition-colors" />
                       <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4" />
                     </div>
-                    <span className="text-xs font-medium text-gray-600">Variante activa</span>
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Variante activa</span>
                   </label>
                 </div>
 

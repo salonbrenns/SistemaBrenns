@@ -61,7 +61,7 @@ function LoginContenido() {
         await new Promise((r) => setTimeout(r, 800))
 
         const sessionRes = await fetch("/api/auth/session", { cache: "no-store", credentials: "include" })
-        const session    = await sessionRes.json()
+        const session    = await sessionRes.json().catch(() => null)
         const role       = session?.user?.role
 
         if (role === "ADMIN")         router.push("/admin/dashboard")
@@ -130,6 +130,7 @@ function LoginContenido() {
               <p>Tu sesión se cerró por inactividad. Vuelve a iniciar sesión para continuar.</p>
             </div>
           )}
+
 
           <button
             onClick={handleGoogle}

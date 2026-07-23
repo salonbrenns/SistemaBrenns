@@ -7,6 +7,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { PencilIcon, NoSymbolIcon, CheckCircleIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
+import { toast } from '@/lib/toast'
+import { confirmDialog } from '@/lib/confirm'
 
 interface Servicio {
   id:          number
@@ -72,7 +74,10 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
       ? '¿Quieres volver a habilitar este servicio?'
       : '¿Estás segura de deshabilitar este servicio? No aparecerá disponible para citas.'
 
-    if (!confirm(mensaje)) return
+    if (!(await confirmDialog(mensaje, {
+      danger:       !nuevoEstado,
+      confirmLabel: nuevoEstado ? 'Habilitar' : 'Deshabilitar',
+    }))) return
 
     setProcesando(id)
     try {
@@ -82,9 +87,9 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
         body:    JSON.stringify({ activo: nuevoEstado }),
       })
       if (res.ok) router.refresh()
-      else alert('Error al actualizar el estado del servicio')
+      else toast.error('Error al actualizar el estado del servicio')
     } catch {
-      alert('Ocurrió un error inesperado')
+      toast.error('Ocurrió un error inesperado')
     } finally {
       setProcesando(null)
     }
@@ -97,7 +102,7 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
       <div className="flex items-center justify-between">
         <Link
           href="/admin/servicios/create"
-          className="inline-flex items-center gap-2 rounded-lg bg-rose-700 px-4 py-2 text-sm font-medium text-white hover:bg-rose-800 transition"
+          className="inline-flex items-center gap-2 rounded-xl bg-rose-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-rose-800 transition"
         >
           <PlusIcon className="h-5 w-5" />
           Nuevo Servicio
@@ -106,7 +111,7 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
 
       {/* Tabla */}
       <div className="w-full overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-        <table className="min-w-full divide-y divide-gray-200">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-rose-900 dark:bg-rose-950">
             <tr>
               {/* Columna foto — igual que productos */}
@@ -143,7 +148,7 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
             {servicios.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-6 text-center text-sm text-gray-500">
+                <td colSpan={7} className="px-6 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
                   No hay servicios registrados
                 </td>
               </tr>
@@ -182,9 +187,9 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
                   </td>
 
                   {/* Categoría */}
-                  <td className="px-6 py-4 text-sm text-gray-600">
+                  <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      s.activo ? 'bg-pink-100 text-pink-700' : 'bg-gray-200 text-gray-500'
+                      s.activo ? 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400' : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                     }`}>
                       {s.categoria?.nombre ?? 'Sin categoría'}
                     </span>
@@ -203,7 +208,7 @@ export default function ServicioTable({ servicios, currentPage, totalPages }: Pr
                   {/* Estado — igual que productos */}
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      s.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                      s.activo ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                     }`}>
                       {s.activo ? 'Activo' : 'Inactivo'}
                     </span>

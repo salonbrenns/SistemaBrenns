@@ -23,7 +23,7 @@ export async function GET() {
       where: {
         empleado_id: empleadoId,
         fecha: { gte: inicioDia, lte: finDia },
-        estado: { notIn: ["CANCELADO"] },
+        estado: { notIn: ["CANCELADA"] },
       },
     }),
     // Citas pendientes de confirmar

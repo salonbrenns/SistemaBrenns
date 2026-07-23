@@ -4,7 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { SearchX, Heart } from "lucide-react"
-import DotsLoader from "@/components/ui/DotsLoader"
+import { SkeletonGrid } from "@/components/ui/SkeletonCard"
 import { useEffect, useState, useMemo } from "react"
 import { useSession } from "next-auth/react"
 import FiltroServicios from "@/components/ui/FiltroCursos"
@@ -116,9 +116,7 @@ export default function CursosPage() {
           </p>
         )}
 
-        {cargando && (
-          <DotsLoader texto="Cargando cursos..." />
-        )}
+        {cargando && <SkeletonGrid tipo="curso" cantidad={8} />}
 
         {!cargando && cursosPagina.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

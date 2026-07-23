@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import {
   Settings, Save, Loader2, Globe, MapPin, Share2,
-  ImageIcon, Users, Upload, Image as ImageIcon2,
+  ImageIcon, Users, Upload, Image as ImageIcon2, Banknote,
 } from "lucide-react"
 import { SiteConfig, DEFAULTS } from "@/hooks/useSiteConfig"
 import Image from 'next/image'
@@ -236,7 +236,7 @@ const SlideEditor = ({
 export default function ConfiguracionPage() {
   const [form, setForm]           = useState<SiteConfig>(DEFAULTS)
   const [slides, setSlides]       = useState<HeroSlide[]>(DEFAULT_SLIDES)
-  const [tab, setTab]             = useState<"general" | "hero" | "nosotros">("general")
+  const [tab, setTab]             = useState<"general" | "hero" | "nosotros" | "pagos">("general")
   const [guardando, setGuardando] = useState(false)
   const [exito, setExito]         = useState(false)
   const [error, setError]         = useState("")
@@ -287,7 +287,8 @@ export default function ConfiguracionPage() {
   const tabs = [
     { id: "general",  label: "General",  icon: Globe     },
     { id: "hero",     label: "Hero",     icon: ImageIcon },
-    { id: "nosotros", label: "Nosotros", icon: Users      },
+    { id: "nosotros", label: "Nosotros", icon: Users     },
+    { id: "pagos",    label: "Pagos",    icon: Banknote  },
   ] as const
 
   return (
@@ -296,7 +297,7 @@ export default function ConfiguracionPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-pink-900 dark:text-pink-300 flex items-center gap-2 tracking-tight">
+          <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300 flex items-center gap-2">
             <Settings className="w-6 h-6 text-pink-500" /> Configuración
           </h1>
           <p className="text-xs text-gray-400 font-medium">Gestiona la identidad y contenido global del sitio</p>
@@ -416,10 +417,10 @@ export default function ConfiguracionPage() {
           <Card icon={Users} title="Sobre Nosotros">
             <Input label="Título" value={form.nosotros_titulo} onChange={set("nosotros_titulo")} />
             <Textarea label="Descripción" value={form.nosotros_descripcion} onChange={set("nosotros_descripcion")} rows={4} />
-            <Textarea 
-              label="Valores (separados por coma)" 
-              value={form.nosotros_valores} 
-              onChange={set("nosotros_valores")} 
+            <Textarea
+              label="Valores (separados por coma)"
+              value={form.nosotros_valores}
+              onChange={set("nosotros_valores")}
               rows={2}
               hint="Ej: Pasión, Calidad, Integridad"
             />
@@ -428,6 +429,43 @@ export default function ConfiguracionPage() {
           <Card icon={Users} title="Misión y Visión">
             <Textarea label="Misión" value={form.nosotros_mision} onChange={set("nosotros_mision")} rows={5} />
             <Textarea label="Visión" value={form.nosotros_vision} onChange={set("nosotros_vision")} rows={5} />
+          </Card>
+        </div>
+      )}
+
+      {/* ── TAB: PAGOS ── */}
+      {tab === "pagos" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card icon={Banknote} title="Datos bancarios para transferencia">
+            <p className="text-xs text-gray-400">Estos datos se muestran al cliente al agendar su cita.</p>
+            <Input label="Titular de la cuenta" value={form.banco_titular} onChange={set("banco_titular")} placeholder="Nombre completo" />
+            <Input label="Banco" value={form.banco_banco} onChange={set("banco_banco")} placeholder="BBVA, Banamex, etc." />
+            <Input label="Número de cuenta" value={form.banco_cuenta} onChange={set("banco_cuenta")} placeholder="000 000 0000" />
+            <Input label="CLABE interbancaria" value={form.banco_clabe} onChange={set("banco_clabe")} placeholder="000 000 00000000000 0" />
+            <Input label="Celular vinculado (opcional)" value={form.banco_celular} onChange={set("banco_celular")} placeholder="77 0000 0000" />
+          </Card>
+
+          <Card icon={Banknote} title="Anticipo requerido">
+            <p className="text-xs text-gray-400">Porcentaje del costo del servicio que se solicita al agendar.</p>
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Porcentaje de anticipo</label>
+              <div className="flex gap-3">
+                {["50", "100"].map(val => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => set("anticipo_porcentaje")(val)}
+                    className={`flex-1 py-3 rounded-xl border-2 font-bold text-sm transition-all ${
+                      form.anticipo_porcentaje === val
+                        ? "border-pink-600 bg-pink-50 dark:bg-pink-950/30 text-pink-700 dark:text-pink-300"
+                        : "border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-pink-300"
+                    }`}
+                  >
+                    {val}% {val === "50" ? "— Anticipo" : "— Pago completo"}
+                  </button>
+                ))}
+              </div>
+            </div>
           </Card>
         </div>
       )}

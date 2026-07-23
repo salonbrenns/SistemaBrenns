@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
-import { X, Eye, EyeOff, User, Mail, Phone, Lock, ShieldAlert, Upload, Loader2, AlertCircle } from "lucide-react"
+import { X, Eye, EyeOff, User, Phone, Lock, ShieldAlert, Upload, Loader2, AlertCircle } from "lucide-react"
 import Image from "next/image"
 
 interface CustomUser {
@@ -39,7 +39,6 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
   const user = session?.user as CustomUser | undefined
 
   const [nombre,      setNombre]      = useState(user?.name      ?? "")
-  const [correo,      setCorreo]      = useState(user?.email     ?? "")
   const [telefono,    setTelefono]    = useState(user?.telefono  ?? "")
   const [fotoActual,  setFotoActual]  = useState<string | null>(user?.image ?? null)
   const [nuevaFoto,   setNuevaFoto]   = useState<File | null>(null)
@@ -85,8 +84,8 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
     setErrorCloudinary(null)
     setExitoDatos(false)
 
-    if (!nombre.trim() || !correo.trim()) {
-      setErrorDatos("Nombre y correo son requeridos")
+    if (!nombre.trim()) {
+      setErrorDatos("El nombre es requerido")
       return
     }
 
@@ -102,7 +101,7 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
       const res = await fetch("/api/usuario/perfil", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, correo, telefono, image: imageUrl }),
+        body: JSON.stringify({ nombre, telefono, image: imageUrl }),
       })
       const data = await res.json()
 
@@ -113,7 +112,7 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
       if (!res.ok) throw new Error(data.error || "Error al guardar los datos")
 
       // ✅ Actualizar sesión
-      await update({ name: nombre, email: correo, image: imageUrl })
+      await update({ name: nombre, image: imageUrl })
 
       // ✅ Guardar foto en localStorage para que persista entre navegaciones
       if (imageUrl && user?.id) {
@@ -125,8 +124,7 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
       setPreviewFoto(null)
       setExitoDatos(true)
 
-      // ✅ Keys correctas: name/email en lugar de nombre/correo
-      onActualizado({ name: nombre, email: correo, telefono, image: imageUrl })
+      onActualizado({ name: nombre, email: user?.email ?? "", telefono, image: imageUrl })
 
       setTimeout(() => setExitoDatos(false), 2500)
 
@@ -184,7 +182,7 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
       <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
 
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">Editar Perfil</h2>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition">
             <X className="w-5 h-5 text-gray-500" />
@@ -192,16 +190,16 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-100">
+        <div className="flex border-b border-gray-100 dark:border-gray-700">
           <button onClick={() => setTab("datos")}
             className={`flex-1 py-3 text-sm font-semibold transition ${
-              tab === "datos" ? "text-pink-600 border-b-2 border-pink-600" : "text-gray-500 hover:text-gray-700"
+              tab === "datos" ? "text-pink-600 border-b-2 border-pink-600" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
             }`}>
             Datos Personales
           </button>
           <button onClick={() => setTab("password")}
             className={`flex-1 py-3 text-sm font-semibold transition ${
-              tab === "password" ? "text-pink-600 border-b-2 border-pink-600" : "text-gray-500 hover:text-gray-700"
+              tab === "password" ? "text-pink-600 border-b-2 border-pink-600" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
             }`}>
             Contraseña
           </button>
@@ -235,32 +233,23 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
               {/* Campos */}
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre</label>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Nombre</label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input type="text" value={nombre} onChange={e => setNombre(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 text-sm" />
+                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-pink-500 focus:ring-2 focus:ring-pink-100 text-sm" />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Correo</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input type="email" value={correo} onChange={e => setCorreo(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 text-sm" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
                     Teléfono <span className="text-gray-400 font-normal">(opcional)</span>
                   </label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input type="tel" value={telefono} onChange={e => setTelefono(e.target.value)}
                       placeholder="Ej. 9211234567"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 text-sm" />
+                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-pink-500 focus:ring-2 focus:ring-pink-100 text-sm" />
                   </div>
                 </div>
               </div>
@@ -308,12 +297,12 @@ export default function EditarPerfilModal({ onClose, onActualizado }: EditarPerf
                 { id: "pc", label: "Confirmar nueva contraseña", value: passwordConfirm, setter: setPasswordConfirm, show: showNueva,  toggle: () => setShowNueva(v => !v)  },
               ].map(({ id, label, value, setter, show, toggle }) => (
                 <div key={id}>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">{label}</label>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">{label}</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input type={show ? "text" : "password"} value={value}
                       onChange={e => setter(e.target.value)} placeholder="••••••••"
-                      className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-gray-300 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 text-sm" />
+                      className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-pink-500 focus:ring-2 focus:ring-pink-100 text-sm" />
                     <button type="button" onClick={toggle}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-pink-600">
                       {show ? <EyeOff size={16} /> : <Eye size={16} />}

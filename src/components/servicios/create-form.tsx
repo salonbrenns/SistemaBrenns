@@ -3,6 +3,7 @@
 // src/components/servicios/create-form.tsx
 import { useTransition } from 'react'
 import { useRouter }     from 'next/navigation'
+import { toast } from '@/lib/toast'
 import { Loader2, Info } from 'lucide-react'
 import ImageUploadServicio from '@/components/servicios/ImageUploadServicio'
 
@@ -12,9 +13,9 @@ interface Categoria {
 }
 
 const inputClass =
-  'w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition'
+  'w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition'
 const labelClass =
-  'text-xs font-semibold text-gray-500 uppercase tracking-wider'
+  'text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider'
 
 export default function CreateServicioForm({
   categorias,
@@ -81,7 +82,7 @@ export default function CreateServicioForm({
             })
 
             if (res.ok) router.push('/admin/servicios')
-            else        alert('Error al crear el servicio')
+            else        toast.error('Error al crear el servicio')
           })
         }}
       >
@@ -177,7 +178,7 @@ export default function CreateServicioForm({
             </label>
           </div>
 
-          <div className="w-px bg-pink-100 my-6" />
+          <div className="w-px bg-pink-100 dark:bg-gray-700 my-6" />
 
           {/* ── Columna derecha: imagen ── */}
           <div className="w-64 flex-shrink-0 p-8 flex flex-col items-center gap-4">
@@ -191,11 +192,11 @@ export default function CreateServicioForm({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 px-8 py-4 bg-gray-50 border-t border-gray-100">
+        <div className="flex justify-end gap-3 px-8 py-4 bg-gray-50 dark:bg-gray-900/40 border-t border-gray-100 dark:border-gray-700">
           <button
             type="button"
             onClick={() => router.push('/admin/servicios')}
-            className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-100 transition"
+            className="px-5 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
           >
             Cancelar
           </button>

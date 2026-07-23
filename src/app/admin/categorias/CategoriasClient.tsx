@@ -6,6 +6,7 @@ import { TagIcon, SparklesIcon } from '@heroicons/react/24/outline';
 
 import CategoriaTable from '@/components/categorias/table';
 import CategoriaServicioTable from '@/components/categorias-servicios/table';
+import PageLoader from '@/components/ui/PageLoader';
 
 type Tab = 'productos' | 'servicios';
 
@@ -91,13 +92,13 @@ export default function CategoriasClient() {
       </div>
 
       {/* Pestañas */}
-      <div className="flex gap-2 border-b border-gray-100 pb-0">
+      <div className="flex gap-2 border-b border-gray-100 dark:border-gray-700 pb-0">
         <button
           onClick={() => cambiarTab('productos')}
           className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-t-xl border-b-2 transition-all ${
             tab === 'productos'
-              ? 'border-pink-600 text-pink-600 bg-pink-50'
-              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-pink-500'
+              ? 'border-pink-600 dark:border-pink-500 text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/30'
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-pink-500 dark:hover:text-pink-400'
           }`}
         >
           <TagIcon className="w-4 h-4" />
@@ -107,8 +108,8 @@ export default function CategoriasClient() {
           onClick={() => cambiarTab('servicios')}
           className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-t-xl border-b-2 transition-all ${
             tab === 'servicios'
-              ? 'border-pink-600 text-pink-600 bg-pink-50'
-              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-pink-500'
+              ? 'border-pink-600 dark:border-pink-500 text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/30'
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-pink-500 dark:hover:text-pink-400'
           }`}
         >
           <SparklesIcon className="w-4 h-4" />
@@ -133,15 +134,13 @@ export default function CategoriasClient() {
           params.set('tab', tab);
           router.replace(`${pathname}?${params.toString()}`);
         }}
-        className="w-full max-w-sm border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-pink-400"
+        className="w-full max-w-sm border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:border-pink-400"
       />
 
       {/* Contenido pestaña productos */}
       {tab === 'productos' && (
         cargandoP ? (
-          <div className="flex justify-center py-20">
-            <div className="w-8 h-8 border-4 border-pink-400 border-t-transparent rounded-full animate-spin" />
-          </div>
+          <PageLoader className="py-20" />
         ) : (
           <CategoriaTable
             categorias={catProductos}
@@ -154,9 +153,7 @@ export default function CategoriasClient() {
       {/* Contenido pestaña servicios */}
       {tab === 'servicios' && (
         cargandoS ? (
-          <div className="flex justify-center py-20">
-            <div className="w-8 h-8 border-4 border-pink-400 border-t-transparent rounded-full animate-spin" />
-          </div>
+          <PageLoader className="py-20" />
         ) : (
           <CategoriaServicioTable
             categorias={catServicios}
