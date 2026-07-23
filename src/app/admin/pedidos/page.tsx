@@ -45,22 +45,31 @@ export default function AdminPedidosPage() {
   const [totalPaginas, setTotalPaginas] = useState(1)
   const [total,        setTotal]        = useState(0)
 
-  const cargar = useCallback((p: number, f: string) => {
+  const cargar = useCallback(async (p: number, f: string) => {
     setCargando(true)
     const params = new URLSearchParams({ page: String(p) })
     if (f !== 'TODOS') params.set('estado', f)
-    fetch(`/api/admin/pedidos?${params}`)
-      .then(r => { if (!r.ok) throw new Error(); return r.json() })
-      .then(data => {
-        setPedidos(data.pedidos ?? [])
-        setTotalPaginas(data.totalPaginas ?? 1)
-        setTotal(data.total ?? 0)
-      })
-      .catch(() => setPedidos([]))
-      .finally(() => setCargando(false))
+
+    try {
+      const r = await fetch(`/api/admin/pedidos?${params}`)
+      if (!r.ok) throw new Error('No se pudo cargar')
+      const data = await r.json()
+      setPedidos(data.pedidos ?? [])
+      setTotalPaginas(data.totalPaginas ?? 1)
+      setTotal(data.total ?? 0)
+    } catch {
+      setPedidos([])
+    } finally {
+      setCargando(false)
+    }
   }, [])
 
-  useEffect(() => { cargar(pagina, filtro) }, [cargar, pagina, filtro])
+  useEffect(() => {
+    const cargarDatos = async () => {
+      await cargar(pagina, filtro)
+    }
+    void cargarDatos()
+  }, [cargar, pagina, filtro])
 
   const cambiarEstado = async (id: number, estado: string) => {
     await fetch('/api/admin/pedidos', {
