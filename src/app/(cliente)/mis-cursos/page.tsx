@@ -104,7 +104,7 @@ function MisCursosContent() {
 
   useEffect(() => { cargarCursos() }, [])
 
-  const handlePagarRestante = async (inscripcionId: number, _monto: number) => {
+  const handlePagarRestante = async (inscripcionId: number) => {
     setPagandoRest(true)
     setPagoError(null)
     setPagoMsg(null)
@@ -367,7 +367,7 @@ function MisCursosContent() {
               </button>
               <button
                 type="button"
-                onClick={() => handlePagarRestante(pagoRest.inscripcionId, pagoRest.monto)}
+                onClick={() => handlePagarRestante(pagoRest.inscripcionId)}
                 disabled={pagandoRest}
                 className="flex-1 py-3 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-black text-sm transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
               >
