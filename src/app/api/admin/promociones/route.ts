@@ -46,6 +46,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 })
     }
 
+    const desc = Number(descuento)
+    if (isNaN(desc) || desc <= 0 || desc > 100) {
+      return NextResponse.json({ error: "El descuento debe estar entre 1 y 100" }, { status: 400 })
+    }
+
+    if (new Date(fecha_fin) <= new Date(fecha_inicio)) {
+      return NextResponse.json({ error: "La fecha de fin debe ser posterior a la de inicio" }, { status: 400 })
+    }
+
     const promo = await prisma.promocion.create({
       data: {
         nombre,

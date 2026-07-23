@@ -33,6 +33,8 @@ export async function GET(req: NextRequest) {
   if (!fecha) return NextResponse.json([], { status: 400 })
 
   const fechaDate   = new Date(fecha + "T00:00:00")
+  const fechaInicio  = new Date(fecha + "T00:00:00")
+  const fechaFin     = new Date(fecha + "T23:59:59.999")
   const diaSemanaJS = fechaDate.getDay()
   const diaSemana   = diaSemanaJS === 0 ? 7 : diaSemanaJS // 7=Domingo
 
@@ -66,7 +68,7 @@ export async function GET(req: NextRequest) {
     prisma.horaBloqueada.findMany({ where: { fecha: fechaDate } }),
     prisma.cita.findMany({
       where: {
-        fecha: fechaDate,
+        fecha: { gte: fechaInicio, lte: fechaFin },
         estado: { in: ["PENDIENTE", "CONFIRMADA"] },
         ...(empleadoId && empleadoId !== "null"
           ? { empleado_id: Number(empleadoId) }

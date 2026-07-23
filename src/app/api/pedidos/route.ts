@@ -14,10 +14,24 @@ export async function POST(req: NextRequest) {
     }
     const usuarioId = Number(session.user.id)
 
-    const { metodo_pago, nombre_cliente, correo_cliente, telefono_cliente } = await req.json()
+    const body = await req.json()
+    const metodo_pago      = String(body.metodo_pago    ?? '').trim()
+    const nombre_cliente   = String(body.nombre_cliente  ?? '').trim().slice(0, 200)
+    const correo_cliente   = String(body.correo_cliente  ?? '').trim().toLowerCase().slice(0, 200)
+    const telefono_cliente = body.telefono_cliente ? String(body.telefono_cliente).trim().slice(0, 30) : null
 
     if (!metodo_pago || !nombre_cliente || !correo_cliente) {
       return NextResponse.json({ error: 'Faltan datos del pedido' }, { status: 400 })
+    }
+
+    const METODOS_VALIDOS = ['transferencia', 'efectivo', 'tarjeta']
+    if (!METODOS_VALIDOS.includes(metodo_pago)) {
+      return NextResponse.json({ error: 'Método de pago no válido' }, { status: 400 })
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(correo_cliente)) {
+      return NextResponse.json({ error: 'Correo electrónico no válido' }, { status: 400 })
     }
 
     // 1. Leer el carrito actual del usuario desde BD
@@ -36,7 +50,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'El carrito está vacío' }, { status: 400 })
     }
 
-    // 2. Verificar stock suficiente para todas las variantes
+    // 2. Verificar stock (pre-check rápido para dar feedback inmediato)
     for (const item of carritoItems) {
       if (item.variante.stock < item.cantidad) {
         return NextResponse.json(
@@ -60,7 +74,22 @@ export async function POST(req: NextRequest) {
 
     // 4. una transacción: crear pedido + descontar stock + vaciar carrito
     const pedido = await prisma.$transaction(async (tx) => {
-      // 4a. Crear pedido
+      // 4a. Re-verificar stock dentro de la transacción (previene race conditions)
+      for (const item of carritoItems) {
+        const varianteActual = await tx.variante.findUnique({
+          where: { id: item.variante_id },
+          select: { stock: true },
+        })
+        if (!varianteActual || varianteActual.stock < item.cantidad) {
+          throw Object.assign(new Error("stock_insuficiente"), {
+            nombre: item.variante.producto.nombre,
+            tono:   item.variante.tono,
+            disponible: varianteActual?.stock ?? 0,
+          })
+        }
+      }
+
+      // 4b. Crear pedido
       const nuevoPedido = await tx.pedido.create({
         data: {
           usuario_id:       usuarioId,
@@ -70,26 +99,20 @@ export async function POST(req: NextRequest) {
           nombre_cliente,
           correo_cliente,
           telefono_cliente: telefono_cliente || null,
+          metodo_pago:      metodo_pago || null,
           estado:           'PENDIENTE',
           detalles: {
-            create: carritoItems.map((item) => {
-              const atributos = [item.variante.tono, item.variante.presentacion]
-                .filter(Boolean)
-                .join(' / ')
-              return {
-                variante_id:          item.variante_id,
-                nombre_producto:      item.variante.producto.nombre,
-                descripcion_variante: atributos || null,
-                precio_unitario:      Number(item.variante.precio_venta),
-                cantidad:             item.cantidad,
-                subtotal:             Number(item.variante.precio_venta) * item.cantidad,
-              }
-            }),
+            create: carritoItems.map((item) => ({
+              variante_id:     item.variante_id,
+              precio_unitario: Number(item.variante.precio_venta),
+              cantidad:        item.cantidad,
+              subtotal:        Number(item.variante.precio_venta) * item.cantidad,
+            })),
           },
         },
       })
 
-      // 4b. Descontar stock de cada variante
+      // 4c. Descontar stock de cada variante
       for (const item of carritoItems) {
         await tx.variante.update({
           where: { id: item.variante_id },
@@ -97,7 +120,7 @@ export async function POST(req: NextRequest) {
         })
       }
 
-      // 4c. Vaciar carrito
+      // 4d. Vaciar carrito
       await tx.carritoItem.deleteMany({ where: { usuario_id: usuarioId } })
 
       return nuevoPedido
@@ -112,6 +135,18 @@ export async function POST(req: NextRequest) {
       metodo_pago,
     })
   } catch (error) {
+    // Race condition: stock se agotó entre el pre-check y la transacción
+    if (error instanceof Error && error.message === "stock_insuficiente") {
+      const e = error as Error & { nombre?: string; tono?: string; disponible?: number }
+      return NextResponse.json(
+        {
+          error: `Stock insuficiente para "${e.nombre ?? 'producto'}"${
+            e.tono ? ` (${e.tono})` : ''
+          }. Disponible: ${e.disponible ?? 0}`,
+        },
+        { status: 409 }
+      )
+    }
     console.error('Error creando pedido:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
@@ -151,10 +186,12 @@ export async function GET() {
       correo_cliente:   p.correo_cliente,
       telefono_cliente: p.telefono_cliente,
       fecha_pedido:     p.fecha_pedido.toISOString(),
+      metodo_pago:      p.metodo_pago,
+      comprobante_url:  p.comprobante_url,
       detalles: p.detalles.map((d) => ({
         id:                   d.id,
-        nombre_producto:      d.nombre_producto,
-        descripcion_variante: d.descripcion_variante,
+        nombre_producto:      d.variante.producto.nombre,
+        descripcion_variante: [d.variante.tono, d.variante.presentacion].filter(Boolean).join(' / ') || null,
         precio_unitario:      Number(d.precio_unitario),
         cantidad:             d.cantidad,
         subtotal:             Number(d.subtotal),

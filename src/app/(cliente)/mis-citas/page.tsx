@@ -4,9 +4,13 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { CalendarDays, ChevronDown, ChevronUp, Clock, User, XCircle, Loader2 } from 'lucide-react'
+import {
+  CalendarDays, ChevronDown, ChevronUp, Clock, User,
+  XCircle, Loader2, Upload, CheckCircle, ImageIcon, ExternalLink,
+} from 'lucide-react'
 import DotsLoader from '@/components/ui/DotsLoader'
 import AuthGuard from '@/components/ui/AuthGuard'
+import { toast } from '@/lib/toast'
 
 interface Servicio {
   nombre: string
@@ -22,6 +26,8 @@ interface Cita {
   estado: string
   notas: string | null
   nombre_contacto: string | null
+  metodo_pago: string | null
+  comprobante: string | null
   servicio: Servicio
 }
 
@@ -30,6 +36,13 @@ const ESTADO_STYLE: Record<string, string> = {
   CONFIRMADA: 'bg-green-100  text-green-700',
   CANCELADA:  'bg-red-100    text-red-600',
   COMPLETADA: 'bg-blue-100   text-blue-700',
+}
+
+const ESTADO_LABEL: Record<string, string> = {
+  PENDIENTE:  'Pendiente',
+  CONFIRMADA: 'Confirmada',
+  CANCELADA:  'Cancelada',
+  COMPLETADA: 'Completada',
 }
 
 export default function MisCitasPage() {
@@ -49,8 +62,20 @@ function MisCitasContenido() {
   const [cancelando, setCancelando] = useState<number | null>(null)
   const [error,      setError]      = useState<string | null>(null)
 
+  // Estados para subir comprobante
+  const [subiendoComp,     setSubiendoComp]     = useState<number | null>(null)
+  const [compExito,        setCompExito]        = useState<Set<number>>(new Set())
+  const [errorComp,        setErrorComp]        = useState<Record<number, string>>({})
+  const [modalCancelar,    setModalCancelar]    = useState<number | null>(null)  // id de cita a cancelar
+
+  const cargarCitas = () => {
+    fetch('/api/citas')
+      .then(r => r.json())
+      .then(data => setCitas(Array.isArray(data) ? data : Array.isArray(data.citas) ? data.citas : []))
+      .finally(() => setCargando(false))
+  }
+
   const cancelarCita = async (id: number) => {
-    if (!confirm('¿Segura que quieres cancelar esta cita? Esta acción no se puede deshacer.')) return
     setCancelando(id)
     setError(null)
     try {
@@ -63,6 +88,7 @@ function MisCitasContenido() {
       if (!res.ok) { setError(data.error); return }
       setCitas(prev => prev.map(c => c.id === id ? { ...c, estado: 'CANCELADA' } : c))
       setAbierto(null)
+      toast.success("Cita cancelada")
     } catch {
       setError('Error al cancelar. Intenta de nuevo.')
     } finally {
@@ -70,12 +96,32 @@ function MisCitasContenido() {
     }
   }
 
- useEffect(() => {
-  fetch('/api/citas')
-    .then(r => r.json())
-    .then(data => setCitas(Array.isArray(data) ? data : Array.isArray(data.citas) ? data.citas : []))
-    .finally(() => setCargando(false))
-}, [])
+  const handleSubirComprobante = async (citaId: number, file: File) => {
+    setErrorComp(prev => ({ ...prev, [citaId]: '' }))
+    setSubiendoComp(citaId)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch(`/api/citas/${citaId}/comprobante`, { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok) {
+        setErrorComp(prev => ({ ...prev, [citaId]: data.error || 'Error al subir comprobante' }))
+        return
+      }
+      // Actualizar la cita localmente
+      setCitas(prev => prev.map(c =>
+        c.id === citaId ? { ...c, comprobante: data.url, estado: 'CONFIRMADA' } : c
+      ))
+      setCompExito(prev => new Set([...prev, citaId]))
+      toast.success("Comprobante enviado")
+    } catch {
+      setErrorComp(prev => ({ ...prev, [citaId]: 'Error de conexión. Intenta de nuevo.' }))
+    } finally {
+      setSubiendoComp(null)
+    }
+  }
+
+  useEffect(() => { cargarCitas() }, [])
 
   if (cargando) {
     return (
@@ -139,7 +185,7 @@ function MisCitasContenido() {
                   </div>
 
                   <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${ESTADO_STYLE[cita.estado] ?? 'bg-gray-100 text-gray-600 dark:text-gray-400'}`}>
-                    {cita.estado}
+                    {ESTADO_LABEL[cita.estado] ?? cita.estado}
                   </span>
                 </div>
 
@@ -180,10 +226,63 @@ function MisCitasContenido() {
                     </div>
                   )}
 
+                  {/* ── Sección comprobante de pago ─────────────────────── */}
+                  {cita.metodo_pago === 'TRANSFERENCIA' && cita.estado !== 'CANCELADA' && cita.estado !== 'COMPLETADA' && (
+                    <div className="mt-1">
+                      {/* Ya subió comprobante */}
+                      {cita.comprobante ? (
+                        <div className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl p-3">
+                          <div className="flex items-center gap-2 text-green-700 dark:text-green-400 text-sm font-semibold">
+                            <CheckCircle className="w-4 h-4" />
+                            Comprobante enviado
+                          </div>
+                          <a
+                            href={cita.comprobante}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs text-blue-600 hover:underline font-medium"
+                          >
+                            Ver <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+                      ) : compExito.has(cita.id) ? (
+                        <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl p-3 text-green-700 dark:text-green-400 text-sm font-semibold">
+                          <CheckCircle className="w-4 h-4" />
+                          ¡Comprobante recibido! Tu cita está confirmada. ✅
+                        </div>
+                      ) : (
+                        <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl p-3">
+                          <p className="text-xs font-bold text-rose-600 dark:text-rose-400 mb-2 flex items-center gap-1.5">
+                            <Upload className="w-3.5 h-3.5" />
+                            Sube tu comprobante de transferencia para confirmar tu cita
+                          </p>
+                          {errorComp[cita.id] && (
+                            <p className="text-xs text-red-500 mb-1.5">{errorComp[cita.id]}</p>
+                          )}
+                          <label className={`flex items-center justify-center gap-2 w-full py-2 rounded-xl border-2 border-dashed border-rose-300 dark:border-rose-700 text-rose-600 dark:text-rose-400 text-xs font-semibold cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/30 transition ${subiendoComp === cita.id ? 'opacity-50 pointer-events-none' : ''}`}>
+                            {subiendoComp === cita.id
+                              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Subiendo...</>
+                              : <><ImageIcon className="w-3.5 h-3.5" /> Seleccionar comprobante</>
+                            }
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={e => {
+                                const f = e.target.files?.[0]
+                                if (f) handleSubirComprobante(cita.id, f)
+                              }}
+                            />
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Cancelar cita */}
                   {puedeCancelar(cita.fecha, cita.estado) && (
                     <button
-                      onClick={() => cancelarCita(cita.id)}
+                      onClick={() => setModalCancelar(cita.id)}
                       disabled={cancelando === cita.id}
                       className="mt-2 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 border-red-200 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition text-sm font-semibold disabled:opacity-50"
                     >
@@ -210,6 +309,45 @@ function MisCitasContenido() {
           ))}
         </div>
       </div>
+
+      {/* ── Modal de confirmación para cancelar ─────────────────────── */}
+      {modalCancelar !== null && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl p-7 w-full max-w-sm shadow-2xl border border-red-100 dark:border-red-900/30 animate-in fade-in slide-in-from-bottom-4 duration-200">
+            {/* Ícono */}
+            <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-950/40 flex items-center justify-center mx-auto mb-5">
+              <XCircle className="w-9 h-9 text-red-500" />
+            </div>
+
+            <h3 className="text-xl font-black text-gray-900 dark:text-white text-center mb-2">
+              ¿Cancelar esta cita?
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-7 leading-relaxed">
+              Esta acción <strong className="text-gray-700 dark:text-gray-300">no se puede deshacer</strong>.
+              Recibirás un correo de confirmación de cancelación.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setModalCancelar(null)}
+                className="flex-1 px-4 py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                No, mantener
+              </button>
+              <button
+                onClick={() => { cancelarCita(modalCancelar); setModalCancelar(null) }}
+                disabled={cancelando !== null}
+                className="flex-1 px-4 py-3 rounded-2xl bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-bold text-sm transition shadow-lg shadow-red-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {cancelando !== null
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Cancelando...</>
+                  : 'Sí, cancelar'
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

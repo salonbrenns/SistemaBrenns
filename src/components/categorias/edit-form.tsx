@@ -27,14 +27,14 @@ export default function EditCategoriaForm({ categoria }: { categoria: Categoria 
       <input
         name="nombre"
         defaultValue={categoria.nombre}
-        className="border p-2 rounded w-full"
+        className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-colors"
       />
 
      <div className="flex gap-3 pt-2">
         <button
           type="button"
           onClick={() => router.push('/admin/categorias')}
-          className="border px-4 py-2 rounded"
+          className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 py-2 rounded transition-colors"
         >
           Cancelar
         </button>

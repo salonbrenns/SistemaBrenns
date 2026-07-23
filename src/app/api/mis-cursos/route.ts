@@ -42,7 +42,10 @@ export async function GET() {
     const resultado = inscripciones.map((insc) => {
       const curso        = cursos.find((c) => c.id === insc.curso_id)
       const pagosCurso   = pagos.filter((p) => p.inscripcion_id === insc.id)
-      const totalPagado  = pagosCurso.reduce((sum, p) => sum + Number(p.monto), 0)
+      // Solo contabilizar pagos confirmados (PAGADO) para el cálculo de deuda
+      const totalPagado  = pagosCurso
+        .filter((p) => p.estado === "PAGADO")
+        .reduce((sum, p) => sum + Number(p.monto), 0)
       const misAsistencias = asistencias
         .filter(a => a.inscripcion_id === insc.id)
         .map(a => new Date(a.fecha).toISOString().slice(0, 10))

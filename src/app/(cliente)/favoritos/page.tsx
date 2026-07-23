@@ -7,6 +7,7 @@ import { Heart, ShoppingBag, Trash2, Wrench, GraduationCap, Clock } from 'lucide
 import { useFavoritos } from '@/hooks/useFavoritos'
 import { useFavoritosServicios } from '@/hooks/useFavoritosServicios'
 import AuthGuard from '@/components/ui/AuthGuard'
+import PageLoader from '@/components/ui/PageLoader'
 
 type CursoFav = {
   id:            number
@@ -73,11 +74,7 @@ function FavoritosContenido() {
   const totalFavs = favoritos.length + favServicios.length + favCursoIds.length
 
   if (cargando) {
-    return (
-      <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin" />
-      </div>
-    )
+    return <PageLoader className="min-h-screen bg-[#fffafa] dark:bg-gray-950" />
   }
 
   const tabClass = (t: typeof tab) =>
@@ -88,7 +85,7 @@ function FavoritosContenido() {
     }`
   const countClass = (t: typeof tab) =>
     `text-xs font-black px-1.5 py-0.5 rounded-full ${
-      tab === t ? 'bg-rose-100 text-rose-700' : 'bg-gray-100 text-gray-400'
+      tab === t ? 'bg-rose-100 text-rose-700' : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
     }`
 
   return (
@@ -135,7 +132,7 @@ function FavoritosContenido() {
                   return (
                     <article key={fav.id} className="group bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm hover:shadow-xl border border-rose-50 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:-translate-y-1">
                       <Link href={`/producto/${p.id}`} className="block">
-                        <div className="relative h-56 overflow-hidden bg-rose-50">
+                        <div className="relative h-56 overflow-hidden bg-rose-50 dark:bg-gray-700">
                           {foto ? (
                             <Image src={foto} alt={p.nombre} fill sizes="(max-width: 640px) 100vw, 25vw"
                               className="object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -189,7 +186,7 @@ function FavoritosContenido() {
                   return (
                     <article key={fav.id} className="group bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm hover:shadow-xl border border-rose-50 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:-translate-y-1">
                       <Link href={`/servicio/${s.id}`} className="block">
-                        <div className="relative h-56 overflow-hidden bg-rose-50">
+                        <div className="relative h-56 overflow-hidden bg-rose-50 dark:bg-gray-700">
                           {foto ? (
                             <Image src={foto} alt={s.nombre} fill sizes="(max-width: 640px) 100vw, 25vw"
                               className="object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -236,7 +233,7 @@ function FavoritosContenido() {
                   return (
                     <article key={curso.id} className="group bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm hover:shadow-xl border border-rose-50 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:-translate-y-1">
                       <Link href={`/curso/${curso.id}`} className="block">
-                        <div className="relative h-48 overflow-hidden bg-rose-50">
+                        <div className="relative h-48 overflow-hidden bg-rose-50 dark:bg-gray-700">
                           {foto ? (
                             <Image src={foto} alt={curso.titulo} fill sizes="(max-width: 640px) 100vw, 33vw"
                               className="object-cover group-hover:scale-105 transition-transform duration-500" />

@@ -103,6 +103,9 @@ export default function EmpleadasPage() {
         if (!formEmp.nombre || !formEmp.correo || !formEmp.password) {
           setErrorEmp("Nombre, correo y contraseña son obligatorios"); setGuardandoEmp(false); return
         }
+        if (formEmp.password.length < 8) {
+          setErrorEmp("La contraseña debe tener al menos 8 caracteres"); setGuardandoEmp(false); return
+        }
         const res = await fetch("/api/admin/empleadas", {
           method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(formEmp),
         })
@@ -507,7 +510,7 @@ export default function EmpleadasPage() {
                 <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Teléfono</label>
                 <input value={formEmp.telefono} onChange={e => setFormEmp(f => ({ ...f, telefono: e.target.value }))}
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white text-sm focus:outline-none focus:border-pink-400"
-                  placeholder="961 123 4567" />
+                  placeholder="961 123 4567" maxLength={20} />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
@@ -517,7 +520,8 @@ export default function EmpleadasPage() {
                   <input type={verPass ? "text" : "password"} value={formEmp.password}
                     onChange={e => setFormEmp(f => ({ ...f, password: e.target.value }))}
                     className="w-full px-4 py-2.5 pr-10 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white text-sm focus:outline-none focus:border-pink-400"
-                    placeholder={modalEmp === "crear" ? "Mínimo 6 caracteres" : "Nueva contraseña"} />
+                    placeholder={modalEmp === "crear" ? "Mínimo 8 caracteres" : "Nueva contraseña"}
+                    minLength={modalEmp === "crear" ? 8 : undefined} />
                   <button type="button" onClick={() => setVerPass(v => !v)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                     {verPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

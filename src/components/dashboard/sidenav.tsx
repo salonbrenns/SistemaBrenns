@@ -23,7 +23,7 @@ function ThemeToggle({ mobile }: { mobile: boolean }) {
     return (
       <button
         onClick={() => setTheme(next.value)}
-        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
       >
         <current.Icon className="h-5 w-5" />
         <span>{current.label}</span>

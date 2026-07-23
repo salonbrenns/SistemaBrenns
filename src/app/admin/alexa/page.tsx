@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: "Alexa Skill | Admin",
 }
 
-const PIN = "2580"
+const PIN = process.env.NEXT_PUBLIC_ALEXA_PIN ?? "2580"
 
 const INTENTS = [
   {

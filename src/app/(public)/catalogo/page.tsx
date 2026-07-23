@@ -7,6 +7,7 @@ import ProductoCard, { type ProductoCardType } from '@/components/ui/ProductoCar
 import ProductosFiltros from '@/components/ui/ProductosFiltros'
 import Paginacion from '@/components/ui/paginacion'
 import { usePromociones } from "@/hooks/usePromociones"
+import PageLoader from "@/components/ui/PageLoader"
 
 const POR_PAGINA = 12
 
@@ -133,11 +134,7 @@ function ProductosContent() {
           </p>
         )}
 
-        {cargando && (
-          <div className="flex justify-center py-20">
-            <div className="w-10 h-10 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin" />
-          </div>
-        )}
+        {cargando && <PageLoader className="py-20" />}
 
         {!cargando && productosPagina.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -187,11 +184,7 @@ function ProductosContent() {
 
 export default function ProductosPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-10 h-10 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin" />
-      </div>
-    }>
+    <Suspense fallback={<PageLoader className="min-h-screen" />}>
       <ProductosContent />
     </Suspense>
   )

@@ -53,8 +53,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if ("telefono" in user) token.telefono = user.telefono as string | null
       }
 
-      // Para usuarios de Google: consultar rol en BD (dynamic import para no romper Edge runtime)
-      if (account?.provider === "google" && token.email) {
+      // Consultar BD cuando:
+      // 1. Login con Google (siempre en el primer sign-in)
+      // 2. token.id es inválido (UUID de NextAuth en vez del ID numérico de la BD)
+      //    → Esto sana sesiones viejas sin necesidad de que el usuario vuelva a iniciar sesión
+      const tokenIdInvalido = !token.id || isNaN(Number(token.id as string))
+      if ((account?.provider === "google" || tokenIdInvalido) && token.email) {
         try {
           const { prisma } = await import("@/lib/prisma")
           const dbUser = await prisma.usuario.findUnique({
@@ -67,7 +71,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             token.telefono = dbUser.telefono
           }
         } catch (err) {
-          console.error("Error consultando usuario Google en BD:", err)
+          console.error("Error consultando usuario en BD:", err)
         }
       }
 

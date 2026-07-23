@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { v2 as cloudinary } from "cloudinary"
+import { validarArchivo } from "@/lib/uploadValidation"
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -17,12 +18,23 @@ export async function POST(req: Request) {
   }
 
   try {
-    const formData = await req.formData()
-    const file     = formData.get("file") as File | null
-    const folder   = formData.get("folder") as string || "Brenns-Home" // Carpeta dinámica
+    const formData    = await req.formData()
+    const file        = formData.get("file") as File | null
+    const folderParam = formData.get("folder") as string | null
+
+    // Whitelist de carpetas permitidas para evitar inyección de rutas en Cloudinary
+    const CARPETAS_PERMITIDAS = ["Brenns-Home", "Brenns-Banner", "Brenns-Galeria"]
+    const folder = CARPETAS_PERMITIDAS.includes(folderParam ?? "")
+      ? (folderParam as string)
+      : "Brenns-Home"
 
     if (!file) {
       return NextResponse.json({ error: "No se recibió archivo" }, { status: 400 })
+    }
+
+    const validacion = validarArchivo(file)
+    if (!validacion.ok) {
+      return NextResponse.json({ error: validacion.error }, { status: validacion.status })
     }
 
     const bytes  = await file.arrayBuffer()

@@ -47,7 +47,7 @@ function VerificarContenido() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 flex items-center justify-center p-6">
       {/* Logo arriba */}
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
@@ -55,17 +55,17 @@ function VerificarContenido() {
             <div className="w-9 h-9 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center text-white font-black text-base shadow-lg">
               B
             </div>
-            <span className="text-white font-bold text-lg tracking-wide">Brenn&apos;s</span>
+            <span className="text-gray-900 dark:text-white font-bold text-lg tracking-wide">Brenn&apos;s</span>
           </div>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-3xl shadow-2xl p-8 text-center">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl shadow-2xl p-8 text-center">
 
           {/* Cargando */}
           {estado === "cargando" && (
             <>
               <Loader2 className="w-14 h-14 text-pink-500 animate-spin mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-white">Verificando tu correo...</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Verificando tu correo...</h2>
             </>
           )}
 
@@ -75,8 +75,8 @@ function VerificarContenido() {
               <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
                 <CheckCircle2 className="w-9 h-9 text-emerald-400" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">¡Correo verificado!</h2>
-              <p className="text-gray-400 mb-8">Tu cuenta está activa. Ya puedes iniciar sesión.</p>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">¡Correo verificado!</h2>
+              <p className="text-gray-500 dark:text-gray-400 mb-8">Tu cuenta está activa. Ya puedes iniciar sesión.</p>
               <Link
                 href="/login"
                 className="inline-block w-full bg-gradient-to-r from-pink-600 to-rose-600 text-white font-bold py-3 px-10 rounded-2xl shadow hover:shadow-lg hover:from-pink-500 hover:to-rose-500 transition-all"
@@ -92,8 +92,8 @@ function VerificarContenido() {
               <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
                 <XCircle className="w-9 h-9 text-red-400" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Enlace inválido</h2>
-              <p className="text-gray-400 mb-6">{errorMsg}</p>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Enlace inválido</h2>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">{errorMsg}</p>
               <ReenviarForm
                 correoInput={correoInput}
                 setCorreoInput={setCorreoInput}
@@ -110,8 +110,8 @@ function VerificarContenido() {
               <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
                 <XCircle className="w-9 h-9 text-amber-400" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Enlace expirado</h2>
-              <p className="text-gray-400 mb-6">El enlace de verificación venció. Solicita uno nuevo:</p>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Enlace expirado</h2>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">El enlace de verificación venció. Solicita uno nuevo:</p>
               <ReenviarForm
                 correoInput={correoInput}
                 setCorreoInput={setCorreoInput}
@@ -128,8 +128,8 @@ function VerificarContenido() {
               <div className="w-16 h-16 rounded-full bg-pink-500/10 flex items-center justify-center mx-auto mb-4">
                 <MailCheck className="w-9 h-9 text-pink-400" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Revisa tu correo</h2>
-              <p className="text-gray-400 mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Revisa tu correo</h2>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">
                 Te enviamos un enlace de verificación.<br />
                 Haz clic en él para activar tu cuenta.
               </p>
@@ -143,7 +143,7 @@ function VerificarContenido() {
             </>
           )}
 
-          <div className="mt-6 pt-6 border-t border-gray-800 text-sm text-gray-500">
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800 text-sm text-gray-500 dark:text-gray-400">
             ¿Ya verificaste?{" "}
             <Link href="/login" className="text-pink-400 font-medium hover:text-pink-300 transition-colors">
               Iniciar sesión
@@ -182,7 +182,7 @@ function ReenviarForm({
         value={correoInput}
         onChange={e => setCorreoInput(e.target.value)}
         placeholder="tu@correo.com"
-        className="w-full px-4 py-3 rounded-2xl bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 outline-none text-sm transition-colors"
+        className="w-full px-4 py-3 rounded-2xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 outline-none text-sm transition-colors"
       />
       <button
         type="submit"
@@ -201,7 +201,7 @@ function ReenviarForm({
 export default function VerificarEmailPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-950 flex items-center justify-center">
         <Loader2 className="w-12 h-12 text-pink-500 animate-spin" />
       </div>
     }>

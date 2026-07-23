@@ -22,7 +22,16 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { servicio_id, fecha, hora, notas, empleado_id, nombre_contacto, telefono_contacto, metodo_pago } = body;
+  const servicio_id      = body.servicio_id
+  const fecha            = body.fecha
+  const hora             = body.hora
+  const notas            = body.notas ? String(body.notas).trim().slice(0, 1000) : null
+  const empleado_id      = body.empleado_id
+  const nombre_contacto  = body.nombre_contacto  ? String(body.nombre_contacto).trim().slice(0, 100)  : null
+  const telefono_contacto = body.telefono_contacto ? String(body.telefono_contacto).trim().slice(0, 30) : null
+  const metodo_pago      = body.metodo_pago
+
+  const total            = body.total
 
   if (!servicio_id || !fecha || !hora) {
     return NextResponse.json({ error: "Faltan datos requeridos" }, { status: 400 });
@@ -32,16 +41,51 @@ export async function POST(req: Request) {
     const fechaInicio = new Date(fecha + "T00:00:00");
     const fechaFin    = new Date(fecha + "T23:59:59.999");
 
-    // Duración del servicio nuevo
+    // ── 1. Validar que la fecha/hora no sea en el pasado ──────────────────
+    const fechaCita = new Date(`${fecha}T${hora}`)
+    if (fechaCita < new Date()) {
+      return NextResponse.json({ error: "No puedes agendar en una fecha u hora pasada" }, { status: 400 })
+    }
+
+    // ── 2. Validar que el día no esté bloqueado ────────────────────────────
+    const diaBloqueado = await prisma.diaBloqueado.findFirst({
+      where: { fecha: fechaInicio },
+    })
+    if (diaBloqueado) {
+      return NextResponse.json({ error: "El salón no atiende ese día" }, { status: 409 })
+    }
+
+    // ── 3. Validar que la hora no esté bloqueada ───────────────────────────
+    const horaBloqueada = await prisma.horaBloqueada.findFirst({
+      where: { fecha: fechaInicio, hora },
+    })
+    if (horaBloqueada) {
+      return NextResponse.json({ error: "Esa hora no está disponible" }, { status: 409 })
+    }
+
+    // ── 4. Límite de citas activas por usuario (máx. 5) ────────────────────
+    const citasActivas = await prisma.cita.count({
+      where: {
+        usuario_id: Number(session.user.id),
+        estado:     { in: ["PENDIENTE", "CONFIRMADA"] },
+      },
+    })
+    if (citasActivas >= 5) {
+      return NextResponse.json({
+        error: "Tienes demasiadas citas activas. Cancela alguna antes de agendar una nueva.",
+      }, { status: 400 })
+    }
+
+    // ── 5. Duración del servicio nuevo ─────────────────────────────────────
     const servicioNuevo = await prisma.servicio.findUnique({
       where: { id: Number(servicio_id) },
       select: { nombre: true, duracion: true },
     })
-    const durNuevo   = parseDurMin(servicioNuevo?.duracion ?? "1h")
+    const durNuevo    = parseDurMin(servicioNuevo?.duracion ?? "1h")
     const inicioNuevo = horaAMin(hora)
     const finNuevo    = inicioNuevo + durNuevo
 
-    // Citas activas del día
+    // ── 6. Verificar solapamiento con citas existentes ──────────────────────
     const citasDelDia = await prisma.cita.findMany({
       where: {
         fecha:  { gte: fechaInicio, lte: fechaFin },
@@ -64,6 +108,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Esa hora ya esta ocupada" }, { status: 409 });
     }
 
+    // Las citas de TRANSFERENCIA nacen PENDIENTE hasta que se suba el comprobante.
+    // El comprobante route las pasa a CONFIRMADA automáticamente.
+    const esTranferencia = (metodo_pago || "TRANSFERENCIA") === "TRANSFERENCIA"
+    const estadoInicial  = esTranferencia ? "PENDIENTE" : "CONFIRMADA"
+
     const cita = await prisma.cita.create({
       data: {
         servicio_id:       Number(servicio_id),
@@ -72,15 +121,20 @@ export async function POST(req: Request) {
         usuario_id:        Number(session.user.id),
         empleado_id:       empleado_id ? Number(empleado_id) : null,
         notas:             notas || null,
-        metodo_pago:       metodo_pago || "TARJETA",
-        estado:            "CONFIRMADA",
+        metodo_pago:       metodo_pago || "TRANSFERENCIA",
+        estado:            estadoInicial,
+        estado_cita:       estadoInicial,
         nombre_contacto:   nombre_contacto || null,
         telefono_contacto: telefono_contacto || null,
+        // Monto a cobrar: anticipo o pago completo
+        total:             total ? Number(total) : null,
       },
     });
 
+    // Solo enviar correo de confirmación si no es transferencia
+    // (para transferencia el correo se envía cuando suben el comprobante)
     const clienteEmail = session.user.email
-    if (clienteEmail) {
+    if (clienteEmail && !esTranferencia) {
       sendCitaAgendada({
         to:       clienteEmail,
         nombre:   session.user.name ?? "Cliente",

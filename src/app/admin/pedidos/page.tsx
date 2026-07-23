@@ -1,11 +1,9 @@
 'use client'
 
-import { useEffect, useState, Fragment } from 'react'
-import { Package, Loader2, ChevronDown, ChevronUp, CheckCircle, XCircle, Truck, Package2, ClipboardCheck } from 'lucide-react'
+import { useEffect, useState, useCallback, Fragment } from 'react'
+import { Package, Loader2, ChevronDown, ChevronUp, CheckCircle, XCircle, Truck, Package2, ClipboardCheck, FileImage } from 'lucide-react'
 import Paginacion from '@/components/ui/paginacion'
 import DropdownAcciones, { DropdownItem, DropdownSeparator } from '@/components/ui/DropdownAcciones'
-
-const POR_PAGINA = 10
 
 type Detalle = {
   nombre_producto: string
@@ -23,6 +21,7 @@ interface PedidoAdmin {
   correo_cliente: string
   fecha_pedido: string
   total_items: number
+  comprobante_url: string | null
   usuario: { nombre: string; correo: string } | null
   detalles: Detalle[]
 }
@@ -38,21 +37,39 @@ const ESTADO_STYLE: Record<string, string> = {
 }
 
 export default function AdminPedidosPage() {
-  const [pedidos,  setPedidos]  = useState<PedidoAdmin[]>([])
-  const [cargando, setCargando] = useState(true)
-  const [filtro,   setFiltro]   = useState('TODOS')
-  const [abierto,  setAbierto]  = useState<number | null>(null)
-  const [pagina,   setPagina]   = useState(1)
+  const [pedidos,      setPedidos]      = useState<PedidoAdmin[]>([])
+  const [cargando,     setCargando]     = useState(true)
+  const [filtro,       setFiltro]       = useState('TODOS')
+  const [abierto,      setAbierto]      = useState<number | null>(null)
+  const [pagina,       setPagina]       = useState(1)
+  const [totalPaginas, setTotalPaginas] = useState(1)
+  const [total,        setTotal]        = useState(0)
 
-  const cargar = () => {
-    fetch('/api/admin/pedidos')
-      .then(r => { if (!r.ok) throw new Error(); return r.json() })
-      .then(data => setPedidos(Array.isArray(data) ? data : []))
-      .catch(() => setPedidos([]))
-      .finally(() => setCargando(false))
-  }
+  const cargar = useCallback(async (p: number, f: string) => {
+    setCargando(true)
+    const params = new URLSearchParams({ page: String(p) })
+    if (f !== 'TODOS') params.set('estado', f)
 
-  useEffect(() => { cargar() }, [])
+    try {
+      const r = await fetch(`/api/admin/pedidos?${params}`)
+      if (!r.ok) throw new Error('No se pudo cargar')
+      const data = await r.json()
+      setPedidos(data.pedidos ?? [])
+      setTotalPaginas(data.totalPaginas ?? 1)
+      setTotal(data.total ?? 0)
+    } catch {
+      setPedidos([])
+    } finally {
+      setCargando(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    const cargarDatos = async () => {
+      await cargar(pagina, filtro)
+    }
+    void cargarDatos()
+  }, [cargar, pagina, filtro])
 
   const cambiarEstado = async (id: number, estado: string) => {
     await fetch('/api/admin/pedidos', {
@@ -60,19 +77,21 @@ export default function AdminPedidosPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, estado }),
     })
-    cargar()
+    cargar(pagina, filtro)
   }
 
-  const pedidosFiltrados = filtro === 'TODOS'
-    ? pedidos
-    : pedidos.filter(p => p.estado === filtro)
+  const cambiarFiltro = (f: string) => {
+    setFiltro(f)
+    setPagina(1)
+    setAbierto(null)
+  }
 
-  const totalPaginas  = Math.ceil(pedidosFiltrados.length / POR_PAGINA)
-  const pedidosPagina = pedidosFiltrados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
+  const irAPagina = (p: number) => {
+    setPagina(p)
+    setAbierto(null)
+  }
 
-  const cambiarFiltro = (f: string) => { setFiltro(f); setPagina(1); setAbierto(null) }
-
-  if (cargando) {
+  if (cargando && pedidos.length === 0) {
     return (
       <div className="flex items-center justify-center py-40">
         <Loader2 className="w-10 h-10 text-rose-400 animate-spin" />
@@ -87,7 +106,8 @@ export default function AdminPedidosPage() {
       <div className="flex items-center gap-3">
         <Package className="w-7 h-7 text-rose-600" />
         <h1 className="text-2xl font-bold text-pink-900 dark:text-pink-300">Pedidos</h1>
-        <span className="text-sm text-gray-400 font-semibold">({pedidos.length} total)</span>
+        <span className="text-sm text-gray-400 font-semibold">({total} total)</span>
+        {cargando && <Loader2 className="w-4 h-4 text-rose-400 animate-spin" />}
       </div>
 
       {/* Filtros */}
@@ -109,7 +129,7 @@ export default function AdminPedidosPage() {
         <table className="min-w-full divide-y">
           <thead className="bg-rose-900 dark:bg-rose-950">
             <tr>
-              {['#Pedido', 'Cliente', 'Artículos', 'Total', 'Fecha', 'Estado', 'Acción'].map(h => (
+              {['#Pedido', 'Cliente', 'Artículos', 'Total', 'Fecha', 'Estado', 'Comprobante', 'Acción'].map(h => (
                 <th key={h} className="px-5 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">
                   {h}
                 </th>
@@ -118,15 +138,15 @@ export default function AdminPedidosPage() {
           </thead>
 
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
-            {pedidosPagina.length === 0 && (
+            {pedidos.length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center py-10 text-gray-400">
+                <td colSpan={8} className="text-center py-10 text-gray-400">
                   No hay pedidos
                 </td>
               </tr>
             )}
 
-            {pedidosPagina.map(pedido => (
+            {pedidos.map(pedido => (
               <Fragment key={pedido.id}>
 
                 {/* FILA PRINCIPAL */}
@@ -165,6 +185,21 @@ export default function AdminPedidosPage() {
                   </td>
 
                   <td className="px-5 py-4">
+                    {pedido.comprobante_url ? (
+                      <a
+                        href={pedido.comprobante_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                      >
+                        <FileImage className="w-4 h-4" /> Ver
+                      </a>
+                    ) : (
+                      <span className="text-xs text-gray-400">—</span>
+                    )}
+                  </td>
+
+                  <td className="px-5 py-4">
                     <DropdownAcciones>
                       {pedido.estado !== 'PAGADO' && (
                         <DropdownItem onClick={() => cambiarEstado(pedido.id, 'PAGADO')}
@@ -194,7 +229,7 @@ export default function AdminPedidosPage() {
                 {/* DETALLE */}
                 {abierto === pedido.id && (
                   <tr>
-                    <td colSpan={7} className="bg-rose-50 dark:bg-gray-700/30 p-3">
+                    <td colSpan={8} className="bg-rose-50 dark:bg-gray-700/30 p-3">
                       <DetailPedido detalles={pedido.detalles} />
                     </td>
                   </tr>
@@ -209,7 +244,7 @@ export default function AdminPedidosPage() {
       <Paginacion
         paginaActual={pagina}
         totalPaginas={totalPaginas}
-        onChange={(p) => { setPagina(p); setAbierto(null) }}
+        onChange={irAPagina}
       />
     </div>
   )

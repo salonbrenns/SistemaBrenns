@@ -34,7 +34,10 @@ export async function GET(
     const inscripcionIds = inscripciones.map((i) => i.id)
 
     const [usuarios, pagos] = await Promise.all([
-      prisma.usuario.findMany({ where: { id: { in: usuarioIds } } }),
+      prisma.usuario.findMany({
+        where:  { id: { in: usuarioIds } },
+        select: { id: true, nombre: true, appaterno: true, apmaterno: true, correo: true, telefono: true },
+      }),
       prisma.pagoCurso.findMany({ where: { inscripcion_id: { in: inscripcionIds } } }),
     ])
 

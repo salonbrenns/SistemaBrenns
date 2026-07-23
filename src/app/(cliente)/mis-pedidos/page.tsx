@@ -2,8 +2,9 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Package, ChevronDown, ChevronUp, ShoppingBag, CheckCircle2, Clock, Truck } from 'lucide-react'
+import { Package, ChevronDown, ChevronUp, ShoppingBag, CheckCircle2, Clock, Truck, Upload, ExternalLink } from 'lucide-react'
 import AuthGuard from '@/components/ui/AuthGuard'
+import PageLoader from '@/components/ui/PageLoader'
 
 interface Detalle {
   id: number
@@ -22,6 +23,8 @@ interface Pedido {
   subtotal: number
   costo_envio: number
   fecha_pedido: string
+  metodo_pago: string | null
+  comprobante_url: string | null
   detalles: Detalle[]
 }
 
@@ -56,7 +59,7 @@ function TrackingTimeline({ estado }: { estado: string }) {
   const idxActual = PASOS.findIndex(p => p.key === estado)
   return (
     <div className="relative flex items-start justify-between py-4 px-2">
-      <div className="absolute top-[22px] left-6 right-6 h-0.5 bg-gray-200 z-0" />
+      <div className="absolute top-[22px] left-6 right-6 h-0.5 bg-gray-200 dark:bg-gray-700 z-0" />
       <div
         className="absolute top-[22px] left-6 h-0.5 bg-rose-400 z-0 transition-all duration-500"
         style={{ width: idxActual <= 0 ? '0%' : `calc(${(idxActual / (PASOS.length - 1)) * 100}% - 12px)` }}
@@ -101,11 +104,7 @@ function MisPedidosContenido() {
   }, [])
 
   if (cargando) {
-    return (
-      <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin" />
-      </div>
-    )
+    return <PageLoader className="min-h-screen bg-[#fffafa] dark:bg-gray-950" />
   }
 
   return (
@@ -177,7 +176,7 @@ function MisPedidosContenido() {
                             }
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-800 line-clamp-1">{d.nombre_producto}</p>
+                            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 line-clamp-1">{d.nombre_producto}</p>
                             {d.descripcion_variante && (
                               <p className="text-xs text-rose-500 font-semibold">{d.descripcion_variante}</p>
                             )}
@@ -204,6 +203,28 @@ function MisPedidosContenido() {
                         <span className="text-rose-700">${pedido.total.toLocaleString('es-MX')} MXN</span>
                       </div>
                     </div>
+
+                    {/* Comprobante de transferencia */}
+                    {pedido.metodo_pago === 'transferencia' && (
+                      <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                        {pedido.comprobante_url ? (
+                          <a
+                            href={pedido.comprobante_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" /> Ver comprobante enviado
+                          </a>
+                        ) : pedido.estado === 'PENDIENTE' ? (
+                          <Link href={`/pedido/${pedido.id}?metodo=transferencia`}>
+                            <button className="inline-flex items-center gap-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-full transition-all shadow-sm">
+                              <Upload className="w-3.5 h-3.5" /> Subir comprobante de pago
+                            </button>
+                          </Link>
+                        ) : null}
+                      </div>
+                    )}
                   </div>
                 )}
 
