@@ -111,7 +111,7 @@ function ConfirmacionContenido() {
       .finally(() => setCargando(false))
   }, [pedidoId])
 
-  const manejarArchivo = (f: File) => {
+  const procesarArchivoSeleccionado = (f: File) => {
     setArchivo(f)
     setErrorUpload(null)
     setPreview(URL.createObjectURL(f))
@@ -323,7 +323,7 @@ function ConfirmacionContenido() {
                     onClick={() => inputRef.current?.click()}
                     onDragOver={e => { e.preventDefault(); setDragOver(true) }}
                     onDragLeave={() => setDragOver(false)}
-                    onDrop={e => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) manejarArchivo(f) }}
+                    onDrop={e => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) procesarArchivoSeleccionado(f) }}
                     className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all min-h-[160px] ${
                       dragOver
                         ? 'border-rose-400 bg-rose-50 dark:bg-rose-900/20'
@@ -337,7 +337,7 @@ function ConfirmacionContenido() {
                       type="file"
                       accept="image/*,application/pdf"
                       className="hidden"
-                      onChange={e => { const f = e.target.files?.[0]; if (f) manejarArchivo(f) }}
+                      onChange={e => { const f = e.target.files?.[0]; if (f) procesarArchivoSeleccionado(f) }}
                     />
                     {preview ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -399,10 +399,4 @@ function ConfirmacionContenido() {
       </div>
     </div>
   )
-
-  function manejarArchivo(f: File) {
-    setArchivo(f)
-    setErrorUpload(null)
-    setPreview(URL.createObjectURL(f))
-  }
 }
