@@ -126,6 +126,13 @@ export default function AdminAgendarPage() {
     if (!sinUsuario && !usuarioSel)             { setError("Selecciona un cliente o marca 'Sin usuario'"); return }
     if (sinUsuario && !nombreContacto)           { setError("Ingresa el nombre del cliente"); return }
 
+    const horaSigueDisponible = horarios.some(h => h.hora === horaSel && h.disponible)
+    if (!horaSigueDisponible) {
+      setHoraSel(null)
+      setError("La hora seleccionada ya no está disponible. Elige otra.")
+      return
+    }
+
     setGuardando(true)
     try {
       const res = await fetch("/api/admin/crear-cita", {

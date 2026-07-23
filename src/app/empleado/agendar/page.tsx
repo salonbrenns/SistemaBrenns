@@ -118,6 +118,13 @@ export default function EmpleadoAgendarPage() {
     if (sinUsuario && !nombreContacto)           { setError("Ingresa el nombre del cliente"); return }
     if (!tipoPago)                               { setError("Selecciona si se cobró anticipo o pago completo"); return }
 
+    const horaSigueDisponible = horarios.some(h => h.hora === horaSel && h.disponible)
+    if (!horaSigueDisponible) {
+      setHoraSel(null)
+      setError("La hora seleccionada ya no está disponible. Elige otra.")
+      return
+    }
+
     setGuardando(true)
     try {
       const res = await fetch("/api/admin/crear-cita", {

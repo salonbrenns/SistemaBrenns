@@ -113,6 +113,16 @@ function AgendarContenido() {
     setEmpleadoSel(id)
     setFechaSel(null)
     setHoraSel(null)
+    setErrorHora("")
+    setHorarios([])
+    setSinAtencion(false)
+  }
+
+  // ── NUEVO: al cambiar fecha limpiar la hora previamente seleccionada y recrear la lista desde cero
+  const handleSelFecha = (dia: Date) => {
+    setFechaSel(dia)
+    setHoraSel(null)
+    setErrorHora("")
     setHorarios([])
     setSinAtencion(false)
   }
@@ -201,6 +211,19 @@ function AgendarContenido() {
     setErrorHora("")
     if (!tipoPago) { setErrorPago("Selecciona anticipo o pago completo"); return }
     if (!fechaSel || !horaSel) { setErrorPago("Faltan datos de la cita"); return }
+
+    const horaSigueDisponible = horarios.some(h => h.hora === horaSel && h.disponible)
+    if (!horaSigueDisponible) {
+      setCargandoHor(true)
+      setHoraSel(null)
+      setHorarios([])
+      setSinAtencion(false)
+      setRefreshHor(n => n + 1)
+      setPaso(1)
+      setErrorHora("⚠️ Esa hora ya no está disponible. Selecciona otro horario.")
+      return
+    }
+
     setPagando(true)
     try {
       const id = await crearCita("TRANSFERENCIA")
@@ -208,10 +231,13 @@ function AgendarContenido() {
       setExito(true)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error al confirmar"
-      // Si la hora ya fue tomada: volver a paso 1 y actualizar horarios disponibles
+      // Si la hora ya fue tomada: limpiar el estado local y forzar una recarga fresca de disponibilidad
       if (msg.toLowerCase().includes("hora") || msg.toLowerCase().includes("ocupad")) {
+        setCargandoHor(true)
         setHoraSel(null)
-        setRefreshHor(n => n + 1)   // dispara re-fetch del useEffect
+        setHorarios([])
+        setSinAtencion(false)
+        setRefreshHor(n => n + 1)
         setPaso(1)
         setErrorHora("⚠️ Esa hora fue tomada mientras elegías. Selecciona otro horario.")
       } else {
@@ -538,7 +564,7 @@ function AgendarContenido() {
                         <button
                           key={dia.toISOString()}
                           disabled={!disponible}
-                          onClick={() => setFechaSel(dia)}
+                          onClick={() => handleSelFecha(dia)}
                           title={bloqueado ? "Día sin servicio" : sinEmp ? "Especialista no disponible" : undefined}
                           className={`aspect-square flex items-center justify-center rounded-lg text-sm font-bold transition-all relative ${
                             selected
