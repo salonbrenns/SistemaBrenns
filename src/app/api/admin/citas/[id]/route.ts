@@ -89,7 +89,7 @@ export async function PATCH(
   const citaId = Number(id)
   if (!citaId) return NextResponse.json({ error: "ID inválido" }, { status: 400 })
 
-  const { accion } = await req.json()
+  const { accion, motivo } = await req.json()
   if (accion !== "confirmar" && accion !== "rechazar") {
     return NextResponse.json({ error: "Acción inválida" }, { status: 400 })
   }
@@ -132,8 +132,9 @@ export async function PATCH(
       data: { comprobante: null },
     })
 
-    // Avisar al cliente que su comprobante fue rechazado
+    // Avisar al cliente que su comprobante fue rechazado, con el motivo si lo hay
     if (cita.usuario?.correo) {
+      const motivoTexto = motivo ? String(motivo).trim().slice(0, 500) : null
       sendEmail({
         to:      cita.usuario.correo,
         subject: "Tu comprobante de pago no pudo verificarse — Salón Brenn's",
@@ -144,8 +145,13 @@ export async function PATCH(
               Hola <strong>${cita.usuario.nombre}</strong>, revisamos el comprobante que enviaste
               para tu cita de <strong>${cita.servicio.nombre}</strong> pero no pudimos verificarlo.
             </p>
+            ${motivoTexto ? `
+            <div style="background:#fef3c7;border-left:4px solid #f59e0b;border-radius:4px;padding:12px 16px;margin:0 0 20px;">
+              <p style="color:#92400e;font-size:14px;font-weight:600;margin:0 0 4px;">Motivo:</p>
+              <p style="color:#78350f;font-size:14px;margin:0;">${motivoTexto}</p>
+            </div>` : ''}
             <p style="color:#374151;margin:0 0 20px;">
-              Por favor sube nuevamente tu comprobante de transferencia desde la sección
+              Por favor sube nuevamente tu comprobante desde la sección
               <strong>Mis citas</strong> asegurándote de que muestre claramente:
               fecha, monto y número de referencia.
             </p>
