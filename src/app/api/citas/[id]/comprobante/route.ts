@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { v2 as cloudinary } from "cloudinary"
 import { validarComprobante } from "@/lib/uploadValidation"
-import { sendEmail, sendCitaAgendada } from "@/lib/email"
+import { sendEmail } from "@/lib/email"
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -85,43 +85,28 @@ export async function POST(
       ).end(buffer)
     })
 
-    // Actualizar cita: guardar comprobante + confirmar automáticamente
+    // Guardar comprobante — la cita queda PENDIENTE hasta que el admin la verifique
     await prisma.cita.update({
       where: { id: citaId },
-      data: {
-        comprobante: result.secure_url,
-        estado:      "CONFIRMADA",
-        estado_cita: "CONFIRMADA",
-      },
+      data: { comprobante: result.secure_url },
     })
 
-    // Notificar al cliente que su cita quedó confirmada
-    const clienteEmail = cita.usuario?.correo || session.user.email
     const clienteNombre = cita.usuario?.nombre || session.user.name || "Cliente"
-    if (clienteEmail) {
-      sendCitaAgendada({
-        to:       clienteEmail,
-        nombre:   clienteNombre,
-        servicio: cita.servicio.nombre,
-        fecha:    cita.fecha,
-        hora:     cita.hora,
-      }).catch(err => console.error("[comprobante] email cliente:", err))
-    }
 
-    // Notificar al admin
+    // Notificar al admin para que revise manualmente
     const fechaStr = cita.fecha.toLocaleDateString("es-MX", {
       weekday: "long", day: "numeric", month: "long", year: "numeric",
     })
 
     sendEmail({
       to:      ADMIN_EMAIL,
-      subject: `💳 Comprobante de pago recibido — ${cita.servicio.nombre}`,
+      subject: `💳 Comprobante recibido — ${cita.servicio.nombre} (pendiente de revisión)`,
       html: `
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;">
           <h2 style="color:#be123c;margin:0 0 12px;">💳 Comprobante de pago recibido</h2>
           <p style="color:#374151;margin:0 0 20px;">
             La clienta <strong>${clienteNombre}</strong> subió su comprobante de transferencia.
-            La cita fue <strong style="color:#16a34a;">confirmada automáticamente</strong>.
+            <strong style="color:#d97706;">Revísalo y confirma o rechaza la cita desde el panel.</strong>
           </p>
           <table style="width:100%;border-radius:12px;background:#fdf2f8;padding:16px;margin-bottom:20px;border:1px solid #fbcfe8;border-spacing:0;">
             <tr><td style="padding:4px 0;color:#9d174d;font-size:13px;font-weight:600;">Servicio</td><td style="padding:4px 0;color:#374151;font-size:14px;">${cita.servicio.nombre}</td></tr>
@@ -133,7 +118,7 @@ export async function POST(
             style="display:inline-block;background:#be123c;color:white;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:700;font-size:14px;">
             Ver comprobante 🔍
           </a>
-          <p style="color:#9ca3af;font-size:12px;margin-top:20px;">Panel admin → Citas para ver los detalles completos.</p>
+          <p style="color:#9ca3af;font-size:12px;margin-top:20px;">Panel admin → Pagos para confirmar o rechazar.</p>
         </div>
       `,
     }).catch(err => console.error("[comprobante] email admin:", err))

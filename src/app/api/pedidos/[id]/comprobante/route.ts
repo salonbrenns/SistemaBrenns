@@ -85,28 +85,25 @@ export async function POST(
       ).end(buffer)
     })
 
-    // Guardar URL y marcar pedido como PAGADO
+    // Guardar URL — el pedido queda PENDIENTE hasta que el admin verifique
     await prisma.pedido.update({
       where: { id: pedidoId },
-      data: {
-        comprobante_url: result.secure_url,
-        estado:          "PAGADO",
-      },
+      data: { comprobante_url: result.secure_url },
     })
 
-    // Notificar al admin
+    // Notificar al admin para revisión manual
     const clienteNombre = pedido.usuario?.nombre || pedido.nombre_cliente
     const clienteEmail  = pedido.correo_cliente
 
     sendEmail({
       to:      ADMIN_EMAIL,
-      subject: `💳 Comprobante de pedido #${String(pedidoId).padStart(6, '0')} — ${clienteNombre}`,
+      subject: `💳 Comprobante de pedido #${String(pedidoId).padStart(6, '0')} — pendiente de revisión`,
       html: `
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;">
           <h2 style="color:#be123c;margin:0 0 12px;">💳 Comprobante de transferencia recibido</h2>
           <p style="color:#374151;margin:0 0 20px;">
             La clienta <strong>${clienteNombre}</strong> subió su comprobante de transferencia.
-            El pedido fue marcado como <strong style="color:#2563eb;">PAGADO</strong> automáticamente.
+            <strong style="color:#d97706;">Revísalo y marca el pedido como PAGADO desde el panel si es correcto.</strong>
           </p>
           <table style="width:100%;border-radius:12px;background:#fef2f2;padding:16px;margin-bottom:20px;border:1px solid #fecaca;border-spacing:0;">
             <tr><td style="padding:4px 0;color:#9d174d;font-size:13px;font-weight:600;"># Pedido</td><td style="padding:4px 0;color:#374151;font-size:14px;">#${String(pedidoId).padStart(6, '0')}</td></tr>

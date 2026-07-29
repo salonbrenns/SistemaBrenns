@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { CreditCard, Banknote, ArrowRight, CheckCircle, Clock, XCircle, AlertCircle, ExternalLink, ChevronLeft, ChevronRight, FileImage } from "lucide-react"
 import { Metadata } from "next"
 import Link from "next/link"
+import PagoAccionesClient from "./PagoAccionesClient"
 
 export const dynamic = "force-dynamic"
 export const metadata: Metadata = { title: "Pagos — Servicios" }
@@ -288,15 +289,20 @@ export default async function PagosPage({
                   <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs whitespace-nowrap">{p.fecha}</td>
                   <td className="px-4 py-3">
                     {p.comprobante ? (
-                      <a
-                        href={p.comprobante}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold whitespace-nowrap"
-                      >
-                        <FileImage className="w-3.5 h-3.5" /> Ver
-                        <ExternalLink className="w-2.5 h-2.5" />
-                      </a>
+                      <div className="flex flex-col gap-2">
+                        <a
+                          href={p.comprobante}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold whitespace-nowrap"
+                        >
+                          <FileImage className="w-3.5 h-3.5" /> Ver
+                          <ExternalLink className="w-2.5 h-2.5" />
+                        </a>
+                        {p.estadoPago === "POR_VERIFICAR" && (
+                          <PagoAccionesClient citaId={p.id} />
+                        )}
+                      </div>
                     ) : (
                       <span className="text-xs text-gray-300 dark:text-gray-600">—</span>
                     )}
