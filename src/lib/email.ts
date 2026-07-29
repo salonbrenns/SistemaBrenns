@@ -29,14 +29,14 @@ export async function sendEmail(opts: EmailOptions): Promise<boolean> {
       })
 
       if (result.error) {
-        console.error("❌ Error al enviar email con Resend:", result.error)
-        return false
+        console.error("❌ Error al enviar email con Resend, usando Brevo como fallback:", result.error)
+        // fall through to Brevo below
+      } else {
+        return true
       }
-
-      return true
     } catch (err) {
-      console.error("❌ Error al enviar email con Resend:", err)
-      return false
+      console.error("❌ Error al enviar email con Resend, usando Brevo como fallback:", err)
+      // fall through to Brevo below
     }
   }
 
