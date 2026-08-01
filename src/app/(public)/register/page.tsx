@@ -165,6 +165,7 @@ function RegisterContenido() {
                     value={name}
                     onChange={handleNameChange(setName)}
                     placeholder="Brenda"
+                    maxLength={60}
                     className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:ring-pink-500/20 outline-none"
                   />
                 </div>
@@ -175,6 +176,7 @@ function RegisterContenido() {
                     value={appaterno}
                     onChange={handleNameChange(setAppaterno)}
                     placeholder="García"
+                    maxLength={60}
                     className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:ring-pink-500/20 outline-none"
                   />
                 </div>
@@ -185,6 +187,7 @@ function RegisterContenido() {
                     value={apmaterno}
                     onChange={handleNameChange(setApmaterno)}
                     placeholder="Hernández"
+                    maxLength={60}
                     className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:ring-pink-500/20 outline-none"
                   />
                 </div>
@@ -225,6 +228,7 @@ function RegisterContenido() {
                       value={telefono}
                       onChange={handlePhoneChange}
                       placeholder="5512345678"
+                      maxLength={15}
                       className="flex-1 px-5 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:border-pink-500 focus:ring-2 focus:ring-pink-100 dark:focus:ring-pink-500/20 outline-none text-lg"
                     />
                   </div>
@@ -239,6 +243,7 @@ function RegisterContenido() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
+                  maxLength={120}
                   className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:ring-pink-500/20 outline-none"
                 />
               </div>

@@ -1,9 +1,34 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { enviarCorreoRecuperacion } from "@/lib/email"
 import crypto from "crypto"
 
-export async function POST(req: Request) {
+// Rate limit: máx 3 solicitudes por IP en 10 minutos
+const intentos = new Map<string, { count: number; first: number }>()
+const MAX_INTENTOS = 3
+const VENTANA_MS   = 10 * 60 * 1000 // 10 minutos
+
+function excedeLimite(ip: string): boolean {
+  const ahora = Date.now()
+  const rec   = intentos.get(ip)
+  if (!rec || ahora - rec.first > VENTANA_MS) {
+    intentos.set(ip, { count: 1, first: ahora })
+    return false
+  }
+  rec.count++
+  return rec.count > MAX_INTENTOS
+}
+
+export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for") ?? "unknown"
+
+  if (excedeLimite(ip)) {
+    return NextResponse.json(
+      { error: "Demasiadas solicitudes. Intenta de nuevo en unos minutos." },
+      { status: 429 }
+    )
+  }
+
   const { correo } = await req.json()
 
   if (!correo) {
@@ -12,7 +37,7 @@ export async function POST(req: Request) {
 
   const usuario = await prisma.usuario.findUnique({ where: { correo } })
 
-  // Siempre responder igual (seguridad)
+  // Siempre responder igual (no revelar si el correo existe)
   if (!usuario) {
     return NextResponse.json({ ok: true })
   }
@@ -26,10 +51,7 @@ export async function POST(req: Request) {
     create: { usuario_id: usuario.id, token, expira, usado: false },
   })
 
-  // Fire-and-forget: siempre responder ok para no revelar si el correo existe
-  enviarCorreoRecuperacion(correo, token).catch(err =>
-    console.error("❌ Error enviando correo de recuperación:", err)
-  )
+  enviarCorreoRecuperacion(correo, token).catch(() => {})
 
   return NextResponse.json({ ok: true })
 }

@@ -74,6 +74,7 @@ export default function CitasTable({
   estadoFiltro,
   desdeFiltro,
   hastaFiltro,
+  busquedaFiltro = '',
   totalCitas = 0,
   paginaActual = 1,
   porPagina = 15,
@@ -82,6 +83,7 @@ export default function CitasTable({
   estadoFiltro: string
   desdeFiltro: string
   hastaFiltro: string
+  busquedaFiltro?: string
   totalCitas?: number
   paginaActual?: number
   porPagina?: number
@@ -94,6 +96,7 @@ export default function CitasTable({
   const [avisoEnviado, setAvisoEnviado] = useState<number | null>(null)
   const [citaParaRecordatorio, setCitaParaRecordatorio] = useState<Cita | null>(null)
   const [mensajeRecordatorio, setMensajeRecordatorio] = useState('')
+  const [inputBusqueda, setInputBusqueda] = useState(busquedaFiltro)
 
   const totalPaginas = Math.max(1, Math.ceil(totalCitas / porPagina))
 
@@ -103,6 +106,7 @@ export default function CitasTable({
       estado: estadoFiltro,
       desde:  desdeFiltro,
       hasta:  hastaFiltro,
+      q:      busquedaFiltro,
       ...updates,
     }
     // Al cambiar filtros (no página), volver a página 1
@@ -176,7 +180,7 @@ export default function CitasTable({
     }
   }
 
-  const hayFiltros = estadoFiltro || desdeFiltro || hastaFiltro
+  const hayFiltros = estadoFiltro || desdeFiltro || hastaFiltro || busquedaFiltro
 
   const irAPagina = (p: number) => aplicarFiltro({ page: String(p) })
 
@@ -186,6 +190,26 @@ export default function CitasTable({
       {/* ── Filtros ── */}
       <div className="bg-pink-50 dark:bg-gray-800 rounded-xl p-4 border border-pink-100 dark:border-gray-700">
         <div className="flex flex-wrap gap-4 items-end">
+
+          {/* Búsqueda por nombre */}
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Buscar cliente</label>
+            <form onSubmit={e => { e.preventDefault(); aplicarFiltro({ q: inputBusqueda }) }}>
+              <div className="relative">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  value={inputBusqueda}
+                  onChange={e => setInputBusqueda(e.target.value)}
+                  onBlur={() => aplicarFiltro({ q: inputBusqueda })}
+                  placeholder="Nombre o correo..."
+                  className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:border-pink-400"
+                />
+              </div>
+            </form>
+          </div>
 
           {/* Estado */}
           <div>

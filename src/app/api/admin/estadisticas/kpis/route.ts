@@ -15,7 +15,9 @@ export async function GET() {
 
   const pasadoManana = new Date(hoy.getTime() + 2 * 86_400_000)
 
-  const [citasHoy, citasMes, pedidosMes, pedidosPendientes, clientesTotal, citasSinComprobante] = await Promise.all([
+  const STOCK_MINIMO = 5
+
+  const [citasHoy, citasMes, pedidosMes, pedidosPendientes, clientesTotal, citasSinComprobante, productosStockBajo] = await Promise.all([
     prisma.cita.count({
       where: { fecha: { gte: hoy, lt: manana } },
     }),
@@ -51,6 +53,18 @@ export async function GET() {
       },
       orderBy: { fecha: "asc" },
     }),
+    // Variantes con stock bajo
+    prisma.varianteProducto.findMany({
+      where: { stock: { lte: STOCK_MINIMO }, activo: true },
+      select: {
+        id:    true,
+        stock: true,
+        nombre: true,
+        producto: { select: { id: true, nombre: true } },
+      },
+      orderBy: { stock: "asc" },
+      take: 20,
+    }),
   ])
 
   return NextResponse.json({
@@ -65,6 +79,14 @@ export async function GET() {
       esHoy:    c.fecha >= hoy && c.fecha < manana,
       cliente:  c.usuario?.nombre || c.nombre_contacto || "Sin nombre",
       servicio: c.servicio.nombre,
+    })),
+    productosStockBajo: productosStockBajo.map(v => ({
+      id:        v.id,
+      producto:  v.producto.nombre,
+      productoId: v.producto.id,
+      variante:  v.nombre || null,
+      stock:     v.stock,
+      sinStock:  v.stock === 0,
     })),
   })
 }

@@ -2,7 +2,17 @@
 import "./globals.css"
 import Providers from "@/components/ui/providers"
 import ToastContainer from "@/components/ui/ToastContainer"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#be185d" },
+    { media: "(prefers-color-scheme: dark)",  color: "#9d174d" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.AUTH_URL ?? "https://brennsbeauty.com"),
@@ -30,6 +40,12 @@ export const metadata: Metadata = {
     images: ["/logo/logo.png"],
   },
   robots: { index: true, follow: true },
+  appleWebApp: {
+    capable: true,
+    title: "Brenn's Beauty",
+    statusBarStyle: "default",
+  },
+  formatDetection: { telephone: false },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

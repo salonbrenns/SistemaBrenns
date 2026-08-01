@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { confirmDialog } from "@/lib/confirm"
 import { Tag, Plus, Percent, Calendar, ToggleLeft, ToggleRight,
          Trash2, Edit, X, Save, Loader2, Search, Package } from "lucide-react"
+import { SkeletonAdminCardList } from "@/components/ui/SkeletonCard"
 
 interface Producto { id: number; nombre: string; marca?: { nombre: string } | null }
 interface Promocion {
@@ -156,7 +157,7 @@ export default function PromocionesPage() {
           </div>
 
           {cargando ? (
-            <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-pink-400" /></div>
+            <SkeletonAdminCardList cantidad={4} />
           ) : promos.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
               <Tag className="w-12 h-12 mx-auto mb-3 opacity-30" />

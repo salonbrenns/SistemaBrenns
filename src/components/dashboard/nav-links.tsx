@@ -20,6 +20,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 export default function NavLinks({
+  mobile = false,
   onLinkClick,
 }: {
   mobile?: boolean
@@ -35,6 +36,14 @@ export default function NavLinks({
     setOpenSection(openSection === title ? null : title)
   }
 
+  // Clases adaptadas al contexto (sidebar oscuro vs. menú mobile claro/oscuro)
+  const linkBase   = mobile
+    ? 'flex items-center gap-3 rounded-lg p-3 text-sm font-medium transition-colors text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-gray-700'
+    : 'flex items-center gap-3 rounded-lg p-3 text-sm font-medium transition-colors text-pink-100 hover:bg-white/10 hover:text-white'
+  const linkActive = mobile
+    ? 'bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300 font-semibold border-l-4 border-pink-500'
+    : 'bg-pink-500/20 text-white border-l-4 border-pink-400'
+
   // ── Menú EMPLEADO ──────────────────────────────────────────────────────────
   if (role === "EMPLEADO") {
     const linksEmpleado = [
@@ -43,7 +52,7 @@ export default function NavLinks({
       { name: 'Citas',          href: '/empleado/citas',          icon: CalendarDaysIcon },
       { name: 'Mi horario',     href: '/empleado/mi-horario',     icon: ClockIcon       },
       { name: 'Notificaciones', href: '/empleado/notificaciones', icon: BellIcon        },
-      { name: 'Mi cuenta',     href: '/empleado/mi-cuenta',     icon: UserCircleIcon  },
+      { name: 'Mi cuenta',      href: '/empleado/mi-cuenta',      icon: UserCircleIcon  },
     ]
 
     return (
@@ -56,12 +65,7 @@ export default function NavLinks({
               key={link.name}
               href={link.href}
               onClick={onLinkClick}
-              className={clsx(
-                'flex items-center gap-3 rounded-lg p-3 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-pink-500/20 text-white border-l-4 border-pink-400'
-                  : 'text-pink-100 hover:bg-white/10 hover:text-white'
-              )}
+              className={clsx(linkBase, isActive && linkActive)}
             >
               <LinkIcon className="h-5 w-5" />
               <span>{link.name}</span>
@@ -155,15 +159,21 @@ export default function NavLinks({
               onClick={() => toggleSection(section.title)}
               className={clsx(
                 "flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                isOpen || hasActiveLink
-                  ? "bg-white/10 text-white"
-                  : "text-pink-100 hover:bg-white/5"
+                mobile
+                  ? isOpen || hasActiveLink
+                    ? "bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300"
+                    : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  : isOpen || hasActiveLink
+                    ? "bg-white/10 text-white"
+                    : "text-pink-100 hover:bg-white/5"
               )}
             >
               <div className="flex items-center gap-3">
                 <Icon className={clsx(
                   "h-5 w-5 transition-colors",
-                  hasActiveLink ? "text-pink-400" : "text-pink-200"
+                  mobile
+                    ? hasActiveLink ? "text-pink-500" : "text-gray-500 dark:text-gray-400"
+                    : hasActiveLink ? "text-pink-400" : "text-pink-200"
                 )} />
                 <span>{section.title}</span>
               </div>
@@ -177,7 +187,10 @@ export default function NavLinks({
               "overflow-hidden transition-all duration-300 ease-in-out",
               isOpen ? "max-h-[400px] opacity-100 my-1" : "max-h-0 opacity-0"
             )}>
-              <div className="ml-9 space-y-1 border-l border-pink-700/40 pl-3">
+              <div className={clsx(
+                "ml-9 space-y-1 pl-3",
+                mobile ? "border-l border-pink-200 dark:border-gray-600" : "border-l border-pink-700/40"
+              )}>
                 {section.links.map((link) => {
                   const isActive = pathname === link.href
                   return (
@@ -187,9 +200,13 @@ export default function NavLinks({
                       onClick={onLinkClick}
                       className={clsx(
                         'block rounded-md px-3 py-2 text-[13px] transition-all',
-                        isActive
-                          ? 'bg-pink-600 text-white font-semibold shadow-sm'
-                          : 'text-pink-200 hover:text-white hover:bg-white/5'
+                        mobile
+                          ? isActive
+                            ? 'bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300 font-semibold'
+                            : 'text-gray-600 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-gray-700'
+                          : isActive
+                            ? 'bg-pink-600 text-white font-semibold shadow-sm'
+                            : 'text-pink-200 hover:text-white hover:bg-white/5'
                       )}
                     >
                       {link.name}

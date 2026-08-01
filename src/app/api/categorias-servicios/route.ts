@@ -10,6 +10,7 @@ export async function GET() {
       where:   { activo: true },
       select:  { id: true, nombre: true },
       orderBy: { nombre: 'asc' },
+      take:    200,
     })
     return NextResponse.json(categorias)
   } catch {

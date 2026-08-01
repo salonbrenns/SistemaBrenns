@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react"
 import { Shield, User, Crown, Check, X, Briefcase, Loader2, AlertCircle, Search } from "lucide-react"
+import { SkeletonTablaFila } from "@/components/ui/SkeletonCard"
 
 const ROLES_INFO = [
   { nombre: "ADMIN",    icon: Crown,        color: "bg-pink-500",  border: "border-pink-200 dark:border-pink-900",   badge: "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400",   descripcion: "Acceso completo al sistema",    permisos: ["Ver y editar todos los módulos","Gestionar usuarios y roles","Ver reportes y estadísticas","Configurar el sistema","Gestionar pagos"] },
@@ -126,7 +127,7 @@ export default function RolesPage() {
           </thead>
           <tbody>
             {cargando ? (
-              <tr><td colSpan={4} className="text-center py-8 text-gray-400 text-sm">Cargando...</td></tr>
+              <>{Array.from({length:5}).map((_,i)=><SkeletonTablaFila key={i} columnas={4}/>)}</>
             ) : usuarios.length === 0 ? (
               <tr><td colSpan={4} className="text-center py-8 text-gray-400 text-sm">No hay personal registrado</td></tr>
             ) : (

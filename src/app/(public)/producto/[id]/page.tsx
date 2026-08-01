@@ -1,8 +1,50 @@
 // Server Component — sin 'use client'
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import DetalleProductoClient from '@/components/productos/DetalleProductoclient'
 import Recomendaciones from '@/components/productos/Recomendaciones'
+
+export const revalidate = 3600 // revalidar cada hora
+
+export async function generateStaticParams() {
+  const productos = await prisma.producto.findMany({
+    where: { activo: true },
+    select: { id: true },
+  })
+  return productos.map(p => ({ id: String(p.id) }))
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const producto = await prisma.producto.findUnique({
+    where: { id: Number(id), activo: true },
+    select: { nombre: true, descripcion: true, imagen: true },
+  })
+  if (!producto) return { title: "Producto no encontrado" }
+
+  const imagenes = Array.isArray(producto.imagen) ? producto.imagen as string[] : []
+  const imagen   = imagenes[0] ?? "/logo/logo.png"
+
+  return {
+    title: producto.nombre,
+    description: producto.descripcion ?? `Compra ${producto.nombre} en Brenn's Beauty`,
+    openGraph: {
+      title: producto.nombre,
+      description: producto.descripcion ?? `Compra ${producto.nombre} en Brenn's Beauty`,
+      images: [{ url: imagen }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: producto.nombre,
+      images: [imagen],
+    },
+  }
+}
 
 export default async function DetalleProductoPage({
   params,

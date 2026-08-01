@@ -7,7 +7,11 @@ export async function GET() {
   try {
     const registros = await prisma.configSitio.findMany()
     const config = Object.fromEntries(registros.map(r => [r.clave, r.valor]))
-    return NextResponse.json(config)
+    return NextResponse.json(config, {
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
+    })
   } catch {
     return NextResponse.json({}, { status: 500 })
   }

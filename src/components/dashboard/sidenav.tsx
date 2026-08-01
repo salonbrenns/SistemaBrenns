@@ -96,8 +96,8 @@ export default function SideNav({
             onClick={handleLogout}
             className={
               mobile
-                ? 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-100'
-                : 'flex w-full items-center gap-3 rounded-lg p-3 text-sm font-medium bg-pink-800 hover:bg-pink-700 transition-colors'
+                ? 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors'
+                : 'flex w-full items-center gap-3 rounded-lg p-3 text-sm font-medium bg-pink-800 hover:bg-pink-700 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors'
             }
           >
             <ArrowLeftEndOnRectangleIcon className="h-5 w-5" />

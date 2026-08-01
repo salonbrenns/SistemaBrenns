@@ -7,7 +7,7 @@ import { Heart, ShoppingBag, Trash2, Wrench, GraduationCap, Clock } from 'lucide
 import { useFavoritos } from '@/hooks/useFavoritos'
 import { useFavoritosServicios } from '@/hooks/useFavoritosServicios'
 import AuthGuard from '@/components/ui/AuthGuard'
-import PageLoader from '@/components/ui/PageLoader'
+import { SkeletonFavoritos } from '@/components/ui/SkeletonCard'
 
 type CursoFav = {
   id:            number
@@ -73,9 +73,7 @@ function FavoritosContenido() {
   const cargando = cargandoP || cargandoS || cargandoC
   const totalFavs = favoritos.length + favServicios.length + favCursoIds.length
 
-  if (cargando) {
-    return <PageLoader className="min-h-screen bg-[#fffafa] dark:bg-gray-950" />
-  }
+  if (cargando) return <SkeletonFavoritos />
 
   const tabClass = (t: typeof tab) =>
     `flex items-center gap-2 px-5 py-2.5 text-sm font-bold border-b-2 -mb-px transition-colors ${

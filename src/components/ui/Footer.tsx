@@ -21,7 +21,11 @@ export default function Footer() {
           {/* Columna 1: Marca & Valores (4 cols) */}
           <div className="lg:col-span-4 space-y-8">
             <div className="space-y-4">
-              <Image src={config.logo_src} alt={config.nombre} width={60} height={60} className="grayscale brightness-200" />
+              {config.cargandoConfig ? (
+                <div className="w-14 h-14 rounded-full bg-white/10 animate-pulse" />
+              ) : (
+                <Image src={config.logo_src} alt={config.nombre} width={60} height={60} className="grayscale brightness-200" />
+              )}
               <h4 className="text-xl font-black tracking-tighter uppercase">{config.nombre}</h4>
               <p className="text-gray-400 text-sm leading-relaxed pr-8">
                 {config.descripcion || "Líderes en belleza y educación profesional en la Huasteca. Transformando estilos, empoderando profesionales."}

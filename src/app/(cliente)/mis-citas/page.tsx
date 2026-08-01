@@ -8,8 +8,8 @@ import {
   CalendarDays, ChevronDown, ChevronUp, Clock, User,
   XCircle, Loader2, Upload, CheckCircle, ImageIcon, ExternalLink,
 } from 'lucide-react'
-import DotsLoader from '@/components/ui/DotsLoader'
 import AuthGuard from '@/components/ui/AuthGuard'
+import { SkeletonMisCitas } from '@/components/ui/SkeletonCard'
 import { toast } from '@/lib/toast'
 
 interface Servicio {
@@ -123,13 +123,7 @@ function MisCitasContenido() {
 
   useEffect(() => { cargarCitas() }, [])
 
-  if (cargando) {
-    return (
-      <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 flex items-center justify-center">
-        <DotsLoader />
-      </div>
-    )
-  }
+  if (cargando) return <SkeletonMisCitas cantidad={3} />
 
   return (
     <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 py-12">

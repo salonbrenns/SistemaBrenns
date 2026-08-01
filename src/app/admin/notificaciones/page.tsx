@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react"
 import { Bell, Calendar, Clock, User, Phone, MessageSquare, CheckCircle, AlertCircle, Loader2, RefreshCw } from "lucide-react"
+import { SkeletonNotificaciones } from "@/components/ui/SkeletonCard"
 import { format, isToday, isTomorrow, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 export const dynamic = 'force-dynamic'
@@ -145,9 +146,7 @@ export default function NotificacionesPage() {
 
       {/* Grupos */}
       {cargando ? (
-        <div className="flex justify-center py-16">
-          <Loader2 className="w-8 h-8 text-pink-400 animate-spin" />
-        </div>
+        <SkeletonNotificaciones cantidad={6} />
       ) : (
         grupos.map(grupo => (
           <div key={grupo.label}>

@@ -107,12 +107,25 @@ export default function Header() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition flex-shrink-0">
-            <div className="relative w-16 h-16 md:w-20 md:h-20">
-              <Image key={config.logo_src} src={config.logo_src} alt={config.nombre} fill className="object-contain" sizes="80px" priority />
+            <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
+              {config.cargandoConfig ? (
+                <div className="w-full h-full rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+              ) : (
+                <Image key={config.logo_src} src={config.logo_src} alt={config.nombre} fill className="object-contain" sizes="80px" priority />
+              )}
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white leading-tight">{config.nombre}</h1>
-              <p className="text-xs md:text-sm text-pink-600 dark:text-pink-400 font-medium">{config.eslogan}</p>
+              {config.cargandoConfig ? (
+                <div className="space-y-2">
+                  <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-full" />
+                  <div className="h-3 w-36 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-full" />
+                </div>
+              ) : (
+                <>
+                  <h1 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white leading-tight">{config.nombre}</h1>
+                  <p className="text-xs md:text-sm text-pink-600 dark:text-pink-400 font-medium">{config.eslogan}</p>
+                </>
+              )}
             </div>
           </Link>
 

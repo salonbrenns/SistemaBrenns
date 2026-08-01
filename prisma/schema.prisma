@@ -34,6 +34,11 @@ model Cita {
   usuario              Usuario?     @relation("CitaCliente", fields: [usuario_id], references: [id])
   avisos               AvisoAdmin[]
 
+  @@index([fecha],        map: "idx_citas_fecha")
+  @@index([estado],       map: "idx_citas_estado")
+  @@index([usuario_id],   map: "idx_citas_usuario")
+  @@index([empleado_id],  map: "idx_citas_empleado")
+  @@index([fecha, estado],map: "idx_citas_fecha_estado")
   @@map("tblcitas")
   @@schema("agenda")
 }
@@ -451,6 +456,10 @@ model Pedido {
   detalles         DetallePedido[]
   usuario          Usuario         @relation(fields: [usuario_id], references: [id])
 
+  @@index([usuario_id],              map: "idx_pedidos_usuario")
+  @@index([estado],                  map: "idx_pedidos_estado")
+  @@index([fecha_pedido],            map: "idx_pedidos_fecha")
+  @@index([estado, fecha_pedido],    map: "idx_pedidos_estado_fecha")
   @@map("tblpedidos")
   @@schema("ventas")
 }

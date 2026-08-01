@@ -7,6 +7,7 @@ import {
   Clock, Plus, Trash2, Loader2, Check, Users,
   Calendar, ChevronDown, ChevronUp, X, AlertCircle
 } from "lucide-react"
+import { SkeletonHorarios } from "@/components/ui/SkeletonCard"
 export const dynamic = 'force-dynamic'
 
 const DIAS = [
@@ -129,11 +130,7 @@ useEffect(() => {
     await cargar()
   }
 
-  if (cargando) return (
-    <div className="flex justify-center py-4">
-      <Loader2 className="w-5 h-5 text-pink-400 animate-spin" />
-    </div>
-  )
+  if (cargando) return <SkeletonHorarios />
 
   return (
     <div className="mt-4 space-y-4">

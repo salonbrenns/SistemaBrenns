@@ -49,12 +49,13 @@ async function consultarRiesgoLote(citaIds: number[]): Promise<Map<number, Riesg
 export default async function CitasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ estado?: string; desde?: string; hasta?: string; page?: string }>
+  searchParams: Promise<{ estado?: string; desde?: string; hasta?: string; page?: string; q?: string }>
 }) {
   const params  = await searchParams
   const estado  = params.estado as EstadoCita | undefined
   const desde   = params.desde || ''
   const hasta   = params.hasta || ''
+  const q       = params.q?.trim() || ''
   const pageNum = Math.max(1, Number(params.page) || 1)
 
   const where: Record<string, unknown> = {}
@@ -71,6 +72,14 @@ export default async function CitasPage({
       ...(desde && { gte: new Date(`${desde}T00:00:00.000Z`) }),
       ...(hasta && { lte: new Date(`${hasta}T23:59:59.999Z`) }),
     }
+  }
+
+  if (q) {
+    where.OR = [
+      { usuario:         { nombre: { contains: q, mode: 'insensitive' } } },
+      { usuario:         { correo: { contains: q, mode: 'insensitive' } } },
+      { nombre_contacto: { contains: q, mode: 'insensitive' } },
+    ]
   }
 
   // Auto-marcar como FINALIZADA las citas de días anteriores que siguen PENDIENTE
@@ -130,6 +139,7 @@ export default async function CitasPage({
         estadoFiltro={estado || ''}
         desdeFiltro={desde}
         hastaFiltro={hasta}
+        busquedaFiltro={q}
         totalCitas={totalCitas}
         paginaActual={pageNum}
         porPagina={PAGE_SIZE}

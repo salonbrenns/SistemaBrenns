@@ -11,7 +11,8 @@ import {
 } from 'lucide-react'
 import AuthGuard from '@/components/ui/AuthGuard'
 import { useCarrito, type CartItem } from '@/hooks/useCarrito'
-import PageLoader from '@/components/ui/PageLoader'
+import { useSiteConfig } from '@/hooks/useSiteConfig'
+import { SkeletonCheckout } from '@/components/ui/SkeletonCard'
 
 const COSTO_ENVIO        = 100
 const ENVIO_GRATIS_DESDE = 1500
@@ -49,17 +50,18 @@ function CheckoutContenido() {
   const { data: session } = useSession()
   const router = useRouter()
   const { items, cargando, total, totalItems } = useCarrito()
+  const siteConfig = useSiteConfig()
 
   const [metodoPago, setMetodoPago] = useState('transferencia')
   const [procesando, setProcesando] = useState(false)
   const [error, setError]           = useState<string | null>(null)
 
-  const [bancoCfg, setBancoCfg] = useState({
-    banco:   'BBVA',
-    titular: 'Ruth Barrientos Angeles',
-    cuenta:  '154 792 8563',
-    clabe:   '012 290 01547928563 4',
-  })
+  const bancoCfg = {
+    banco:   siteConfig.banco_banco   || 'BBVA',
+    titular: siteConfig.banco_titular || 'Ruth Barrientos Angeles',
+    cuenta:  siteConfig.banco_cuenta  || '154 792 8563',
+    clabe:   siteConfig.banco_clabe   || '012 290 01547928563 4',
+  }
 
   const [form, setForm] = useState({
     nombre:   '',
@@ -67,21 +69,6 @@ function CheckoutContenido() {
     correo:   '',
     telefono: '',
   })
-
-  useEffect(() => {
-    fetch('/api/config-sitio')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!data) return
-        setBancoCfg({
-          banco:   data.banco_banco   || 'BBVA',
-          titular: data.banco_titular || 'Ruth Barrientos Angeles',
-          cuenta:  data.banco_cuenta  || '154 792 8563',
-          clabe:   data.banco_clabe   || '012 290 01547928563 4',
-        })
-      })
-      .catch(() => {/* usar defaults */})
-  }, [])
 
   useEffect(() => {
     if (!session?.user) return
@@ -132,9 +119,7 @@ function CheckoutContenido() {
     }
   }
 
-  if (cargando) {
-    return <PageLoader className="min-h-screen bg-[#fffafa] dark:bg-gray-950" />
-  }
+  if (cargando) return <SkeletonCheckout />
 
   if (!cargando && items.length === 0) {
     return (
@@ -182,6 +167,7 @@ function CheckoutContenido() {
                       onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))}
                       className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 dark:text-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 transition"
                       placeholder="Ana Karen"
+                      maxLength={80}
                       required
                     />
                   </div>
@@ -193,6 +179,7 @@ function CheckoutContenido() {
                       onChange={e => setForm(f => ({ ...f, apellido: e.target.value }))}
                       className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 dark:text-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 transition"
                       placeholder="Gómez López"
+                      maxLength={80}
                     />
                   </div>
                   <div className="space-y-1">
@@ -204,6 +191,7 @@ function CheckoutContenido() {
                       onChange={e => setForm(f => ({ ...f, correo: e.target.value }))}
                       className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 dark:text-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 transition"
                       placeholder="ana@ejemplo.com"
+                      maxLength={120}
                       required
                     />
                   </div>
@@ -215,6 +203,7 @@ function CheckoutContenido() {
                       onChange={e => setForm(f => ({ ...f, telefono: e.target.value }))}
                       className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 dark:text-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 transition"
                       placeholder="961 123 4567"
+                      maxLength={20}
                     />
                   </div>
                 </div>

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Package, ChevronDown, ChevronUp, ShoppingBag, CheckCircle2, Clock, Truck, Upload, ExternalLink } from 'lucide-react'
 import AuthGuard from '@/components/ui/AuthGuard'
-import PageLoader from '@/components/ui/PageLoader'
+import { SkeletonMisPedidos } from '@/components/ui/SkeletonCard'
 
 interface Detalle {
   id: number
@@ -103,9 +103,7 @@ function MisPedidosContenido() {
       .finally(() => setCargando(false))
   }, [])
 
-  if (cargando) {
-    return <PageLoader className="min-h-screen bg-[#fffafa] dark:bg-gray-950" />
-  }
+  if (cargando) return <SkeletonMisPedidos />
 
   return (
     <div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 py-12">

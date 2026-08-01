@@ -1,5 +1,16 @@
 // src/app/(frontend)/servicio/[id]/page.tsx
 import Image from "next/image"
+import type { Metadata } from "next"
+
+export const revalidate = 3600
+
+export async function generateStaticParams() {
+  const servicios = await prisma.servicio.findMany({
+    where: { activo: true },
+    select: { id: true },
+  })
+  return servicios.map(s => ({ id: String(s.id) }))
+}
 import { Clock, Layers, CalendarCheck } from "lucide-react"
 import { notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
@@ -7,6 +18,36 @@ import BotonAccion from "@/components/ui/BotonAccion"
 import DetalleTabs from "@/components/ui/DetalleTabs"
 import { FavoritoServicioBoton } from "@/components/ui/FavoritoServicioBoton"
 import BackButton from "@/components/ui/BackButton"
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const servicio = await prisma.servicio.findUnique({
+    where: { id: Number(id), activo: true },
+    select: { nombre: true, descripcion: true, imagen: true },
+  })
+  if (!servicio) return { title: "Servicio no encontrado" }
+
+  const imagen = servicio.imagen ?? "/logo/logo.png"
+
+  return {
+    title: servicio.nombre,
+    description: servicio.descripcion ?? `Agenda tu cita de ${servicio.nombre} en Brenn's Beauty`,
+    openGraph: {
+      title: servicio.nombre,
+      description: servicio.descripcion ?? `Agenda tu cita de ${servicio.nombre} en Brenn's Beauty`,
+      images: [{ url: imagen }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: servicio.nombre,
+      images: [imagen],
+    },
+  }
+}
 
 export default async function DetalleServicio({
   params,

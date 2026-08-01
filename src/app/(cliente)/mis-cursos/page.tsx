@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { useSiteConfig } from "@/hooks/useSiteConfig"
 import AuthGuard from "@/components/ui/AuthGuard"
 import { toast } from "@/lib/toast"
 import {
@@ -11,6 +12,7 @@ import {
   CreditCard, Banknote, ChevronRight, Award, CalendarCheck,
   Wallet,
 } from "lucide-react"
+import { SkeletonMisCursos } from "@/components/ui/SkeletonCard"
 
 type PagoCurso = {
   id:          number
@@ -58,6 +60,7 @@ function formatDate(d: string | null) {
 }
 
 function MisCursosContent() {
+  const siteConfig = useSiteConfig()
   const [cursos, setCursos]   = useState<CursoInscrito[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string | null>(null)
@@ -68,27 +71,12 @@ function MisCursosContent() {
   const [pagoMsg, setPagoMsg]         = useState<string | null>(null)
   const [pagoError, setPagoError]     = useState<string | null>(null)
 
-  const [bancoCfg, setBancoCfg] = useState({
-    banco:   'BBVA',
-    titular: 'Ruth Barrientos Angeles',
-    cuenta:  '154 792 8563',
-    clabe:   '012 290 01547928563 4',
-  })
-
-  useEffect(() => {
-    fetch('/api/config-sitio')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!data) return
-        setBancoCfg({
-          banco:   data.banco_banco   || 'BBVA',
-          titular: data.banco_titular || 'Ruth Barrientos Angeles',
-          cuenta:  data.banco_cuenta  || '154 792 8563',
-          clabe:   data.banco_clabe   || '012 290 01547928563 4',
-        })
-      })
-      .catch(() => {/* usar defaults */})
-  }, [])
+  const bancoCfg = {
+    banco:   siteConfig.banco_banco   || 'BBVA',
+    titular: siteConfig.banco_titular || 'Ruth Barrientos Angeles',
+    cuenta:  siteConfig.banco_cuenta  || '154 792 8563',
+    clabe:   siteConfig.banco_clabe   || '012 290 01547928563 4',
+  }
 
   const cargarCursos = () => {
     setLoading(true)
@@ -125,11 +113,7 @@ function MisCursosContent() {
     }
   }
 
-  if (loading) return (
-    <div className="flex items-center justify-center py-32">
-      <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
-    </div>
-  )
+  if (loading) return <SkeletonMisCursos />
 
   if (error) return (
     <div className="flex items-center gap-3 p-6 bg-red-50 dark:bg-red-900/20 rounded-2xl text-red-600 dark:text-red-400">

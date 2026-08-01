@@ -83,8 +83,6 @@ export async function GET(req: Request) {
     }
   }
 
-  console.log(`[cron/recordatorio-comprobante] Enviados: ${enviados}, errores: ${errores.length}`)
-
   return NextResponse.json({
     ok:       true,
     enviados,

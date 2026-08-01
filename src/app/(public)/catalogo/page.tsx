@@ -7,7 +7,7 @@ import ProductoCard, { type ProductoCardType } from '@/components/ui/ProductoCar
 import ProductosFiltros from '@/components/ui/ProductosFiltros'
 import Paginacion from '@/components/ui/paginacion'
 import { usePromociones } from "@/hooks/usePromociones"
-import PageLoader from "@/components/ui/PageLoader"
+import { SkeletonGrid } from "@/components/ui/SkeletonCard"
 
 const POR_PAGINA = 12
 
@@ -134,7 +134,7 @@ function ProductosContent() {
           </p>
         )}
 
-        {cargando && <PageLoader className="py-20" />}
+        {cargando && <SkeletonGrid tipo="producto" cantidad={12} />}
 
         {!cargando && productosPagina.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -184,7 +184,7 @@ function ProductosContent() {
 
 export default function ProductosPage() {
   return (
-    <Suspense fallback={<PageLoader className="min-h-screen" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[#fffafa] dark:bg-gray-950 py-20 px-6"><SkeletonGrid tipo="producto" cantidad={12} /></div>}>
       <ProductosContent />
     </Suspense>
   )

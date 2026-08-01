@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
+import { useSiteConfig } from "@/hooks/useSiteConfig"
 // Tipo del slide — mismo que en la página de configuración
 type HeroSlide = {
   imagen:       string
@@ -56,25 +57,21 @@ const OVERLAYS = [
 ]
 
 export default function Hero() {
-  const [slides, setSlides]     = useState<HeroSlide[]>(SLIDES_DEFAULT)
-  const [current, setCurrent]   = useState(0)
+  const siteConfig = useSiteConfig()
+  const [current, setCurrent]     = useState(0)
   const [animating, setAnimating] = useState(false)
 
-  // Cargar slides desde la config de BD
- useEffect(() => {
-  fetch("/api/config-sitio")
-    .then(r => r.json())
-    .then(data => {
-      let heroSlides = data?.hero_slides
-      if (typeof heroSlides === "string") {
-        try { heroSlides = JSON.parse(heroSlides) } catch {}
-      }
-      if (Array.isArray(heroSlides) && heroSlides.length > 0) {
-        setSlides(heroSlides)
-      }
-    })
-    .catch(() => {})
-}, [])
+  // Parsear slides desde el contexto (JSON string guardado en BD)
+  const slides: HeroSlide[] = (() => {
+    try {
+      const raw = siteConfig.hero_slides
+      if (!raw) return SLIDES_DEFAULT
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : SLIDES_DEFAULT
+    } catch {
+      return SLIDES_DEFAULT
+    }
+  })()
 
   const goTo = useCallback(
     (index: number) => {

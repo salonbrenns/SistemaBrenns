@@ -40,5 +40,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   } catch { /* si falla, no bloquear */ }
 
-  return [...estaticas, ...servicios, ...cursos]
+  // Productos dinámicos
+  let productos: MetadataRoute.Sitemap = []
+  try {
+    const data = await prisma.producto.findMany({ where: { activo: true }, select: { id: true, updatedAt: true } })
+    productos = data.map(p => ({
+      url: `${base}/producto/${p.id}`,
+      lastModified: p.updatedAt,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }))
+  } catch { /* si falla, no bloquear */ }
+
+  return [...estaticas, ...servicios, ...cursos, ...productos]
 }
