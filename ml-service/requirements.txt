@@ -1,0 +1,8 @@
+fastapi==0.115.6
+uvicorn==0.34.0
+psycopg[binary]>=3.2
+pandas>=2.0
+# Fijo a la versión con la que se entrenó modelo_citas.pkl (ver warning
+# InconsistentVersionWarning al cargar el .pkl con otra versión) — evita que
+# Render instale una versión distinta a la que se usó para entrenar.
+scikit-learn==1.9.0

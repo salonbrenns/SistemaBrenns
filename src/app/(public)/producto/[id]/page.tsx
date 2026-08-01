@@ -2,6 +2,7 @@
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import DetalleProductoClient from '@/components/productos/DetalleProductoclient'
+import Recomendaciones from '@/components/productos/Recomendaciones'
 
 export default async function DetalleProductoPage({
   params,
@@ -64,5 +65,10 @@ export default async function DetalleProductoPage({
     })),
   }
 
-  return <DetalleProductoClient producto={producto} descuentoProducto={descuentoProducto} />
+  return (
+    <>
+      <DetalleProductoClient producto={producto} descuentoProducto={descuentoProducto} />
+      <Recomendaciones productoId={productoId} />
+    </>
+  )
 }
