@@ -396,7 +396,7 @@ model EmpleadoDia {
 
   @@unique([usuario_id, dia_semana])
   @@map("tblempleado_dias")
-  @@schema("seguridad")
+  @@schema("agenda")
 }
 
 model EmpleadoHoraExcepcion {
