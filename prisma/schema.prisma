@@ -6,7 +6,7 @@ datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
-  schemas   = ["agenda", "catalogos", "cursos", "seguridad", "ventas"]
+  schemas   = ["agenda", "catalogos", "cursos", "seguridad", "sistema", "ventas"]
 }
 
 model Cita {
@@ -49,7 +49,7 @@ model DiaBloqueado {
   motivo    String?
   createdAt DateTime @default(now())
 
-  @@map("tbldiasbloquedos")
+  @@map("tbldias_bloqueados")
   @@schema("agenda")
 }
 
@@ -127,7 +127,7 @@ model Producto {
   variantes           Variante[]
 
   @@map("tblproductos")
-  @@schema("ventas")
+  @@schema("catalogos")
 }
 
 model Variante {
@@ -150,7 +150,7 @@ model Variante {
   @@index([activo], map: "idx_variantes_activo")
   @@index([producto_id], map: "idx_variantes_producto_id")
   @@map("tblvariantes")
-  @@schema("ventas")
+  @@schema("catalogos")
 }
 
 model CarritoItem {
@@ -179,7 +179,7 @@ model Favorito {
 
   @@unique([usuario_id, producto_id])
   @@index([usuario_id], map: "idx_favoritos_usuario")
-  @@map("tblfavoritos")
+  @@map("tblfavoritos_productos")
   @@schema("ventas")
 }
 
@@ -312,7 +312,7 @@ model AvisoAdmin {
   usuario    Usuario? @relation(fields: [usuario_id], references: [id])
 
   @@map("tblavisos_admin")
-  @@schema("seguridad")
+  @@schema("sistema")
 }
 
 model TokenRecuperacion {
@@ -411,7 +411,7 @@ model EmpleadoHoraExcepcion {
   @@unique([usuario_id, dia_semana, hora, tipo])
   @@unique([usuario_id, fecha, hora, tipo])
   @@map("tblempleado_hora_excepciones")
-  @@schema("seguridad")
+  @@schema("agenda")
 }
 
 model PermisoUsuario {
@@ -498,7 +498,7 @@ model ConfigSitio {
   valor String
 
   @@map("tblconfig_sitio")
-  @@schema("seguridad")
+  @@schema("sistema")
 }
 
 model PreguntaFrecuente {
@@ -523,7 +523,7 @@ model Backup {
   estado String?   @default("COMPLETADO") @db.VarChar(50)
 
   @@map("tblbackup")
-  @@schema("seguridad")
+  @@schema("sistema")
 }
 
 enum Rol {
