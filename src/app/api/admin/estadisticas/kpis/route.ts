@@ -54,12 +54,13 @@ export async function GET() {
       orderBy: { fecha: "asc" },
     }),
     // Variantes con stock bajo
-    prisma.varianteProducto.findMany({
+    prisma.variante.findMany({
       where: { stock: { lte: STOCK_MINIMO }, activo: true },
       select: {
-        id:    true,
-        stock: true,
-        nombre: true,
+        id:           true,
+        stock:        true,
+        tono:         true,
+        presentacion: true,
         producto: { select: { id: true, nombre: true } },
       },
       orderBy: { stock: "asc" },
@@ -84,7 +85,7 @@ export async function GET() {
       id:        v.id,
       producto:  v.producto.nombre,
       productoId: v.producto.id,
-      variante:  v.nombre || null,
+      variante:  [v.tono, v.presentacion].filter(Boolean).join(' · ') || null,
       stock:     v.stock,
       sinStock:  v.stock === 0,
     })),
