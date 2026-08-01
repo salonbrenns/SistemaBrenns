@@ -358,6 +358,7 @@ model Usuario {
   pedidos            Pedido[]
   correo_verificado  Boolean  @default(true)
   tokenVerificacion  TokenVerificacion?
+  perfilEmpleado     Empleado?
 
   @@map("tblusuarios")
   @@schema("seguridad")
@@ -385,6 +386,9 @@ model Empleado {
   activo      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  /// FK opcional: vincula el perfil público con la cuenta de sistema del empleado
+  usuario_id  Int?     @unique
+  usuario     Usuario? @relation(fields: [usuario_id], references: [id], onDelete: SetNull)
 
   @@map("tblempleados")
   @@schema("catalogos")
