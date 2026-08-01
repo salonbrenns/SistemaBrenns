@@ -4,6 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts"
 import { TrendingUp, CalendarCheck, Users, DollarSign, Loader2, Trophy, Star } from "lucide-react"
+import { SkeletonReportes } from "@/components/ui/SkeletonCard"
 
 type Resumen  = { totalCitasAnio: number; totalIngresosAnio: number; citasHoy: number; clientesTotal: number }
 type Mes      = { mes: string; ingresos: number; citas: number }
@@ -44,11 +45,7 @@ export default function ReportesPage() {
       .catch(() => setCarg(false))
   }, [])
 
-  if (cargando) return (
-    <div className="flex justify-center items-center py-32">
-      <Loader2 className="w-8 h-8 text-pink-400 animate-spin" />
-    </div>
-  )
+  if (cargando) return <SkeletonReportes />
   if (!data) return null
 
   const { resumen, ingresosPorMes, topServicios, topEmpleadas } = data

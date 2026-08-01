@@ -1,11 +1,36 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import crypto from "crypto"
 import { sendVerificacionEmail } from "@/lib/email"
 
 type UsuarioRow = { id: number; nombre: string; correo: string; correo_verificado: boolean }
 
-export async function POST(req: Request) {
+// Rate limit: máx 3 solicitudes por IP en 10 minutos
+const intentos = new Map<string, { count: number; first: number }>()
+const MAX_INTENTOS = 3
+const VENTANA_MS   = 10 * 60 * 1000
+
+function excedeLimite(ip: string): boolean {
+  const ahora = Date.now()
+  const rec   = intentos.get(ip)
+  if (!rec || ahora - rec.first > VENTANA_MS) {
+    intentos.set(ip, { count: 1, first: ahora })
+    return false
+  }
+  rec.count++
+  return rec.count > MAX_INTENTOS
+}
+
+export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for") ?? "unknown"
+
+  if (excedeLimite(ip)) {
+    return NextResponse.json(
+      { error: "Demasiadas solicitudes. Intenta de nuevo en unos minutos." },
+      { status: 429 }
+    )
+  }
+
   try {
     const { correo } = await req.json()
     if (!correo) return NextResponse.json({ error: "Correo requerido" }, { status: 400 })
@@ -32,11 +57,10 @@ export async function POST(req: Request) {
     `
 
     sendVerificacionEmail({ to: usuario.correo, nombre: usuario.nombre, token })
-      .catch(err => console.error("Error reenviando verificación:", err))
+      .catch(() => {})
 
     return NextResponse.json({ ok: true })
-  } catch (err) {
-    console.error("Error reenviar verificación:", err)
+  } catch {
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

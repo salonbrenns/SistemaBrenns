@@ -4,17 +4,13 @@ import { NextResponse } from "next/server"
 export async function GET() {
   try {
     const cursos = await prisma.curso.findMany({
-      where: {
-        activo: true, // 🔥 SOLO ACTIVOS
-      },
-      orderBy: {
-        created_at: "desc",
-      },
+      where:   { activo: true },
+      orderBy: { created_at: "desc" },
+      take:    100,
     })
 
     return NextResponse.json({ cursos })
-  } catch (error) {
-    console.error(error)
+  } catch {
     return NextResponse.json(
       { error: "Error al obtener cursos" },
       { status: 500 }

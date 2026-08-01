@@ -6,11 +6,29 @@ import { useSession } from "next-auth/react"
 import {
   Users, CalendarCheck, ShoppingBag, Calendar,
   Shield, Briefcase, UserCircle,
-  ChevronDown, Plus, X, Eye, EyeOff, Loader2, CheckCircle
+  ChevronDown, Plus, X, Eye, EyeOff, Loader2, CheckCircle, AlertTriangle, Clock
 } from "lucide-react"
 import Paginacion from "@/components/ui/paginacion"
+import { SkeletonKpiValor, SkeletonTablaFila } from "@/components/ui/SkeletonCard"
 
 const POR_PAGINA = 15
+
+type CitaSinComprobante = {
+  id: number
+  hora: string
+  esHoy: boolean
+  cliente: string
+  servicio: string
+}
+
+type ProductoStockBajo = {
+  id: number
+  producto: string
+  productoId: number
+  variante: string | null
+  stock: number
+  sinStock: boolean
+}
 
 type KPIs = {
   citasHoy: number
@@ -18,6 +36,8 @@ type KPIs = {
   pedidosMes: number
   pedidosPendientes: number
   clientesTotal: number
+  citasSinComprobante: CitaSinComprobante[]
+  productosStockBajo: ProductoStockBajo[]
 }
 
 type Usuario = {
@@ -308,11 +328,77 @@ export default function DashboardPage() {
               <div className="bg-white/20 p-2 rounded-xl">{kpi.icon}</div>
             </div>
             <div className="text-4xl font-bold">
-              {loadingKpis ? "..." : (kpi.value ?? 0)}
+              {loadingKpis ? <SkeletonKpiValor /> : (kpi.value ?? 0)}
             </div>
           </div>
         ))}
       </div>
+
+      {/* Alerta: citas sin comprobante hoy / mañana */}
+      {kpis && kpis.citasSinComprobante.length > 0 && (
+        <div className="rounded-2xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+            <h2 className="font-bold text-amber-800 dark:text-amber-300">
+              {kpis.citasSinComprobante.length} cita{kpis.citasSinComprobante.length > 1 ? "s" : ""} sin comprobante de pago
+            </h2>
+          </div>
+          <p className="text-sm text-amber-700 dark:text-amber-400 mb-4">
+            Estas clientas reservaron con transferencia pero aún no han subido su comprobante. Se les enviará un recordatorio automático.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {kpis.citasSinComprobante.map(c => (
+              <div key={c.id} className="flex items-center gap-3 bg-white dark:bg-gray-900 rounded-xl px-4 py-3 border border-amber-200 dark:border-amber-800">
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${c.esHoy ? "bg-red-500" : "bg-amber-400"}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{c.cliente}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{c.servicio}</p>
+                </div>
+                <div className="flex items-center gap-1 text-xs font-bold text-amber-700 dark:text-amber-400 flex-shrink-0">
+                  <Clock className="w-3.5 h-3.5" />
+                  {c.hora}
+                  <span className="ml-1 text-xs font-normal text-gray-400">{c.esHoy ? "hoy" : "mañana"}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Alerta: productos con stock bajo o agotado */}
+      {kpis && kpis.productosStockBajo.length > 0 && (
+        <div className="rounded-2xl border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/40 p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+            <h2 className="font-bold text-red-800 dark:text-red-300">
+              {kpis.productosStockBajo.filter(p => p.sinStock).length > 0
+                ? `${kpis.productosStockBajo.filter(p => p.sinStock).length} producto${kpis.productosStockBajo.filter(p => p.sinStock).length > 1 ? "s" : ""} agotado${kpis.productosStockBajo.filter(p => p.sinStock).length > 1 ? "s" : ""} · `
+                : ""}
+              {kpis.productosStockBajo.filter(p => !p.sinStock).length > 0
+                ? `${kpis.productosStockBajo.filter(p => !p.sinStock).length} con stock bajo`
+                : ""}
+            </h2>
+          </div>
+          <p className="text-sm text-red-700 dark:text-red-400 mb-4">
+            Estos productos necesitan reabastecimiento pronto.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {kpis.productosStockBajo.map(p => (
+              <a key={p.id} href={`/admin/productos/${p.productoId}/edit`}
+                className="flex items-center gap-3 bg-white dark:bg-gray-900 rounded-xl px-4 py-3 border border-red-200 dark:border-red-900 hover:border-red-400 transition">
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${p.sinStock ? "bg-red-600" : "bg-orange-400"}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{p.producto}</p>
+                  {p.variante && <p className="text-xs text-gray-400 truncate">{p.variante}</p>}
+                </div>
+                <span className={`text-xs font-black flex-shrink-0 ${p.sinStock ? "text-red-600" : "text-orange-500"}`}>
+                  {p.sinStock ? "AGOTADO" : `${p.stock} uds`}
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Resumen por rol */}
       <div className="grid grid-cols-3 gap-4">
@@ -363,9 +449,7 @@ export default function DashboardPage() {
         </div>
 
         {loadingUsuarios ? (
-          <div className="p-10 text-center text-gray-400 flex items-center justify-center gap-2">
-            <Loader2 className="w-5 h-5 animate-spin" /> Cargando usuarios...
-          </div>
+          <table className="w-full"><tbody>{Array.from({length:6}).map((_,i)=><SkeletonTablaFila key={i} columnas={4}/>)}</tbody></table>
         ) : usuariosFiltrados.length === 0 ? (
           <div className="p-10 text-center text-gray-400">No hay usuarios</div>
         ) : (

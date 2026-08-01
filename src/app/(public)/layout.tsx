@@ -2,6 +2,7 @@
 import Header from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
 import AdminBar from "@/components/ui/AdminBar";
+import WhatsAppFAB from "@/components/ui/WhatsAppFAB";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -12,6 +13,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         {children}
       </main>
       <Footer />
+      <WhatsAppFAB />
     </>
   );
 }

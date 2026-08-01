@@ -5,7 +5,30 @@ import crypto from "crypto"
 import { withRasp } from "@/lib/withRasp"
 import { sendVerificacionEmail } from "@/lib/email"
 
+// Rate limit: máx 5 registros por IP en 10 minutos
+const intentos = new Map<string, { count: number; first: number }>()
+const MAX_REGISTROS = 5
+const VENTANA_MS    = 10 * 60 * 1000
+
+function excedeLimite(ip: string): boolean {
+  const ahora = Date.now()
+  const rec   = intentos.get(ip)
+  if (!rec || ahora - rec.first > VENTANA_MS) {
+    intentos.set(ip, { count: 1, first: ahora })
+    return false
+  }
+  rec.count++
+  return rec.count > MAX_REGISTROS
+}
+
 async function registerHandler(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for") ?? "unknown"
+  if (excedeLimite(ip)) {
+    return NextResponse.json(
+      { error: "Demasiados intentos. Intenta de nuevo en unos minutos." },
+      { status: 429 }
+    )
+  }
   try {
     const { name, email, password, telefono } = await req.json()
 

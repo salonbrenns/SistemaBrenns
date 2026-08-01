@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react"
 import { useSession } from "next-auth/react"
+import { useSiteConfig } from "@/hooks/useSiteConfig"
 import { useSearchParams } from "next/navigation"
 import AuthGuard from "@/components/ui/AuthGuard"
 import Breadcrumb from "@/components/Breadcrumb"
@@ -27,6 +28,7 @@ type Empleado = { id: number; nombre: string; imagen: string | null; dias?: numb
 function AgendarContenido() {
   useSession()
   const searchParams = useSearchParams()
+  const siteConfig = useSiteConfig()
   const servicioId = searchParams.get("servicioId")
 
   const [paso,        setPaso]        = useState<0 | 1 | 2>(0)
@@ -57,30 +59,14 @@ function AgendarContenido() {
   const [compSubido,    setCompSubido]    = useState(false)
   const [errorComp,     setErrorComp]     = useState("")
 
-  const [bancoCfg, setBancoCfg] = useState({
-    titular: "Ruth Barrientos Angeles",
-    banco:   "BBVA",
-    cuenta:  "154 792 8563",
-    clabe:   "012 290 01547928563 4",
-    celular: "77 1748 2746",
-    anticipoPct: 50,
-  })
-
-  useEffect(() => {
-    fetch("/api/config-sitio")
-      .then(r => r.json())
-      .then(data => {
-        if (data) setBancoCfg({
-          titular:     data.banco_titular     || "Ruth Barrientos Angeles",
-          banco:       data.banco_banco       || "BBVA",
-          cuenta:      data.banco_cuenta      || "154 792 8563",
-          clabe:       data.banco_clabe       || "012 290 01547928563 4",
-          celular:     data.banco_celular     || "77 1748 2746",
-          anticipoPct: Number(data.anticipo_porcentaje) || 50,
-        })
-      })
-      .catch(() => {})
-  }, [])
+  const bancoCfg = {
+    titular:     siteConfig.banco_titular     || "Ruth Barrientos Angeles",
+    banco:       siteConfig.banco_banco       || "BBVA",
+    cuenta:      siteConfig.banco_cuenta      || "154 792 8563",
+    clabe:       siteConfig.banco_clabe       || "012 290 01547928563 4",
+    celular:     siteConfig.banco_celular     || "77 1748 2746",
+    anticipoPct: Number(siteConfig.anticipo_porcentaje) || 50,
+  }
 
   // ── Helpers de calendario
   const diasDelMes = eachDayOfInterval({ start: startOfMonth(mesActual), end: endOfMonth(mesActual) })
@@ -718,6 +704,7 @@ function AgendarContenido() {
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Notas adicionales (opcional)</label>
                     <textarea value={notas} onChange={e => setNotas(e.target.value)} rows={2}
                       placeholder="Ej: Alergia a ciertos productos, uñas muy cortas..."
+                      maxLength={500}
                       className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 px-4 py-3 text-sm focus:outline-none focus:border-pink-400 transition resize-none" />
                   </div>
                 )}

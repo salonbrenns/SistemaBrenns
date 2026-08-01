@@ -13,7 +13,11 @@ export async function GET() {
   const manana  = new Date(hoy.getTime() + 86_400_000)
   const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1)
 
-  const [citasHoy, citasMes, pedidosMes, pedidosPendientes, clientesTotal] = await Promise.all([
+  const pasadoManana = new Date(hoy.getTime() + 2 * 86_400_000)
+
+  const STOCK_MINIMO = 5
+
+  const [citasHoy, citasMes, pedidosMes, pedidosPendientes, clientesTotal, citasSinComprobante, productosStockBajo] = await Promise.all([
     prisma.cita.count({
       where: { fecha: { gte: hoy, lt: manana } },
     }),
@@ -31,6 +35,37 @@ export async function GET() {
       FROM seguridad.tblusuarios
       WHERE rol::text = 'CLIENTE' AND activo = true
     `,
+    // Citas hoy y mañana que son PENDIENTE (sin comprobante subido) por TRANSFERENCIA
+    prisma.cita.findMany({
+      where: {
+        fecha:       { gte: hoy, lt: pasadoManana },
+        estado:      "PENDIENTE",
+        metodo_pago: "TRANSFERENCIA",
+        comprobante: null,
+      },
+      select: {
+        id:      true,
+        hora:    true,
+        fecha:   true,
+        usuario: { select: { nombre: true } },
+        servicio:{ select: { nombre: true } },
+        nombre_contacto: true,
+      },
+      orderBy: { fecha: "asc" },
+    }),
+    // Variantes con stock bajo
+    prisma.variante.findMany({
+      where: { stock: { lte: STOCK_MINIMO }, activo: true },
+      select: {
+        id:           true,
+        stock:        true,
+        tono:         true,
+        presentacion: true,
+        producto: { select: { id: true, nombre: true } },
+      },
+      orderBy: { stock: "asc" },
+      take: 20,
+    }),
   ])
 
   return NextResponse.json({
@@ -39,5 +74,20 @@ export async function GET() {
     pedidosMes,
     pedidosPendientes,
     clientesTotal: Number(clientesTotal[0].count),
+    citasSinComprobante: citasSinComprobante.map(c => ({
+      id:       c.id,
+      hora:     c.hora,
+      esHoy:    c.fecha >= hoy && c.fecha < manana,
+      cliente:  c.usuario?.nombre || c.nombre_contacto || "Sin nombre",
+      servicio: c.servicio.nombre,
+    })),
+    productosStockBajo: productosStockBajo.map(v => ({
+      id:        v.id,
+      producto:  v.producto.nombre,
+      productoId: v.producto.id,
+      variante:  [v.tono, v.presentacion].filter(Boolean).join(' · ') || null,
+      stock:     v.stock,
+      sinStock:  v.stock === 0,
+    })),
   })
 }

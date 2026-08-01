@@ -8,6 +8,7 @@ import {
   Calendar, Mail, Phone, Edit2, Heart,
   Clock, CreditCard, Loader2, Bell, Truck, AlertCircle
 } from "lucide-react"
+import { SkeletonPerfil } from "@/components/ui/SkeletonCard"
 import Breadcrumb from "@/components/Breadcrumb"
 import EditarPerfilModal from "@/components/ui/EditarPerfilModal"
 import { useFavoritos } from "@/hooks/useFavoritos"
@@ -90,13 +91,7 @@ export default function PerfilPage() {
       .catch(() => null)
   }, [status])
 
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen bg-[#fff8fa] dark:bg-gray-950 flex items-center justify-center">
-        <Loader2 className="w-10 h-10 text-rose-500 animate-spin" />
-      </div>
-    )
-  }
+  if (status === "loading") return <SkeletonPerfil />
 
   if (!session?.user) return null
 

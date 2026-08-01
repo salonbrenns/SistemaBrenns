@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, Fragment } from 'react'
 import { Package, Loader2, ChevronDown, ChevronUp, CheckCircle, XCircle, Truck, Package2, ClipboardCheck, FileImage } from 'lucide-react'
+import { SkeletonAdminCardList } from '@/components/ui/SkeletonCard'
 import Paginacion from '@/components/ui/paginacion'
 import DropdownAcciones, { DropdownItem, DropdownSeparator } from '@/components/ui/DropdownAcciones'
 
@@ -91,13 +92,7 @@ export default function AdminPedidosPage() {
     setAbierto(null)
   }
 
-  if (cargando && pedidos.length === 0) {
-    return (
-      <div className="flex items-center justify-center py-40">
-        <Loader2 className="w-10 h-10 text-rose-400 animate-spin" />
-      </div>
-    )
-  }
+  if (cargando && pedidos.length === 0) return <SkeletonAdminCardList cantidad={6} />
 
   return (
     <div className="space-y-6">

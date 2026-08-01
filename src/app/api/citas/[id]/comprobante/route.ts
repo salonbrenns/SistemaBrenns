@@ -85,7 +85,7 @@ export async function POST(
       ).end(buffer)
     })
 
-    // Actualizar cita: guardar comprobante + confirmar automáticamente
+    // Confirmar cita automáticamente al recibir comprobante
     await prisma.cita.update({
       where: { id: citaId },
       data: {
@@ -95,9 +95,10 @@ export async function POST(
       },
     })
 
-    // Notificar al cliente que su cita quedó confirmada
-    const clienteEmail = cita.usuario?.correo || session.user.email
     const clienteNombre = cita.usuario?.nombre || session.user.name || "Cliente"
+    const clienteEmail  = cita.usuario?.correo || session.user.email
+
+    // Notificar a la clienta que su cita quedó confirmada
     if (clienteEmail) {
       sendCitaAgendada({
         to:       clienteEmail,
@@ -108,20 +109,19 @@ export async function POST(
       }).catch(err => console.error("[comprobante] email cliente:", err))
     }
 
-    // Notificar al admin
+    // Notificar al admin (solo como aviso, la cita ya está confirmada)
     const fechaStr = cita.fecha.toLocaleDateString("es-MX", {
       weekday: "long", day: "numeric", month: "long", year: "numeric",
     })
 
     sendEmail({
       to:      ADMIN_EMAIL,
-      subject: `💳 Comprobante de pago recibido — ${cita.servicio.nombre}`,
+      subject: `✅ Pago recibido — ${cita.servicio.nombre} (${clienteNombre})`,
       html: `
         <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;">
-          <h2 style="color:#be123c;margin:0 0 12px;">💳 Comprobante de pago recibido</h2>
+          <h2 style="color:#16a34a;margin:0 0 12px;">✅ Comprobante recibido — cita confirmada</h2>
           <p style="color:#374151;margin:0 0 20px;">
-            La clienta <strong>${clienteNombre}</strong> subió su comprobante de transferencia.
-            La cita fue <strong style="color:#16a34a;">confirmada automáticamente</strong>.
+            <strong>${clienteNombre}</strong> subió su comprobante. La cita quedó confirmada automáticamente.
           </p>
           <table style="width:100%;border-radius:12px;background:#fdf2f8;padding:16px;margin-bottom:20px;border:1px solid #fbcfe8;border-spacing:0;">
             <tr><td style="padding:4px 0;color:#9d174d;font-size:13px;font-weight:600;">Servicio</td><td style="padding:4px 0;color:#374151;font-size:14px;">${cita.servicio.nombre}</td></tr>
@@ -133,7 +133,7 @@ export async function POST(
             style="display:inline-block;background:#be123c;color:white;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:700;font-size:14px;">
             Ver comprobante 🔍
           </a>
-          <p style="color:#9ca3af;font-size:12px;margin-top:20px;">Panel admin → Citas para ver los detalles completos.</p>
+          <p style="color:#9ca3af;font-size:12px;margin-top:20px;">Si algo no cuadra puedes rechazar el comprobante desde Panel admin → Pagos.</p>
         </div>
       `,
     }).catch(err => console.error("[comprobante] email admin:", err))

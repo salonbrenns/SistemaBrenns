@@ -1,8 +1,50 @@
 // src/app/(frontend)/cursos/[id]/page.tsx
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import { auth } from "@/lib/auth"
 import CursoDetalleClient from './CursoDetalle'
+
+export const revalidate = 3600
+
+export async function generateStaticParams() {
+  const cursos = await prisma.curso.findMany({
+    where: { activo: true },
+    select: { id: true },
+  })
+  return cursos.map(c => ({ id: String(c.id) }))
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const curso = await prisma.curso.findUnique({
+    where: { id: Number(id), activo: true },
+    select: { titulo: true, descripcion: true, imagenes: true },
+  })
+  if (!curso) return { title: "Curso no encontrado" }
+
+  const imagenes = Array.isArray(curso.imagenes) ? curso.imagenes as string[] : []
+  const imagen   = imagenes[0] ?? "/logo/logo.png"
+
+  return {
+    title: curso.titulo,
+    description: curso.descripcion ?? `Inscríbete al curso ${curso.titulo} en Brenn's Beauty`,
+    openGraph: {
+      title: curso.titulo,
+      description: curso.descripcion ?? `Inscríbete al curso ${curso.titulo} en Brenn's Beauty`,
+      images: [{ url: imagen }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: curso.titulo,
+      images: [imagen],
+    },
+  }
+}
 
 export default async function DetalleCursoPage({
   params,

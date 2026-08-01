@@ -2,7 +2,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Bell, Calendar, Clock, CheckCheck, MessageSquare, Loader2 } from "lucide-react"
+import { Bell, Calendar, Clock, CheckCheck, MessageSquare } from "lucide-react"
+import { SkeletonMensajes } from "@/components/ui/SkeletonCard"
 import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import { useSession } from "next-auth/react"
@@ -52,13 +53,7 @@ const { status } = useSession()
 
   const noLeidos = mensajes.filter(m => !m.leido).length
 
-  if (status === "loading" || cargando) {
-    return (
-      <div className="flex justify-center items-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 text-pink-400 animate-spin" />
-      </div>
-    )
-  }
+  if (status === "loading" || cargando) return <SkeletonMensajes />
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">

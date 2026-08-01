@@ -3,16 +3,17 @@
 import { useEffect, useRef, useState, Suspense } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { useSiteConfig } from '@/hooks/useSiteConfig'
 import {
   CheckCircle2, Clock, CreditCard, Building2, Banknote, Package,
   Upload, ImageIcon, Loader2, CheckCheck, ExternalLink,
 } from 'lucide-react'
 import AuthGuard from '@/components/ui/AuthGuard'
-import PageLoader from '@/components/ui/PageLoader'
+import { SkeletonPedidoDetalle } from '@/components/ui/SkeletonCard'
 import { toast } from '@/lib/toast'
 
 function SpinnerPage() {
-  return <PageLoader className="min-h-screen bg-[#fffafa] dark:bg-gray-950" />
+  return <SkeletonPedidoDetalle />
 }
 
 interface Detalle {
@@ -65,6 +66,7 @@ function ConfirmacionContenido() {
   const searchParams = useSearchParams()
   const pedidoId     = Number(params.id)
   const metodoUrl    = searchParams.get('metodo') ?? 'tarjeta'
+  const siteConfig   = useSiteConfig()
 
   const [pedido,      setPedido]      = useState<Pedido | null>(null)
   const [cargando,    setCargando]    = useState(true)
@@ -76,27 +78,12 @@ function ConfirmacionContenido() {
   const [dragOver,    setDragOver]    = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const [bancoCfg, setBancoCfg] = useState({
-    banco:   'BBVA',
-    titular: 'Ruth Barrientos Angeles',
-    cuenta:  '154 792 8563',
-    clabe:   '012 290 01547928563 4',
-  })
-
-  useEffect(() => {
-    fetch('/api/config-sitio')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!data) return
-        setBancoCfg({
-          banco:   data.banco_banco   || 'BBVA',
-          titular: data.banco_titular || 'Ruth Barrientos Angeles',
-          cuenta:  data.banco_cuenta  || '154 792 8563',
-          clabe:   data.banco_clabe   || '012 290 01547928563 4',
-        })
-      })
-      .catch(() => {/* usar defaults */})
-  }, [])
+  const bancoCfg = {
+    banco:   siteConfig.banco_banco   || 'BBVA',
+    titular: siteConfig.banco_titular || 'Ruth Barrientos Angeles',
+    cuenta:  siteConfig.banco_cuenta  || '154 792 8563',
+    clabe:   siteConfig.banco_clabe   || '012 290 01547928563 4',
+  }
 
   useEffect(() => {
     fetch('/api/pedidos')

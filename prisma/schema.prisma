@@ -6,7 +6,7 @@ datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
-  schemas   = ["agenda", "catalogos", "cursos", "seguridad", "ventas"]
+  schemas   = ["agenda", "catalogos", "cursos", "seguridad", "sistema", "ventas"]
 }
 
 model Cita {
@@ -16,7 +16,7 @@ model Cita {
   fecha                DateTime
   hora                 String
   notas                String?
-  createdAt            DateTime     @default(now())
+  createdAt            DateTime     @default(now()) @map("created_at")
   metodo_pago          String?
   nombre_contacto      String?
   telefono_contacto    String?
@@ -34,6 +34,11 @@ model Cita {
   usuario              Usuario?     @relation("CitaCliente", fields: [usuario_id], references: [id])
   avisos               AvisoAdmin[]
 
+  @@index([fecha],        map: "idx_citas_fecha")
+  @@index([estado],       map: "idx_citas_estado")
+  @@index([usuario_id],   map: "idx_citas_usuario")
+  @@index([empleado_id],  map: "idx_citas_empleado")
+  @@index([fecha, estado],map: "idx_citas_fecha_estado")
   @@map("tblcitas")
   @@schema("agenda")
 }
@@ -42,9 +47,9 @@ model DiaBloqueado {
   id        Int      @id @default(autoincrement())
   fecha     DateTime @db.Date
   motivo    String?
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
 
-  @@map("tbldiasbloquedos")
+  @@map("tbldias_bloqueados")
   @@schema("agenda")
 }
 
@@ -111,18 +116,18 @@ model Producto {
   fecha_creacion      DateTime?           @default(now()) @db.Timestamp(6)
   fecha_actualizacion DateTime?           @default(now()) @db.Timestamp(6)
   imagen              Json?
-  codigo              String?             @db.VarChar(50)
+  codigo              String?             @unique(map: "uq_producto_codigo") @db.VarChar(50)
   precio_costo        Decimal?            @db.Decimal(10, 2)
   precio_venta        Decimal?            @db.Decimal(10, 2)
   stock               Int                 @default(0)
   favoritos           Favorito[]
-  categoria           Categoria?          @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  marca               Marca?              @relation(fields: [marca_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  categoria           Categoria?          @relation(fields: [categoria_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  marca               Marca?              @relation(fields: [marca_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
   promociones         PromocionProducto[]
   variantes           Variante[]
 
   @@map("tblproductos")
-  @@schema("ventas")
+  @@schema("catalogos")
 }
 
 model Variante {
@@ -142,10 +147,11 @@ model Variante {
   detalles            DetallePedido[]
   producto            Producto        @relation(fields: [producto_id], references: [id], onDelete: Cascade, map: "fk_variante_producto")
 
+  @@unique([producto_id, tono, presentacion], map: "uq_variante_producto_tono_presentacion")
   @@index([activo], map: "idx_variantes_activo")
   @@index([producto_id], map: "idx_variantes_producto_id")
   @@map("tblvariantes")
-  @@schema("ventas")
+  @@schema("catalogos")
 }
 
 model CarritoItem {
@@ -174,7 +180,7 @@ model Favorito {
 
   @@unique([usuario_id, producto_id])
   @@index([usuario_id], map: "idx_favoritos_usuario")
-  @@map("tblfavoritos")
+  @@map("tblfavoritos_productos")
   @@schema("ventas")
 }
 
@@ -186,8 +192,8 @@ model Servicio {
   duracion     String
   imagen       String?
   activo       Boolean            @default(true)
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @map("updated_at")
   beneficios   String?
   incluye      String?
   categoria_id Int?
@@ -263,9 +269,10 @@ model Inscripcion {
   curso_id          Int
   fecha_inscripcion DateTime @default(now())
   estado            String   @default("ACTIVO") @db.VarChar(50)
-  curso             Curso    @relation(fields: [curso_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  curso             Curso    @relation(fields: [curso_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
   pagos             PagoCurso[]
 
+  @@unique([usuario_id, curso_id], map: "uq_inscripcion_usuario_curso")
   @@map("tblinscripciones")
   @@schema("cursos")
 }
@@ -302,12 +309,12 @@ model AvisoAdmin {
   usuario_id Int?
   mensaje    String
   leido      Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  createdAt  DateTime @default(now()) @map("created_at")
   cita       Cita     @relation(fields: [cita_id], references: [id])
   usuario    Usuario? @relation(fields: [usuario_id], references: [id])
 
   @@map("tblavisos_admin")
-  @@schema("seguridad")
+  @@schema("sistema")
 }
 
 model TokenRecuperacion {
@@ -316,8 +323,8 @@ model TokenRecuperacion {
   token      String   @unique
   expira     DateTime
   usado      Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  usuario    Usuario  @relation(fields: [usuario_id], references: [id])
+  createdAt  DateTime @default(now()) @map("created_at")
+  usuario    Usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
 
   @@map("tbltoken_recuperacion")
   @@schema("seguridad")
@@ -351,6 +358,7 @@ model Usuario {
   pedidos            Pedido[]
   correo_verificado  Boolean  @default(true)
   tokenVerificacion  TokenVerificacion?
+  perfilEmpleado     Empleado?
 
   @@map("tblusuarios")
   @@schema("seguridad")
@@ -361,7 +369,7 @@ model TokenVerificacion {
   usuario_id Int      @unique
   token      String   @unique
   expira     DateTime
-  createdAt  DateTime @default(now())
+  createdAt  DateTime @default(now()) @map("created_at")
   usuario    Usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
 
   @@map("tbltoken_verificacion")
@@ -376,8 +384,11 @@ model Empleado {
   imagen      String?
   orden       Int      @default(0)
   activo      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt        @map("updated_at")
+  /// FK opcional: vincula el perfil público con la cuenta de sistema del empleado
+  usuario_id  Int?     @unique
+  usuario     Usuario? @relation(fields: [usuario_id], references: [id], onDelete: SetNull)
 
   @@map("tblempleados")
   @@schema("catalogos")
@@ -391,7 +402,7 @@ model EmpleadoDia {
 
   @@unique([usuario_id, dia_semana])
   @@map("tblempleado_dias")
-  @@schema("seguridad")
+  @@schema("agenda")
 }
 
 model EmpleadoHoraExcepcion {
@@ -406,7 +417,7 @@ model EmpleadoHoraExcepcion {
   @@unique([usuario_id, dia_semana, hora, tipo])
   @@unique([usuario_id, fecha, hora, tipo])
   @@map("tblempleado_hora_excepciones")
-  @@schema("seguridad")
+  @@schema("agenda")
 }
 
 model PermisoUsuario {
@@ -451,6 +462,10 @@ model Pedido {
   detalles         DetallePedido[]
   usuario          Usuario         @relation(fields: [usuario_id], references: [id])
 
+  @@index([usuario_id],              map: "idx_pedidos_usuario")
+  @@index([estado],                  map: "idx_pedidos_estado")
+  @@index([fecha_pedido],            map: "idx_pedidos_fecha")
+  @@index([estado, fecha_pedido],    map: "idx_pedidos_estado_fecha")
   @@map("tblpedidos")
   @@schema("ventas")
 }
@@ -464,7 +479,7 @@ model Promocion {
   fecha_inicio DateTime            @db.Date
   fecha_fin    DateTime            @db.Date
   activo       Boolean             @default(true)
-  createdAt    DateTime            @default(now())
+  createdAt    DateTime            @default(now()) @map("created_at")
   productos    PromocionProducto[]
 
   @@map("tblpromociones")
@@ -489,7 +504,7 @@ model ConfigSitio {
   valor String
 
   @@map("tblconfig_sitio")
-  @@schema("seguridad")
+  @@schema("sistema")
 }
 
 model PreguntaFrecuente {
@@ -498,8 +513,8 @@ model PreguntaFrecuente {
   respuesta String
   orden     Int      @default(0)
   activo    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt        @map("updated_at")
 
   @@map("tblfaq")
   @@schema("catalogos")
@@ -514,7 +529,7 @@ model Backup {
   estado String?   @default("COMPLETADO") @db.VarChar(50)
 
   @@map("tblbackup")
-  @@schema("seguridad")
+  @@schema("sistema")
 }
 
 enum Rol {

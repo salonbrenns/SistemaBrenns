@@ -1,12 +1,9 @@
 // src/lib/email.ts
-// Servicio de email con Resend (prioritario) y fallback compatible a Brevo.
-
-import { Resend } from "resend"
+// Servicio de email vía Brevo API (funciona en Vercel Hobby)
 
 const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 const FROM_NAME     = "Salón Brenn's"
-const FROM_EMAIL    = process.env.RESEND_FROM || process.env.BREVO_FROM || "salonbrenns11@gmail.com"
-const resend        = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+const FROM_EMAIL    = process.env.BREVO_FROM || "salonbrenns11@gmail.com"
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 export interface EmailOptions {
@@ -18,31 +15,9 @@ export interface EmailOptions {
 
 // ── Función base ──────────────────────────────────────────────────────────────
 export async function sendEmail(opts: EmailOptions): Promise<boolean> {
-  if (resend && process.env.RESEND_API_KEY) {
-    try {
-      const result = await resend.emails.send({
-        from: `${FROM_NAME} <${FROM_EMAIL}>`,
-        to: [opts.to],
-        subject: opts.subject,
-        html: opts.html,
-        text: opts.text ?? opts.html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
-      })
-
-      if (result.error) {
-        console.error("❌ Error al enviar email con Resend:", result.error)
-        return false
-      }
-
-      return true
-    } catch (err) {
-      console.error("❌ Error al enviar email con Resend:", err)
-      return false
-    }
-  }
-
   const apiKey = process.env.BREVO_API_KEY
   if (!apiKey) {
-    console.warn("⚠️  RESEND_API_KEY/BREVO_API_KEY no configurado — emails desactivados")
+    console.warn("⚠️  BREVO_API_KEY no configurado — emails desactivados en local")
     return false
   }
 

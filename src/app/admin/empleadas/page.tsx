@@ -8,6 +8,7 @@ import Image from "next/image"
 import { toast } from "@/lib/toast"
 import { confirmDialog } from "@/lib/confirm"
 import Paginacion from "@/components/ui/paginacion"
+import { SkeletonTabla } from "@/components/ui/SkeletonCard"
 
 // ── Types ──────────────────────────────────────────────────────────────────
 type Empleada = {
@@ -277,7 +278,7 @@ export default function EmpleadasPage() {
           />
 
           {cargandoEmp ? (
-            <div className="flex justify-center py-16"><Loader2 className="w-7 h-7 text-pink-400 animate-spin" /></div>
+            <SkeletonTabla filas={5} headers={["Empleada","Contacto","Citas totales","Estado","Acciones"]} />
           ) : filtradas.length === 0 ? (
             <div className="text-center py-16 text-gray-400 dark:text-gray-500 text-sm">
               {busqueda ? "No se encontraron empleadas con ese criterio" : "Aún no hay empleadas registradas"}

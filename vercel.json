@@ -3,6 +3,14 @@
     {
       "path": "/api/cron/recordatorios",
       "schedule": "0 16 * * *"
+    },
+    {
+      "path": "/api/cron/recordatorio-comprobante",
+      "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/cron/limpiar-tokens",
+      "schedule": "0 3 1 * *"
     }
   ]
 }
