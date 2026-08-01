@@ -16,7 +16,7 @@ model Cita {
   fecha                DateTime
   hora                 String
   notas                String?
-  createdAt            DateTime     @default(now())
+  createdAt            DateTime     @default(now()) @map("created_at")
   metodo_pago          String?
   nombre_contacto      String?
   telefono_contacto    String?
@@ -47,7 +47,7 @@ model DiaBloqueado {
   id        Int      @id @default(autoincrement())
   fecha     DateTime @db.Date
   motivo    String?
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@map("tbldias_bloqueados")
   @@schema("agenda")
@@ -192,8 +192,8 @@ model Servicio {
   duracion     String
   imagen       String?
   activo       Boolean            @default(true)
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @map("updated_at")
   beneficios   String?
   incluye      String?
   categoria_id Int?
@@ -309,7 +309,7 @@ model AvisoAdmin {
   usuario_id Int?
   mensaje    String
   leido      Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  createdAt  DateTime @default(now()) @map("created_at")
   cita       Cita     @relation(fields: [cita_id], references: [id])
   usuario    Usuario? @relation(fields: [usuario_id], references: [id])
 
@@ -323,7 +323,7 @@ model TokenRecuperacion {
   token      String   @unique
   expira     DateTime
   usado      Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  createdAt  DateTime @default(now()) @map("created_at")
   usuario    Usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
 
   @@map("tbltoken_recuperacion")
@@ -369,7 +369,7 @@ model TokenVerificacion {
   usuario_id Int      @unique
   token      String   @unique
   expira     DateTime
-  createdAt  DateTime @default(now())
+  createdAt  DateTime @default(now()) @map("created_at")
   usuario    Usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
 
   @@map("tbltoken_verificacion")
@@ -384,8 +384,8 @@ model Empleado {
   imagen      String?
   orden       Int      @default(0)
   activo      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt        @map("updated_at")
   /// FK opcional: vincula el perfil público con la cuenta de sistema del empleado
   usuario_id  Int?     @unique
   usuario     Usuario? @relation(fields: [usuario_id], references: [id], onDelete: SetNull)
@@ -479,7 +479,7 @@ model Promocion {
   fecha_inicio DateTime            @db.Date
   fecha_fin    DateTime            @db.Date
   activo       Boolean             @default(true)
-  createdAt    DateTime            @default(now())
+  createdAt    DateTime            @default(now()) @map("created_at")
   productos    PromocionProducto[]
 
   @@map("tblpromociones")
@@ -513,8 +513,8 @@ model PreguntaFrecuente {
   respuesta String
   orden     Int      @default(0)
   activo    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt        @map("updated_at")
 
   @@map("tblfaq")
   @@schema("catalogos")
