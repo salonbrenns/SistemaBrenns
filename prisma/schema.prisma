@@ -116,7 +116,7 @@ model Producto {
   fecha_creacion      DateTime?           @default(now()) @db.Timestamp(6)
   fecha_actualizacion DateTime?           @default(now()) @db.Timestamp(6)
   imagen              Json?
-  codigo              String?             @db.VarChar(50)
+  codigo              String?             @unique(map: "uq_producto_codigo") @db.VarChar(50)
   precio_costo        Decimal?            @db.Decimal(10, 2)
   precio_venta        Decimal?            @db.Decimal(10, 2)
   stock               Int                 @default(0)
@@ -147,6 +147,7 @@ model Variante {
   detalles            DetallePedido[]
   producto            Producto        @relation(fields: [producto_id], references: [id], onDelete: Cascade, map: "fk_variante_producto")
 
+  @@unique([producto_id, tono, presentacion], map: "uq_variante_producto_tono_presentacion")
   @@index([activo], map: "idx_variantes_activo")
   @@index([producto_id], map: "idx_variantes_producto_id")
   @@map("tblvariantes")
@@ -271,6 +272,7 @@ model Inscripcion {
   curso             Curso    @relation(fields: [curso_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   pagos             PagoCurso[]
 
+  @@unique([usuario_id, curso_id], map: "uq_inscripcion_usuario_curso")
   @@map("tblinscripciones")
   @@schema("cursos")
 }
