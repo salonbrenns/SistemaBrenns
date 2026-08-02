@@ -11,13 +11,11 @@ Identidad del ítem vs. nombre para mostrar (fuente única de verdad):
     llave que usa Apriori para decidir si dos productos "van juntos".
   - El NOMBRE para mostrar se obtiene una sola vez, siempre de
     `tblproductos.nombre` (el catálogo vigente).
-  - Deliberadamente NO se usa `tbldetalle_pedidos.nombre_producto`: esa columna
-    es una copia histórica congelada al momento de la venta (para que el
-    ticket de una compra vieja no cambie si el producto se renombra después),
-    pero mezclarla aquí duplicaría la fuente del nombre y podría fragmentar
-    canastas si el nombre cambió entre una compra y otra. Un mismo producto
-    siempre se identifica por su producto_id, sin importar cómo se llamaba
-    en el momento de cada pedido.
+  - El esquema actual de `tbldetalle_pedidos` ya no guarda el nombre del
+    producto (columna histórica `nombre_producto` eliminada en el rediseño
+    de la tabla); el nombre siempre se resuelve por join hacia el catálogo
+    vigente. Un mismo producto se identifica por su producto_id, sin
+    importar cómo se llamaba en el momento de cada pedido.
 """
 import os
 import re
@@ -52,7 +50,7 @@ def cargar_canastas(incluir_favoritos=True):
     cur.execute("""
         SELECT d.pedido_id, v.producto_id
         FROM ventas.tbldetalle_pedidos d
-        JOIN ventas.tblvariantes v ON v.id = d.variante_id
+        JOIN catalogos.tblvariantes v ON v.id = d.variante_id
         JOIN ventas.tblpedidos p ON p.id = d.pedido_id
         WHERE p.estado IN ('ENTREGADO', 'PAGADO')
     """)
@@ -62,12 +60,12 @@ def cargar_canastas(incluir_favoritos=True):
 
     if incluir_favoritos:
         # los favoritos de un usuario también son una "canasta" de afinidad
-        cur.execute("SELECT usuario_id, producto_id FROM ventas.tblfavoritos")
+        cur.execute("SELECT usuario_id, producto_id FROM ventas.tblfavoritos_productos")
         for usuario_id, producto_id in cur.fetchall():
             canastas_map.setdefault(f"F{usuario_id}", set()).add(producto_id)
 
     # nombres de productos activos
-    cur.execute("SELECT id, nombre FROM ventas.tblproductos WHERE activo = true")
+    cur.execute("SELECT id, nombre FROM catalogos.tblproductos WHERE activo = true")
     nombres = {pid: nombre for pid, nombre in cur.fetchall()}
 
     conn.close()

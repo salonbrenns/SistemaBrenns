@@ -82,7 +82,7 @@ def main():
             c.id AS cita_id,
             c.usuario_id,
             c.fecha,
-            c."createdAt" AS created_at,
+            c.created_at AS created_at,
             c.hora,
             c.metodo_pago,
             c.estado,

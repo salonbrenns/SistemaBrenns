@@ -18,6 +18,13 @@ from db import obtener_url
 
 DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
+# Rango máximo de anticipación visto en el entrenamiento (ver libreta, sección 3.3:
+# el seed genera reservas de 0-35 días). Las citas agendadas con más anticipación
+# se recortan a este valor para no extrapolar la regresión logística fuera del
+# rango aprendido (sin el recorte, una cita a 60+ días recibe probabilidades
+# extremas ~90%+ solo por extrapolación lineal del logit).
+ANTICIPACION_MAX_ENTRENAMIENTO = 35
+
 
 def _a_minutos(txt):
     """
@@ -72,17 +79,20 @@ def _a_minutos(txt):
     return int(round(numero))
 
 
-def calcular_features_cita(cita_id: int, tasa_global: float, duracion_default_min: float):
+def calcular_features_cita(cita_id: int, tasa_global: float, duracion_default_min: float,
+                           anticipacion_default_dias: float = 18):
     """
     Devuelve (info_basica, features) o (None, None) si la cita no existe o ya
     no aplica para predicción (por ejemplo, ya fue cancelada o resuelta).
+    Los valores por defecto (duración, anticipación) provienen del artefacto
+    entrenado, para imputar datos faltantes igual que la libreta.
     """
     conn = psycopg.connect(obtener_url(), connect_timeout=15)
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT c.id, c.usuario_id, c.fecha, c."createdAt", c.hora, c.metodo_pago, c.estado,
-               s.precio, s.duracion, cs.nombre AS categoria,
+        SELECT c.id, c.usuario_id, c.fecha, c.created_at, c.hora, c.metodo_pago, c.estado,
+               s.nombre AS servicio_nombre, s.precio, s.duracion, cs.nombre AS categoria,
                u.fecha_registro
         FROM agenda.tblcitas c
         JOIN catalogos.tblservicios s ON s.id = c.servicio_id
@@ -96,7 +106,7 @@ def calcular_features_cita(cita_id: int, tasa_global: float, duracion_default_mi
         return None, None
 
     (cid, usuario_id, fecha, created_at, hora, metodo_pago, estado,
-     precio, duracion, categoria, fecha_registro) = fila
+     servicio_nombre, precio, duracion, categoria, fecha_registro) = fila
 
     if estado not in ('PENDIENTE', 'CONFIRMADA'):
         conn.close()
@@ -119,7 +129,12 @@ def calcular_features_cita(cita_id: int, tasa_global: float, duracion_default_mi
 
     conn.close()
 
-    anticipacion_dias = max((fecha - created_at).days, 0) if created_at else None
+    # Imputación idéntica a la libreta: si la cita no tiene created_at, se usa
+    # la mediana de entrenamiento guardada en el artefacto (nunca None/NaN,
+    # que rompería el StandardScaler del pipeline). El valor se recorta al
+    # rango visto en entrenamiento para no extrapolar (ver constante arriba).
+    anticipacion_dias = (min(max((fecha - created_at).days, 0), ANTICIPACION_MAX_ENTRENAMIENTO)
+                         if created_at else anticipacion_default_dias)
     antiguedad_dias = max((fecha - fecha_registro).days, 0) if fecha_registro else 0
 
     features = {
@@ -135,13 +150,15 @@ def calcular_features_cita(cita_id: int, tasa_global: float, duracion_default_mi
         'dia_semana': DIAS[fecha.weekday()],
         'metodo_pago': metodo_pago or 'SIN_ESPECIFICAR',
         'servicio_categoria': categoria or 'Sin categoría',
+        'servicio_nombre': servicio_nombre or 'Sin nombre',
         'cliente_registrado': usuario_id is not None,
     }
     info_basica = {'cita_id': cid, 'estado': estado, 'fecha': fecha.isoformat()}
     return info_basica, features
 
 
-def calcular_features_citas_lote(cita_ids: list[int], tasa_global: float, duracion_default_min: float):
+def calcular_features_citas_lote(cita_ids: list[int], tasa_global: float, duracion_default_min: float,
+                                 anticipacion_default_dias: float = 18):
     """
     Versión en lote de calcular_features_cita: UNA sola conexión/consulta para
     varias citas a la vez, en lugar de abrir una conexión por cita. La usa el
@@ -162,8 +179,9 @@ def calcular_features_citas_lote(cita_ids: list[int], tasa_global: float, duraci
     # cliente solo cuenta citas ANTERIORES a la fecha de la cita evaluada, para
     # no fugar información de citas futuras del mismo cliente.
     cur.execute("""
-        SELECT c.id, c.usuario_id, c.fecha, c."createdAt", c.hora, c.metodo_pago, c.estado,
-               s.precio, s.duracion, cs.nombre AS categoria, u.fecha_registro,
+        SELECT c.id, c.usuario_id, c.fecha, c.created_at, c.hora, c.metodo_pago, c.estado,
+               s.nombre AS servicio_nombre, s.precio, s.duracion, cs.nombre AS categoria,
+               u.fecha_registro,
                (SELECT COUNT(*) FROM agenda.tblcitas c2
                  WHERE c2.usuario_id = c.usuario_id AND c2.fecha < c.fecha) AS total_previas,
                (SELECT COUNT(*) FROM agenda.tblcitas c2
@@ -180,7 +198,7 @@ def calcular_features_citas_lote(cita_ids: list[int], tasa_global: float, duraci
 
     resultados = []
     for (cid, usuario_id, fecha, created_at, hora, metodo_pago, estado,
-         precio, duracion, categoria, fecha_registro,
+         servicio_nombre, precio, duracion, categoria, fecha_registro,
          total_previas, canceladas_previas) in filas:
 
         if estado not in ('PENDIENTE', 'CONFIRMADA'):
@@ -190,7 +208,8 @@ def calcular_features_citas_lote(cita_ids: list[int], tasa_global: float, duraci
         citas_previas = total_previas or 0
         tasa_previa = (canceladas_previas / citas_previas) if citas_previas > 0 else tasa_global
 
-        anticipacion_dias = max((fecha - created_at).days, 0) if created_at else None
+        anticipacion_dias = (min(max((fecha - created_at).days, 0), ANTICIPACION_MAX_ENTRENAMIENTO)
+                             if created_at else anticipacion_default_dias)
         antiguedad_dias = max((fecha - fecha_registro).days, 0) if fecha_registro else 0
 
         features = {
@@ -206,6 +225,7 @@ def calcular_features_citas_lote(cita_ids: list[int], tasa_global: float, duraci
             'dia_semana': DIAS[fecha.weekday()],
             'metodo_pago': metodo_pago or 'SIN_ESPECIFICAR',
             'servicio_categoria': categoria or 'Sin categoría',
+            'servicio_nombre': servicio_nombre or 'Sin nombre',
             'cliente_registrado': usuario_id is not None,
         }
         resultados.append({'cita_id': cid, 'estado': estado, 'features': features})

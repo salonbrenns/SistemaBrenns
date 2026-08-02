@@ -1,0 +1,19 @@
+{
+  "generado_en": "2026-07-30T06:37:51",
+  "volumen_operativo_bd": {
+    "tblpedidos": 1471,
+    "tbldetalle_pedidos": 2949,
+    "tblfavoritos": 982,
+    "tblcarrito_no_usado_en_modelo": 304,
+    "tblusuarios": 354
+  },
+  "total_operativo_solucion1": 5706,
+  "usuarios_sinteticos_seed": 320,
+  "pedidos_totales": 1471,
+  "pedidos_sinteticos": 1438,
+  "pedidos_reales": 33,
+  "proporcion_real_pct": 2.24,
+  "proporcion_sintetico_pct": 97.76,
+  "renglones_dataset_recomendador": 2924,
+  "catalogo_activo_total": 1222
+}

@@ -67,7 +67,7 @@ def main():
     volumen = {
         "tblpedidos": q("SELECT COUNT(*) FROM ventas.tblpedidos")[0][0],
         "tbldetalle_pedidos": q("SELECT COUNT(*) FROM ventas.tbldetalle_pedidos")[0][0],
-        "tblfavoritos": q("SELECT COUNT(*) FROM ventas.tblfavoritos")[0][0],
+        "tblfavoritos": q("SELECT COUNT(*) FROM ventas.tblfavoritos_productos")[0][0],
         "tblcarrito_no_usado_en_modelo": q("SELECT COUNT(*) FROM ventas.tblcarrito")[0][0],
         "tblusuarios": q("SELECT COUNT(*) FROM seguridad.tblusuarios")[0][0],
     }
@@ -85,8 +85,8 @@ def main():
     data = q("""
         SELECT d.pedido_id, pr.id AS producto_id, pr.nombre AS producto
         FROM ventas.tbldetalle_pedidos d
-        JOIN ventas.tblvariantes v  ON v.id = d.variante_id
-        JOIN ventas.tblproductos pr ON pr.id = v.producto_id
+        JOIN catalogos.tblvariantes v  ON v.id = d.variante_id
+        JOIN catalogos.tblproductos pr ON pr.id = v.producto_id
         JOIN ventas.tblpedidos p    ON p.id = d.pedido_id
         WHERE p.estado IN ('ENTREGADO', 'PAGADO')
     """)
@@ -95,7 +95,7 @@ def main():
     print(f"Dataset extraído: {len(data)} renglones -> {ruta_dataset}")
 
     # --- 4) Catálogo completo (para traducir ids a nombres en la libreta, sin BD) ---
-    catalogo = q("SELECT id, nombre FROM ventas.tblproductos WHERE activo = true")
+    catalogo = q("SELECT id, nombre FROM catalogos.tblproductos WHERE activo = true")
     ruta_catalogo = os.path.join(CARPETA_SALIDA, "catalogo_productos.csv")
     escribir_csv(ruta_catalogo, ["id", "nombre"], catalogo)
     print(f"Catálogo: {len(catalogo)} productos activos -> {ruta_catalogo}")

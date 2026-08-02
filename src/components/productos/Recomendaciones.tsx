@@ -5,6 +5,7 @@ import { Sparkles } from 'lucide-react'
 import ProductoCard, { type ProductoCardType } from '@/components/ui/ProductoCard'
 
 type ProductoRecomendado = ProductoCardType & {
+  origen?: 'apriori' | 'popular'
   confianza: number | null
   lift: number | null
 }
@@ -49,7 +50,13 @@ export default function Recomendaciones({ productoId }: { productoId: number }) 
 
   if (!datos) return null
 
-  const { titulo, subtitulo } = TEXTOS[datos.fuente]
+  const { titulo, subtitulo: subtituloBase } = TEXTOS[datos.fuente]
+  // Si la lista mezcla reglas del modelo con relleno de populares, se indica.
+  const hayRelleno =
+    datos.fuente === 'apriori' && datos.productos.some(p => p.origen === 'popular')
+  const subtitulo = hayRelleno
+    ? 'Sugerencias para complementar tu compra'
+    : subtituloBase
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

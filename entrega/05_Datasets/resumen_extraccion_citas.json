@@ -1,0 +1,12 @@
+{
+  "generado_en": "2026-07-31T11:05:16",
+  "total_citas_bd": 2250,
+  "citas_reales": 100,
+  "citas_sinteticas": 2150,
+  "citas_pasadas_resueltas": 2072,
+  "citas_futuras_abiertas": 178,
+  "renglones_dataset_citas": 2072,
+  "canceladas": 431,
+  "no_canceladas": 1641,
+  "proporcion_cancelada_pct": 20.8
+}

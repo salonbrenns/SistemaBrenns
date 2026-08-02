@@ -28,7 +28,9 @@ from datetime import datetime
 import psycopg
 
 RUTA_ENV = os.path.join(os.path.dirname(__file__), "..", ".env")
-CARPETA_SALIDA = os.path.join(os.path.dirname(__file__), "..", "entrega", "05_Datasets")
+# Este script vive en 04_ETL/ dentro de la estructura de entrega (sección 10);
+# escribe en la carpeta hermana 05_Datasets/, que es la que lee la libreta.
+CARPETA_SALIDA = os.path.join(os.path.dirname(__file__), "..", "05_Datasets")
 
 
 def obtener_url():
@@ -82,7 +84,7 @@ def main():
             c.id AS cita_id,
             c.usuario_id,
             c.fecha,
-            c."createdAt" AS created_at,
+            c.created_at AS created_at,
             c.hora,
             c.metodo_pago,
             c.estado,
