@@ -128,7 +128,7 @@ export async function GET(
         const metricas = new Map(reglas.map(r => [r.producto_id, r]))
         const cards = productos.map(p => ({
           ...aCard(p),
-          origen: 'apriori' as const,
+          origen: 'apriori' as 'apriori' | 'popular',
           confianza: metricas.get(p.id)?.confianza ?? null,
           lift: metricas.get(p.id)?.lift ?? null,
         }))
