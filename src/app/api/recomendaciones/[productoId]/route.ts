@@ -126,14 +126,28 @@ export async function GET(
       const productos = await cargarProductos(reglas.map(r => r.producto_id))
       if (productos.length > 0) {
         const metricas = new Map(reglas.map(r => [r.producto_id, r]))
-        return NextResponse.json({
-          fuente: 'apriori',
-          productos: productos.map(p => ({
-            ...aCard(p),
-            confianza: metricas.get(p.id)?.confianza ?? null,
-            lift: metricas.get(p.id)?.lift ?? null,
-          })),
-        })
+        const cards = productos.map(p => ({
+          ...aCard(p),
+          origen: 'apriori' as const,
+          confianza: metricas.get(p.id)?.confianza ?? null,
+          lift: metricas.get(p.id)?.lift ?? null,
+        }))
+
+        // Relleno híbrido: si las reglas cubren menos de NUM_RECOMENDACIONES
+        // lugares, se completan con populares de la categoría (marcados con
+        // origen 'popular' para distinguirlos del modelo en la respuesta).
+        if (cards.length < NUM_RECOMENDACIONES) {
+          const { productos: populares } = await respaldoPopulares(id)
+          const incluidos = new Set<number>([id, ...cards.map(c => c.id)])
+          for (const p of populares) {
+            if (cards.length >= NUM_RECOMENDACIONES) break
+            if (incluidos.has(p.id)) continue
+            incluidos.add(p.id)
+            cards.push({ ...aCard(p), origen: 'popular' as const, confianza: null, lift: null })
+          }
+        }
+
+        return NextResponse.json({ fuente: 'apriori', productos: cards })
       }
     }
 
@@ -141,7 +155,7 @@ export async function GET(
     const { productos: populares, categorico } = await respaldoPopulares(id)
     return NextResponse.json({
       fuente: categorico ? 'populares_categoria' : 'populares_catalogo',
-      productos: populares.map(p => ({ ...aCard(p), confianza: null, lift: null })),
+      productos: populares.map(p => ({ ...aCard(p), origen: 'popular' as const, confianza: null, lift: null })),
     })
   } catch {
     return NextResponse.json({ error: 'Error al obtener recomendaciones' }, { status: 500 })

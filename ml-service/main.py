@@ -42,7 +42,16 @@ estado = {
 
 
 def entrenar():
-    canastas, nombres = cargar_canastas(incluir_favoritos=True)
+    # NOTA DE REPRODUCIBILIDAD: la fuente de verdad del modelo es la libreta
+    # (desarrollo_recomendador.ipynb), que genera reglas_apriori.pkl. Este
+    # reentrenamiento es solo un mecanismo de emergencia (pkl ausente o
+    # corrupto) y usa la MISMA definición de transacción que la libreta:
+    # solo pedidos ENTREGADO/PAGADO, SIN favoritos (sección 2.2 de la libreta).
+    # Diferencia conocida: esta implementación no aplica el filtro de reglas
+    # "dominadas" (dirección recíproca mucho más débil) que la libreta sí
+    # aplica (176 -> 163 reglas); por eso, tras un reentrenamiento de
+    # emergencia se debe volver a ejecutar la libreta y restaurar su .pkl.
+    canastas, nombres = cargar_canastas(incluir_favoritos=False)
     base = BaseTransaccional()
     for tid, items in canastas:
         base.agregar_transaccion(Transaccion(tid, items))
@@ -177,7 +186,8 @@ def riesgo_cancelacion(cita_id: int):
         info, features = calcular_features_cita(
             cita_id,
             tasa_global=modelo_citas["tasa_global_cancelacion"],
-            duracion_default_min=60,
+            duracion_default_min=modelo_citas.get("duracion_mediana", 60),
+            anticipacion_default_dias=modelo_citas.get("anticipacion_mediana", 18),
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al calcular variables: {e}")
@@ -220,7 +230,8 @@ def riesgo_cancelacion_lote(body: LoteCitasRequest):
         filas = calcular_features_citas_lote(
             body.cita_ids,
             tasa_global=modelo_citas["tasa_global_cancelacion"],
-            duracion_default_min=60,
+            duracion_default_min=modelo_citas.get("duracion_mediana", 60),
+            anticipacion_default_dias=modelo_citas.get("anticipacion_mediana", 18),
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al calcular variables: {e}")
