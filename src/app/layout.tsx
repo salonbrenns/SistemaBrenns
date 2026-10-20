@@ -40,6 +40,13 @@ export const metadata: Metadata = {
     images: ["/logo/logo.png"],
   },
   robots: { index: true, follow: true },
+  icons: {
+    icon: [
+      { url: "/icons/brenns-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/brenns-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
+  },
   appleWebApp: {
     capable: true,
     title: "Brenn's Beauty",
@@ -51,6 +58,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
+      {/* El manifest va directo en <head>: si se deja en metadata, en páginas dinámicas
+          como el Inicio Next lo manda al final del HTML y Chrome tarda en detectar la PWA */}
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+      </head>
       <body className="antialiased">
         <Providers>
           {children}

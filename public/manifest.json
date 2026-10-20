@@ -1,0 +1,54 @@
+{
+  "name": "Salón Brenn's",
+  "short_name": "Brenn's",
+  "description": "Gestión de citas, cursos y comercio electrónico",
+  "id": "/?app=salon-brenns",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "es-MX",
+  "background_color": "#030712",
+  "theme_color": "#9d174d",
+  "categories": [
+    "beauty",
+    "shopping",
+    "education"
+  ],
+  "icons": [
+    {
+      "src": "/icons/brenns-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/brenns-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Catálogo",
+      "url": "/catalogo",
+      "icons": [
+        {
+          "src": "/icons/brenns-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Preguntas frecuentes",
+      "url": "/faq",
+      "icons": [
+        {
+          "src": "/icons/brenns-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
