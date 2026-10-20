@@ -1,6 +1,7 @@
 'use client'
 
 import { Search, SlidersHorizontal, X } from 'lucide-react'
+import BusquedaPorVoz from '@/components/pwa/BusquedaPorVoz'
 
 interface ProductosFiltrosProps {
   busqueda: string
@@ -40,8 +41,10 @@ export default function ProductosFiltros({
             placeholder="Buscar productos..."
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 rounded-2xl border border-rose-100 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-300 text-sm"
+            className="w-full pl-11 pr-12 py-3 rounded-2xl border border-rose-100 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-300 text-sm"
           />
+          {/* Sensor: micrófono para buscar hablando */}
+          <BusquedaPorVoz onResultado={setBusqueda} />
         </div>
         <button
           onClick={() => setAbierto(v => !v)}
