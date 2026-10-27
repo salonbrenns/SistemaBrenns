@@ -1,13 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import {
   User, Mail, Phone, BookOpen, Clock,
   CheckCircle2, Loader2, ArrowLeft, Banknote,
-  GraduationCap, AlertCircle, Calendar
+  GraduationCap, AlertCircle, Calendar, Upload,
+  ImageIcon, ExternalLink,
 } from "lucide-react"
 import Link from "next/link"
+import { useSiteConfig } from "@/hooks/useSiteConfig"
 
 type Usuario = {
   id: number
@@ -38,11 +40,22 @@ export default function InscribirseClient({
   usuario: Usuario
   curso: Curso
 }) {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [error, setError]     = useState<string | null>(null)
-  const [exito, setExito]     = useState(false)
-  const [pagoInfo, setPagoInfo] = useState<{ monto: number } | null>(null)
+  const router      = useRouter()
+  const siteConfig  = useSiteConfig()
+
+  // Paso 1: inscripción
+  const [loading, setLoading]   = useState(false)
+  const [error, setError]       = useState<string | null>(null)
+  const [pagoId, setPagoId]     = useState<number | null>(null)
+  const [monto, setMonto]       = useState<number>(0)
+
+  // Paso 2: upload comprobante
+  const [archivo, setArchivo]           = useState<File | null>(null)
+  const [preview, setPreview]           = useState<string | null>(null)
+  const [subiendo, setSubiendo]         = useState(false)
+  const [errorUpload, setErrorUpload]   = useState<string | null>(null)
+  const [compSubido, setCompSubido]     = useState<string | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const cupoDisponible = curso.cupo_maximo - curso.inscritos
 
@@ -55,6 +68,14 @@ export default function InscribirseClient({
     return new Date(d).toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" })
   }
 
+  const bancoCfg = {
+    banco:   siteConfig.banco_banco   || "BBVA",
+    titular: siteConfig.banco_titular || "Ruth Barrientos Angeles",
+    cuenta:  siteConfig.banco_cuenta  || "154 792 8563",
+    clabe:   siteConfig.banco_clabe   || "012 290 01547928563 4",
+  }
+
+  // ── Paso 1: Inscribirse ───────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -73,8 +94,8 @@ export default function InscribirseClient({
         return
       }
 
-      setPagoInfo({ monto: data.monto })
-      setExito(true)
+      setPagoId(data.pagoId)
+      setMonto(data.monto)
     } catch {
       setError("Error de conexión. Intenta de nuevo.")
     } finally {
@@ -82,58 +103,165 @@ export default function InscribirseClient({
     }
   }
 
-  // ── Pantalla de éxito ─────────────────────────────────────────
-  if (exito && pagoInfo) {
+  // ── Paso 2: Procesar archivo seleccionado ─────────────────────────────────
+  const procesarArchivo = (f: File) => {
+    setErrorUpload(null)
+    const TIPOS = ["image/jpeg","image/png","image/webp","image/heic","application/pdf"]
+    if (!TIPOS.includes(f.type)) {
+      setErrorUpload("Solo se aceptan imágenes (JPG, PNG, WEBP) o PDF.")
+      return
+    }
+    if (f.size > 10 * 1024 * 1024) {
+      setErrorUpload("El archivo no debe superar 10 MB.")
+      return
+    }
+    setArchivo(f)
+    if (f.type.startsWith("image/")) {
+      setPreview(URL.createObjectURL(f))
+    } else {
+      setPreview(null)
+    }
+  }
+
+  // ── Paso 2: Subir comprobante ─────────────────────────────────────────────
+  const subirComprobante = async () => {
+    if (!archivo || !pagoId) return
+    setSubiendo(true)
+    setErrorUpload(null)
+    try {
+      const fd = new FormData()
+      fd.append("file", archivo)
+      const res  = await fetch(`/api/pagos-curso/${pagoId}/comprobante`, { method: "POST", body: fd })
+      const data = await res.json()
+      if (!res.ok) {
+        setErrorUpload(data.error || "Error al subir comprobante")
+        return
+      }
+      setCompSubido(data.url)
+    } catch {
+      setErrorUpload("Error de conexión. Intenta de nuevo.")
+    } finally {
+      setSubiendo(false)
+    }
+  }
+
+  // ── Pantalla: comprobante enviado con éxito ───────────────────────────────
+  if (compSubido) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-rose-50 to-white dark:from-gray-950 dark:to-gray-900 flex items-center justify-center p-6">
-        <div className="w-full max-w-lg">
-          <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] p-10 border border-rose-100 dark:border-gray-700 shadow-2xl shadow-rose-100/40 text-center">
-            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+        <div className="w-full max-w-lg bg-white dark:bg-gray-800 rounded-[2.5rem] p-10 border border-rose-100 dark:border-gray-700 shadow-2xl shadow-rose-100/40 text-center">
+          <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+          </div>
+          <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">¡Comprobante enviado!</h1>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">
+            Revisaremos tu transferencia y te confirmaremos por correo a <strong>{usuario.correo}</strong>.
+          </p>
+          <a href={compSubido} target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline font-semibold mb-8">
+            <ExternalLink className="w-4 h-4" /> Ver comprobante enviado
+          </a>
+          <button
+            onClick={() => router.push("/mis-cursos")}
+            className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 py-4 rounded-[2rem] font-black text-base hover:bg-rose-600 dark:hover:bg-rose-100 transition-all"
+          >
+            Ver mis cursos
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Pantalla: upload de comprobante (después de inscribirse) ──────────────
+  if (pagoId !== null) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-rose-50 to-white dark:from-gray-950 dark:to-gray-900 py-10 px-4">
+        <div className="max-w-lg mx-auto">
+
+          {/* Encabezado */}
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Banknote className="w-8 h-8 text-amber-600" />
             </div>
-            <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-2">¡Inscripción Exitosa!</h1>
-            <p className="text-gray-500 dark:text-gray-400 mb-8">
-              Bienvenida al curso, <span className="font-bold text-gray-700 dark:text-gray-200">{usuario.nombre}</span>
+            <h1 className="text-2xl font-black text-gray-900 dark:text-white">¡Inscripción registrada!</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
+              Ahora transfiere y sube tu comprobante para activar tu lugar.
+            </p>
+          </div>
+
+          {/* Datos bancarios */}
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-2xl p-5 space-y-2 mb-6">
+            <p className="text-xs font-black uppercase tracking-widest text-blue-700 dark:text-blue-300 mb-3">
+              Datos para transferencia / SPEI
+            </p>
+            <p className="text-sm text-blue-700 dark:text-blue-300">Banco: <strong>{bancoCfg.banco}</strong></p>
+            <p className="text-sm text-blue-700 dark:text-blue-300">Titular: <strong>{bancoCfg.titular}</strong></p>
+            <p className="text-sm text-blue-700 dark:text-blue-300">Cuenta: <strong>{bancoCfg.cuenta}</strong></p>
+            <p className="text-sm text-blue-700 dark:text-blue-300">CLABE: <strong>{bancoCfg.clabe}</strong></p>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              Monto: <strong className="text-rose-600 text-base">${monto.toLocaleString("es-MX")} MXN</strong>
+            </p>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              Concepto: <strong>{nombreCompleto} — {curso.titulo}</strong>
+            </p>
+          </div>
+
+          {/* Upload */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 space-y-4">
+            <p className="text-sm font-black text-gray-800 dark:text-white">Sube tu comprobante</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Una foto o captura de pantalla de tu transferencia. Aceptamos JPG, PNG, WEBP o PDF (máx. 10 MB).
             </p>
 
-            <div className="bg-rose-50 dark:bg-gray-900 rounded-2xl p-6 text-left space-y-3 mb-8">
-              <p className="text-xs font-bold uppercase tracking-widest text-rose-400 mb-3">Resumen</p>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Curso</span>
-                <span className="font-bold text-gray-900 dark:text-white text-right max-w-[200px]">{curso.titulo}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Alumna</span>
-                <span className="font-bold text-gray-900 dark:text-white">{nombreCompleto}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Pago</span>
-                <span className="font-bold text-gray-900 dark:text-white">Pago completo</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Método</span>
-                <span className="font-bold text-gray-900 dark:text-white">Transferencia bancaria</span>
-              </div>
-              <div className="border-t border-rose-100 dark:border-gray-700 pt-3 flex justify-between">
-                <span className="font-bold text-gray-700 dark:text-gray-300">Total a pagar</span>
-                <span className="text-xl font-black text-rose-600">
-                  ${pagoInfo.monto.toLocaleString("es-MX")} MXN
-                </span>
-              </div>
+            {/* Drop zone */}
+            <div
+              onClick={() => fileRef.current?.click()}
+              onDragOver={e => e.preventDefault()}
+              onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) procesarArchivo(f) }}
+              className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-rose-200 dark:border-gray-600 rounded-2xl p-8 cursor-pointer hover:border-rose-400 hover:bg-rose-50/50 dark:hover:bg-gray-700/40 transition-all"
+            >
+              {preview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={preview} alt="Preview" className="max-h-48 rounded-xl object-contain" />
+              ) : (
+                <>
+                  <ImageIcon className="w-10 h-10 text-rose-300" />
+                  <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">
+                    {archivo ? archivo.name : "Seleccionar imagen del comprobante"}
+                  </span>
+                </>
+              )}
             </div>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/heic,application/pdf"
+              className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) procesarArchivo(f) }}
+            />
 
-            <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-2xl p-4 mb-6 text-left">
-              <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-              <p className="text-sm text-amber-800 dark:text-amber-300">
-                Tu pago por transferencia está <strong>pendiente de verificación</strong>. Te confirmaremos cuando se acredite.
+            {errorUpload && (
+              <p className="text-xs text-red-500 flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {errorUpload}
               </p>
-            </div>
+            )}
+
+            <button
+              onClick={subirComprobante}
+              disabled={!archivo || subiendo}
+              className="w-full bg-rose-600 hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 transition-all"
+            >
+              {subiendo
+                ? <><Loader2 className="w-5 h-5 animate-spin" /> Enviando...</>
+                : <><Upload className="w-5 h-5" /> Enviar comprobante</>
+              }
+            </button>
 
             <button
               onClick={() => router.push("/mis-cursos")}
-              className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 py-4 rounded-[2rem] font-black text-base hover:bg-rose-600 dark:hover:bg-rose-100 transition-all"
+              className="w-full text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 py-2 transition-colors"
             >
-              Ver mis cursos
+              Subir después desde Mis Cursos →
             </button>
           </div>
         </div>
@@ -141,7 +269,7 @@ export default function InscribirseClient({
     )
   }
 
-  // ── Formulario ────────────────────────────────────────────────
+  // ── Formulario de inscripción ─────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 to-white dark:from-gray-950 dark:to-gray-900 py-10 px-4">
       <div className="max-w-4xl mx-auto">
@@ -162,7 +290,7 @@ export default function InscribirseClient({
           <div className="lg:col-span-3 space-y-5">
             <div>
               <h1 className="text-3xl font-black text-gray-900 dark:text-white">Confirmar Inscripción</h1>
-              <p className="text-gray-500 dark:text-gray-400 mt-1">Revisa tus datos y elige cómo pagar</p>
+              <p className="text-gray-500 dark:text-gray-400 mt-1">Revisa tus datos y confirma para continuar al pago</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -209,18 +337,15 @@ export default function InscribirseClient({
                 </p>
               </div>
 
-              {/* Método de pago — solo transferencia */}
+              {/* Método de pago */}
               <div className="bg-white dark:bg-gray-800 rounded-[2rem] p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
                 <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-5">Método de pago</p>
                 <div className="flex items-center gap-3 p-4 rounded-2xl border-2 border-rose-500 bg-rose-50 dark:bg-rose-900/20">
                   <Banknote className="w-5 h-5 text-rose-500 shrink-0" />
                   <div>
                     <p className="font-black text-sm text-rose-600">Transferencia bancaria</p>
-                    <p className="text-gray-400 text-xs">Depósito o SPEI</p>
+                    <p className="text-gray-400 text-xs">Depósito o SPEI — subirás el comprobante en el siguiente paso</p>
                   </div>
-                </div>
-                <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl text-xs text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-700">
-                  Tu inscripción quedará <strong>pendiente</strong> hasta que confirmemos tu transferencia.
                 </div>
               </div>
 
@@ -241,7 +366,7 @@ export default function InscribirseClient({
                 ) : (
                   <>
                     <GraduationCap className="w-5 h-5" />
-                    Inscribirme — ${curso.precio_total.toLocaleString("es-MX")} MXN
+                    Continuar al pago — ${curso.precio_total.toLocaleString("es-MX")} MXN
                   </>
                 )}
               </button>

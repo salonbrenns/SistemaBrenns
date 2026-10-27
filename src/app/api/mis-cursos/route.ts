@@ -69,12 +69,13 @@ export async function GET() {
             }
           : null,
         pagos:       pagosCurso.map((p) => ({
-          id:          p.id,
-          numero_pago: p.numero_pago,
-          monto:       Number(p.monto),
-          metodo_pago: p.metodo_pago,
-          estado:      p.estado,
-          fecha_pago:  p.fecha_pago,
+          id:             p.id,
+          numero_pago:    p.numero_pago,
+          monto:          Number(p.monto),
+          metodo_pago:    p.metodo_pago,
+          estado:         p.estado,
+          fecha_pago:     p.fecha_pago,
+          comprobante_url: p.comprobante_url ?? null,
         })),
         totalPagado,
       }

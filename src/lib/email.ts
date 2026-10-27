@@ -511,3 +511,75 @@ export async function sendVerificacionEmail(opts: {
   })
 }
 
+/** Email al admin cuando una alumna sube comprobante de pago de curso */
+export async function sendComprobantesCursoAdmin(opts: {
+  to:             string
+  alumna:         string
+  correoAlumna:   string
+  curso:          string
+  monto:          number
+  pagoId:         number
+  comprobanteUrl: string
+}) {
+  const contenido = `
+    <h2 style="margin:0 0 8px;color:#d97706;font-size:24px;">💳 Comprobante de pago de curso recibido</h2>
+    <p style="color:#6b7280;margin:0 0 28px;">
+      La alumna <strong>${opts.alumna}</strong> (${opts.correoAlumna}) subió su comprobante de transferencia.
+      <strong style="color:#d97706;">Revísalo y confirma o rechaza desde el panel.</strong>
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#fffbeb;border-radius:12px;padding:24px;margin-bottom:28px;border:1px solid #fde68a;">
+      <tr><td style="padding:8px 0;color:#374151;font-size:15px;"><span style="color:#d97706;font-weight:600;">🎓 Curso:</span>&nbsp; ${opts.curso}</td></tr>
+      <tr><td style="padding:8px 0;color:#374151;font-size:15px;"><span style="color:#d97706;font-weight:600;">💵 Monto:</span>&nbsp; $${opts.monto.toLocaleString("es-MX")} MXN</td></tr>
+      <tr><td style="padding:8px 0;color:#374151;font-size:15px;"><span style="color:#d97706;font-weight:600;"># Pago:</span>&nbsp; #${opts.pagoId}</td></tr>
+    </table>
+
+    <div style="text-align:center;margin-bottom:28px;">
+      <a href="${opts.comprobanteUrl}" target="_blank"
+        style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;padding:14px 36px;border-radius:50px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;">
+        Ver comprobante 🔍
+      </a>
+    </div>
+
+    <p style="color:#9ca3af;font-size:13px;margin:0;text-align:center;">
+      Panel admin → Pagos de cursos para confirmar o rechazar.
+    </p>`
+
+  return sendEmail({
+    to:      opts.to,
+    subject: `💳 Comprobante de curso — ${opts.alumna} (${opts.curso})`,
+    html:    baseTemplate(contenido),
+  })
+}
+
+/** Email al admin cuando una alumna se inscribe (pago pendiente, sin comprobante aún) */
+export async function sendInscripcionPendienteAdmin(opts: {
+  to:           string
+  alumna:       string
+  correoAlumna: string
+  curso:        string
+  monto:        number
+}) {
+  const contenido = `
+    <h2 style="margin:0 0 8px;color:#d97706;font-size:24px;">🎓 Nueva inscripción — pago pendiente</h2>
+    <p style="color:#6b7280;margin:0 0 28px;">
+      <strong>${opts.alumna}</strong> (${opts.correoAlumna}) se inscribió al curso.
+      El pago aún está pendiente — la alumna debe subir su comprobante de transferencia.
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#fffbeb;border-radius:12px;padding:24px;margin-bottom:28px;border:1px solid #fde68a;">
+      <tr><td style="padding:8px 0;color:#374151;font-size:15px;"><span style="color:#d97706;font-weight:600;">🎓 Curso:</span>&nbsp; ${opts.curso}</td></tr>
+      <tr><td style="padding:8px 0;color:#374151;font-size:15px;"><span style="color:#d97706;font-weight:600;">💵 Monto:</span>&nbsp; $${opts.monto.toLocaleString("es-MX")} MXN</td></tr>
+    </table>
+
+    <p style="color:#9ca3af;font-size:13px;margin:0;text-align:center;">
+      Recibirás otro correo cuando suba el comprobante.
+    </p>`
+
+  return sendEmail({
+    to:      opts.to,
+    subject: `🎓 Nueva inscripción pendiente — ${opts.curso}`,
+    html:    baseTemplate(contenido),
+  })
+}
+
