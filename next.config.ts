@@ -12,13 +12,19 @@ const withPWA = withPWAInit({
   // En desarrollo se apaga para que no se quede pegado el caché mientras programamos
   disable: process.env.NODE_ENV === "development",
   // Archivos internos de Next que no existen como URL y rompen el precache
-  buildExcludes: [/app-build-manifest\.json$/, /middleware-manifest\.json$/],
+  buildExcludes: [
+    /app-build-manifest\.json$/,
+    /middleware-manifest\.json$/,
+    // Secciones que nunca se usan sin internet: no se descargan al instalar el SW
+    /\/app\/(admin|empleado|\(cliente\)|api|certificado)\//,
+  ],
   // De public/ solo se precargan iconos, manifest y offline.html;
   // las fotos se guardan cuando el usuario las ve (ver runtimeCaching)
   publicExcludes: [
     "!noprecache/**/*",
     "!{catalogo,cursos,equipoprueba,logo,marcas,servicios,uploads}/**/*",
     "!*.{png,jpg,jpeg,svg}",
+    "!icons/icon-maskable-512.png",
   ],
   // Si una página no está en caché y no hay red, se muestra esta
   fallbacks: {
