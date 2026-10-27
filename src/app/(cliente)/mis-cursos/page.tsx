@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useSiteConfig } from "@/hooks/useSiteConfig"
@@ -10,17 +10,18 @@ import {
   GraduationCap, Clock, Calendar, BookOpen,
   CheckCircle2, AlertCircle, Loader2, Plus,
   CreditCard, Banknote, ChevronRight, Award, CalendarCheck,
-  Wallet,
+  Wallet, Upload, ImageIcon, ExternalLink, X,
 } from "lucide-react"
 import { SkeletonMisCursos } from "@/components/ui/SkeletonCard"
 
 type PagoCurso = {
-  id:          number
-  numero_pago: number | null
-  monto:       number
-  metodo_pago: string | null
-  estado:      string
-  fecha_pago:  string
+  id:              number
+  numero_pago:     number | null
+  monto:           number
+  metodo_pago:     string | null
+  estado:          string
+  fecha_pago:      string
+  comprobante_url: string | null
 }
 
 type CursoInscrito = {
@@ -71,11 +72,50 @@ function MisCursosContent() {
   const [pagoMsg, setPagoMsg]         = useState<string | null>(null)
   const [pagoError, setPagoError]     = useState<string | null>(null)
 
+  // Estado para upload de comprobante de curso
+  const [uploadPago, setUploadPago]         = useState<{ pagoId: number; monto: number } | null>(null)
+  const [archivo, setArchivo]               = useState<File | null>(null)
+  const [preview, setPreview]               = useState<string | null>(null)
+  const [subiendo, setSubiendo]             = useState(false)
+  const [errorUpload, setErrorUpload]       = useState<string | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+
   const bancoCfg = {
     banco:   siteConfig.banco_banco   || 'BBVA',
     titular: siteConfig.banco_titular || 'Ruth Barrientos Angeles',
     cuenta:  siteConfig.banco_cuenta  || '154 792 8563',
     clabe:   siteConfig.banco_clabe   || '012 290 01547928563 4',
+  }
+
+  const procesarArchivo = (f: File) => {
+    setErrorUpload(null)
+    const TIPOS = ["image/jpeg","image/png","image/webp","image/heic","application/pdf"]
+    if (!TIPOS.includes(f.type)) { setErrorUpload("Solo JPG, PNG, WEBP o PDF."); return }
+    if (f.size > 10 * 1024 * 1024) { setErrorUpload("Máximo 10 MB."); return }
+    setArchivo(f)
+    setPreview(f.type.startsWith("image/") ? URL.createObjectURL(f) : null)
+  }
+
+  const subirComprobante = async () => {
+    if (!archivo || !uploadPago) return
+    setSubiendo(true)
+    setErrorUpload(null)
+    try {
+      const fd = new FormData()
+      fd.append("file", archivo)
+      const res  = await fetch(`/api/pagos-curso/${uploadPago.pagoId}/comprobante`, { method: "POST", body: fd })
+      const data = await res.json()
+      if (!res.ok) { setErrorUpload(data.error || "Error al subir"); return }
+      toast.success("¡Comprobante enviado! El admin lo verificará pronto.")
+      setUploadPago(null)
+      setArchivo(null)
+      setPreview(null)
+      cargarCursos()
+    } catch {
+      setErrorUpload("Error de conexión.")
+    } finally {
+      setSubiendo(false)
+    }
   }
 
   const cargarCursos = () => {
@@ -237,6 +277,38 @@ function MisCursosContent() {
                     </span>
                   )}
 
+                  {/* Botón subir comprobante para pagos pendientes sin comprobante */}
+                  {item.pagos
+                    .filter(p => p.estado === "PENDIENTE" && !p.comprobante_url)
+                    .map(p => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => { setUploadPago({ pagoId: p.id, monto: p.monto }); setErrorUpload(null); setArchivo(null); setPreview(null) }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-colors"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        Subir comprobante
+                      </button>
+                    ))
+                  }
+
+                  {/* Link a comprobante ya subido */}
+                  {item.pagos
+                    .filter(p => p.comprobante_url)
+                    .map(p => (
+                      <a
+                        key={p.id}
+                        href={p.comprobante_url!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                      >
+                        <ExternalLink className="w-3 h-3" /> Ver comprobante
+                      </a>
+                    ))
+                  }
+
                   {/* Botón pagar saldo restante */}
                   {deuda > 0 && item.estado === "ACTIVO" && !pendiente && (
                     <button
@@ -306,6 +378,77 @@ function MisCursosContent() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-xl font-semibold text-sm flex items-center gap-2 max-w-sm text-center">
           <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
           {pagoMsg}
+        </div>
+      )}
+
+      {/* Modal: subir comprobante de curso */}
+      {uploadPago && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-amber-100 dark:border-gray-700 p-8 max-w-md w-full">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+                <Upload className="w-5 h-5 text-amber-500" />
+                Subir comprobante
+              </h2>
+              <button onClick={() => { setUploadPago(null); setArchivo(null); setPreview(null) }}
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <X className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
+              Monto a pagar:{" "}
+              <span className="font-black text-rose-600">${uploadPago.monto.toLocaleString("es-MX")} MXN</span>
+              {" "}· Sube la foto o captura de tu transferencia.
+            </p>
+
+            {/* Drop zone */}
+            <div
+              onClick={() => fileRef.current?.click()}
+              onDragOver={e => e.preventDefault()}
+              onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) procesarArchivo(f) }}
+              className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-amber-200 dark:border-gray-600 rounded-2xl p-6 cursor-pointer hover:border-amber-400 hover:bg-amber-50/50 dark:hover:bg-gray-700/40 transition-all mb-4"
+            >
+              {preview
+                // eslint-disable-next-line @next/next/no-img-element
+                ? <img src={preview} alt="Preview" className="max-h-40 rounded-xl object-contain" />
+                : <>
+                    <ImageIcon className="w-8 h-8 text-amber-300" />
+                    <span className="text-sm text-gray-400">{archivo ? archivo.name : "Seleccionar imagen o PDF"}</span>
+                  </>
+              }
+            </div>
+            <input ref={fileRef} type="file"
+              accept="image/jpeg,image/png,image/webp,image/heic,application/pdf"
+              className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) procesarArchivo(f) }}
+            />
+
+            {errorUpload && (
+              <p className="text-xs text-red-500 mb-3 flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5" /> {errorUpload}
+              </p>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setUploadPago(null); setArchivo(null); setPreview(null) }}
+                disabled={subiendo}
+                className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition disabled:opacity-40"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={subirComprobante}
+                disabled={!archivo || subiendo}
+                className="flex-1 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-black text-sm transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {subiendo
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Enviando...</>
+                  : <><Upload className="w-4 h-4" /> Enviar</>
+                }
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

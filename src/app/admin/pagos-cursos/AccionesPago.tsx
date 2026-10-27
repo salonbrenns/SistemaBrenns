@@ -4,12 +4,25 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { CheckCircle2, XCircle, Loader2, AlertCircle } from "lucide-react"
 
-export default function AccionesPago({ pagoId }: { pagoId: number }) {
+export default function AccionesPago({
+  pagoId,
+  tieneComprobante,
+}: {
+  pagoId:           number
+  tieneComprobante: boolean
+}) {
   const router = useRouter()
   const [cargando, setCargando] = useState<"PAGADO" | "RECHAZADO" | "">("")
   const [error, setError]       = useState("")
 
   const cambiar = async (estado: "PAGADO" | "RECHAZADO") => {
+    if (!tieneComprobante && estado === "PAGADO") {
+      const ok = confirm(
+        "⚠️ Esta alumna aún no ha subido su comprobante de pago.\n\n" +
+        "¿Confirmar el pago de todos modos?"
+      )
+      if (!ok) return
+    }
     setCargando(estado)
     setError("")
     try {
@@ -32,6 +45,11 @@ export default function AccionesPago({ pagoId }: { pagoId: number }) {
 
   return (
     <div className="space-y-1.5">
+      {!tieneComprobante && (
+        <p className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
+          <AlertCircle className="w-3 h-3 shrink-0" /> Sin comprobante
+        </p>
+      )}
       <div className="flex gap-2">
         <button
           onClick={() => cambiar("PAGADO")}

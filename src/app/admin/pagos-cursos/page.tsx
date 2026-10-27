@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { CreditCard, Banknote, AlertCircle, CheckCircle2 } from "lucide-react"
+import { CreditCard, Banknote, AlertCircle, CheckCircle2, FileImage, ExternalLink } from "lucide-react"
 import AccionesPago from "./AccionesPago"
 
 export const dynamic = "force-dynamic"
@@ -121,7 +121,7 @@ export default async function PagosCursosPage({
           <table className="w-full text-sm">
             <thead className="bg-amber-700 dark:bg-amber-900">
               <tr>
-                {["#", "Alumna", "Curso", "Monto", "Método", "Estado", "Fecha", "Acciones"].map(h => (
+                {["#", "Alumna", "Curso", "Monto", "Método", "Estado", "Fecha", "Comprobante", "Acciones"].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap">
                     {h}
                   </th>
@@ -172,8 +172,23 @@ export default async function PagosCursosPage({
                       {formatDate(pago.fecha_pago)}
                     </td>
                     <td className="px-4 py-4">
+                      {pago.comprobante_url ? (
+                        <a
+                          href={pago.comprobante_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline font-semibold whitespace-nowrap"
+                        >
+                          <FileImage className="w-3.5 h-3.5" /> Ver
+                          <ExternalLink className="w-2.5 h-2.5" />
+                        </a>
+                      ) : (
+                        <span className="text-xs text-gray-300 dark:text-gray-600 italic">Sin comprobante</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4">
                       {pago.estado === "PENDIENTE" ? (
-                        <AccionesPago pagoId={pago.id} />
+                        <AccionesPago pagoId={pago.id} tieneComprobante={!!pago.comprobante_url} />
                       ) : (
                         <span className="text-xs text-gray-400 italic">—</span>
                       )}

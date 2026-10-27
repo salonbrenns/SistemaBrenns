@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
+import { sendInscripcionPendienteAdmin } from "@/lib/email"
+
+const ADMIN_EMAIL = "salonbrenns11@gmail.com"
 
 export async function POST(
   req: Request,
@@ -84,6 +87,26 @@ export async function POST(
 
       return { inscripcion, pago }
     })
+
+    // Notificar al admin (sin bloquear la respuesta)
+    void (async () => {
+      try {
+        const usuario = await prisma.usuario.findUnique({
+          where:  { id: usuarioId },
+          select: { nombre: true, appaterno: true, correo: true },
+        })
+        const nombre = [usuario?.nombre, usuario?.appaterno].filter(Boolean).join(" ") || "Alumna"
+        await sendInscripcionPendienteAdmin({
+          to:           ADMIN_EMAIL,
+          alumna:       nombre,
+          correoAlumna: usuario?.correo || "",
+          curso:        curso.titulo,
+          monto,
+        })
+      } catch (emailErr) {
+        console.error("[inscribir] email admin:", emailErr)
+      }
+    })()
 
     return NextResponse.json({
       success: true,
