@@ -6,6 +6,7 @@ import Image from "next/image"
 import { MapPin, Clock, Users, Award, Heart, ChevronRight, ArrowLeft, Sparkles } from "lucide-react"
 import { useSiteConfig } from "@/hooks/useSiteConfig"
 import { useEffect, useState } from "react"
+import ComoLlegar from "@/components/pwa/ComoLlegar"
 
 interface MiembroEquipo {
   id: number; nombre: string; puesto: string; descripcion: string | null; imagen: string | null
@@ -173,6 +174,9 @@ export default function NosotrosPage() {
                 </div>
                 <div className="absolute bottom-0 right-0 w-32 h-32 bg-pink-800 rounded-full -mb-10 -mr-10 opacity-50 blur-2xl group-hover:scale-150 transition-transform duration-1000" />
               </div>
+
+              {/* Sensor GPS (PWA) */}
+              <ComoLlegar />
             </div>
           </aside>
 
