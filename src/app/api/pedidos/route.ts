@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Calcular totales
-    const COSTO_ENVIO        = 100
+    const COSTO_ENVIO        = 0
     const ENVIO_GRATIS_DESDE = 1500
 
     const subtotal   = carritoItems.reduce((s, i) => s + Number(i.variante.precio_venta) * i.cantidad, 0)
