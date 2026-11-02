@@ -38,17 +38,21 @@ export async function sendEmail(opts: EmailOptions): Promise<boolean> {
     })
 
     if (!res.ok) {
-      const error = await res.json().catch(() => res.statusText)
-      console.error("❌ Error al enviar email:", error)
+      // Guardamos el código y el mensaje de Brevo para saber por qué falló
+      const detalle = await res.text().catch(() => "")
+      console.error(`❌ Brevo respondió ${res.status} al enviar a ${opts.to}:`, detalle)
       return false
     }
+
+    // El messageId sirve para buscar el correo en Brevo → Transaccional → Logs
+    const data = await res.json().catch(() => null)
+    console.log(`✅ Email enviado a ${opts.to} (messageId: ${data?.messageId ?? "n/d"})`)
     return true
   } catch (err) {
     console.error("❌ Error al enviar email:", err)
     return false
   }
 }
-
 // ── Helpers de formato ────────────────────────────────────────────────────────
 function formatearFecha(fecha: Date | string): string {
   const d = typeof fecha === "string" ? new Date(fecha) : fecha
