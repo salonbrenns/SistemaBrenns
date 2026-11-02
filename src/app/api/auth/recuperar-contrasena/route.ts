@@ -29,7 +29,8 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const { correo } = await req.json()
+  const body   = await req.json()
+  const correo = typeof body.correo === "string" ? body.correo.trim() : ""
 
   if (!correo) {
     return NextResponse.json({ error: "Correo requerido" }, { status: 400 })
@@ -51,7 +52,11 @@ export async function POST(req: NextRequest) {
     create: { usuario_id: usuario.id, token, expira, usado: false },
   })
 
-  enviarCorreoRecuperacion(correo, token).catch(() => {})
+  // Esperamos el envío: en Vercel la función se puede cortar si respondemos antes
+  const enviado = await enviarCorreoRecuperacion(correo, token)
+  if (!enviado) {
+    console.error(`❌ No se pudo enviar el correo de recuperación a ${correo}`)
+  }
 
   return NextResponse.json({ ok: true })
 }
