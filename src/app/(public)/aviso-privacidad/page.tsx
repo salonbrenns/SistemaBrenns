@@ -116,6 +116,29 @@ También puede inscribirse al REUS de la CONDUSEF para limitar la publicidad com
     titulo: "Cambios al Aviso",
     contenido: `Este aviso puede actualizarse por reformas legales o necesidades del negocio. Notificaremos cambios sustanciales vía correo electrónico.`,
   },
+  {
+    numero: "9",
+    titulo: "Eliminación de cuenta",
+    contenido: `Si deseas eliminar tu cuenta de Salón Brenn's y los datos personales asociados, puedes solicitarlo mediante el correo electrónico salonbrenns11@gmail.com.
+
+No necesitas tener instalada la aplicación móvil ni iniciar sesión para solicitar la eliminación.
+
+Responsable: Brenda Hernandez Garcia, titular de Academia, Distribuidora y Salón Brenn's.`,
+    subsecciones: [
+      {
+        subtitulo: "Procedimiento de solicitud",
+        intro: "Para solicitar la eliminación de tu cuenta, sigue estos pasos:",
+        items: [
+          "Paso 1: Envía un correo con el asunto \"Solicitud de eliminación de cuenta\".",
+          "Paso 2: Indica tu nombre completo y el correo electrónico asociado a tu cuenta.",
+          "Paso 3: La persona encargada revisará tu solicitud y te indicará cómo verificar tu identidad de forma segura.",
+          "Paso 4: Una vez verificada tu identidad, se eliminará la cuenta y los datos personales que corresponda suprimir.",
+          "Paso 5: Recibirás una respuesta informando el resultado de tu solicitud.",
+        ],
+        nota: "Algunos datos relacionados con operaciones comerciales podrán conservarse exclusivamente cuando exista una obligación legal aplicable.",
+      },
+    ],
+  },
 ]
 
 export default function AvisoPrivacidadPage() {
@@ -195,8 +218,7 @@ export default function AvisoPrivacidadPage() {
                 </nav>
               </div>
 
-              <div className="bg-gradient-to-tr from-pink-600 to-rose-500 rounded-[2.5rem] p-8 text-white shadow-xl shadow-pink-200/50 relative overflow-hidden group">
-                <div className="relative z-10">
+<div className="bg-gradient-to-tr from-pink-600 to-rose-500 rounded-[2.5rem] p-8 text-white relative overflow-hidden group">/                <div className="relative z-10">
                   <Mail className="w-8 h-8 mb-4 text-pink-200" />
                   <p className="text-lg font-bold mb-2">¿Dudas Legales?</p>
                   <p className="text-sm text-pink-100 mb-6 opacity-90 leading-relaxed">Si deseas ejercer tus derechos ARCO, nuestro equipo jurídico está para ayudarte.</p>
@@ -264,13 +286,14 @@ export default function AvisoPrivacidadPage() {
                           </div>
                         ))}
                       </div>
-                      {sub.nota && (
-                        <div className="mt-8 bg-white/60 rounded-2xl p-5 border-l-4 border-pink-400 shadow-sm">
-                          <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed italic">
-                            <span className="font-bold text-pink-600 not-italic mr-1">Nota:</span>                            {sub.nota}
-                          </p>
-                        </div>
-                      )}
+                     {sub.nota && (
+  <div className="mt-8 bg-white/60 dark:bg-gray-800/80 rounded-2xl p-5 border-l-4 border-pink-400 dark:border-pink-500 shadow-sm">
+    <p className="text-xs text-gray-500 dark:text-gray-300 leading-relaxed italic">
+      <span className="font-bold text-pink-600 dark:text-pink-400 not-italic mr-1">Nota:</span>
+      {sub.nota}
+    </p>
+  </div>
+)}
                     </div>
                   ))}
                 </div>
