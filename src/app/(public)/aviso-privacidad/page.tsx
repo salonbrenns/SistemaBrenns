@@ -1,19 +1,17 @@
 "use client"
-// src/app/(frontend)/aviso-privacidad/page.tsx
+// src/app/(public)/aviso-privacidad/page.tsx
 
 import Link from "next/link"
 import { ShieldCheck, ArrowLeft, ChevronRight, Mail } from "lucide-react"
 import { useSiteConfig } from "@/hooks/useSiteConfig"
 import { PRIVACIDAD_SECCIONES } from "@/lib/politicas-defaults"
 
-const secciones = [
-  {
-    numero: "1",
-    titulo: "Identidad y domicilio del responsable",
-    contenido: `Academia, Distribuidora y Salón Brenn's ("Brenn's"), con domicilio en calle Juan Mogica Ugalde, colonia Capitán Antonio Reyes, municipio Huejutla de Reyes, Hgo., C.P. 43000, en la entidad de Hidalgo, México, y portal de internet: salonbrenns11@gmail.com, es el responsable del tratamiento y protección de sus datos personales.
+const CORREO = "salonbrenns11@gmail.com"
 
-Brenn's se compromete a cumplir con los principios de Licitud, Consentimiento, Información, Calidad, Finalidad, Lealtad, Proporcionalidad y Responsabilidad establecidos en la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) y su Reglamento.`,
-  },
+// Secciones cuyo texto sale de la BD o, si no hay, de politicas-defaults.ts.
+// Aquí solo se define la estructura (listas, subsecciones).
+const secciones = [
+  { numero: "1", titulo: "Identidad y domicilio del responsable" },
   {
     numero: "2",
     titulo: "Datos personales recabados",
@@ -62,24 +60,12 @@ Brenn's se compromete a cumplir con los principios de Licitud, Consentimiento, I
         letra: "B",
         subtitulo: "Finalidades Secundarias",
         intro: "Adicionalmente, utilizaremos su información para:",
-        items: [
-          "Promociones, Ofertas y Marketing",
-          "Estudios de mercado y calidad",
-        ],
-        nota: "Si no desea que sus datos se usen para fines secundarios, envíe un correo a salonbrennsdudas@gmail.com. Esto no afectará su acceso a los servicios principales.",
+        items: ["Promociones, Ofertas y Marketing", "Estudios de mercado y calidad"],
+        nota: `Si no desea que sus datos se usen para fines secundarios, envíe un correo a ${CORREO}. Esto no afectará su acceso a los servicios principales.`,
       },
     ],
   },
-  {
-    numero: "4",
-    titulo: "Transferencias de datos",
-    contenido: `Sus datos podrán ser transferidos sin requerir consentimiento en los siguientes casos:
-
-• Pasarelas de Pago: Para la validación de transacciones.
-• Proveedores Cloud: Para almacenamiento seguro y soporte técnico.
-
-Cualquier otra transferencia requerirá su autorización expresa.`,
-  },
+  { numero: "4", titulo: "Transferencias de datos" },
   {
     numero: "5",
     titulo: "Derechos ARCO",
@@ -87,7 +73,7 @@ Cualquier otra transferencia requerirá su autorización expresa.`,
     subsecciones: [
       {
         subtitulo: "Procedimiento de Solicitud",
-        intro: "Envíe un correo a salonbrennsdudas@gmail.com con:",
+        intro: `Envíe un correo a ${CORREO} con:`,
         items: [
           "Nombre y correo electrónico",
           "Derecho que desea ejercer",
@@ -97,33 +83,12 @@ Cualquier otra transferencia requerirá su autorización expresa.`,
       },
     ],
   },
-  {
-    numero: "6",
-    titulo: "Uso de Cookies",
-    contenido: `Utilizamos cookies para mejorar su experiencia, recordar sus preferencias y analizar el tráfico.
-
-Puede gestionar o desactivar las cookies directamente en la configuración de su navegador. Tenga en cuenta que esto podría limitar algunas funciones del sitio.`,
-  },
-  {
-    numero: "7",
-    titulo: "Limitación y Quejas",
-    contenido: `Si considera vulnerado su derecho, puede acudir al INAI (www.inai.org.mx).
-
-También puede inscribirse al REUS de la CONDUSEF para limitar la publicidad comercial.`,
-  },
-  {
-    numero: "8",
-    titulo: "Cambios al Aviso",
-    contenido: `Este aviso puede actualizarse por reformas legales o necesidades del negocio. Notificaremos cambios sustanciales vía correo electrónico.`,
-  },
+  { numero: "6", titulo: "Uso de Cookies" },
+  { numero: "7", titulo: "Limitación y Quejas" },
+  { numero: "8", titulo: "Cambios al Aviso" },
   {
     numero: "9",
     titulo: "Eliminación de cuenta",
-    contenido: `Si deseas eliminar tu cuenta de Salón Brenn's y los datos personales asociados, puedes solicitarlo mediante el correo electrónico salonbrenns11@gmail.com.
-
-No necesitas tener instalada la aplicación móvil ni iniciar sesión para solicitar la eliminación.
-
-Responsable: Brenda Hernandez Garcia, titular de Academia, Distribuidora y Salón Brenn's.`,
     subsecciones: [
       {
         subtitulo: "Procedimiento de solicitud",
@@ -141,6 +106,10 @@ Responsable: Brenda Hernandez Garcia, titular de Academia, Distribuidora y Saló
   },
 ]
 
+// Posiciones (0 = sección 1) que usan el texto de la BD o el default.
+// Las secciones 2, 3 y 5 se quedan fuera porque su contenido son las listas del código.
+const SECCIONES_DE_TEXTO = [0, 3, 5, 6, 7, 8]
+
 export default function AvisoPrivacidadPage() {
   const config = useSiteConfig()
   const cfg = config as unknown as Record<string, string>
@@ -148,13 +117,17 @@ export default function AvisoPrivacidadPage() {
   const version     = cfg.legal_privacidad_version || "1.0"
   const fechaUpdate = cfg.legal_privacidad_fecha   || "26 de septiembre de 2025"
 
-  // Contenido dinámico desde BD
-  const seccionesDinamicas = secciones.map((s, i) => ({
-    ...s,
-    contenido: cfg[PRIVACIDAD_SECCIONES[i]?.clave]
-      ? cfg[PRIVACIDAD_SECCIONES[i].clave]
-      : s.contenido,
-  }))
+  // Prioridad: BD (admin) → default de politicas-defaults.ts → contenido propio de la sección
+  const seccionesDinamicas = secciones.map((s, i) => {
+    const def = PRIVACIDAD_SECCIONES[i]
+    const esTexto = SECCIONES_DE_TEXTO.includes(i) && def
+    return {
+      ...s,
+      contenido: esTexto
+        ? (cfg[def.clave] || def.default)
+        : (s as { contenido?: string }).contenido,
+    }
+  })
 
   return (
     <main className="min-h-screen bg-[#fffafa] dark:bg-gray-950 scroll-smooth">
@@ -218,12 +191,12 @@ export default function AvisoPrivacidadPage() {
                 </nav>
               </div>
 
-<div className="bg-gradient-to-tr from-pink-600 to-rose-500 rounded-[2.5rem] p-8 text-white relative overflow-hidden group">
+              <div className="bg-gradient-to-tr from-pink-600 to-rose-500 rounded-[2.5rem] p-8 text-white relative overflow-hidden group">
                 <div className="relative z-10">
                   <Mail className="w-8 h-8 mb-4 text-pink-200" />
                   <p className="text-lg font-bold mb-2">¿Dudas Legales?</p>
                   <p className="text-sm text-pink-100 mb-6 opacity-90 leading-relaxed">Si deseas ejercer tus derechos ARCO, nuestro equipo jurídico está para ayudarte.</p>
-                  <a href="mailto:salonbrennsdudas@gmail.com" className="flex items-center justify-center gap-2 w-full bg-white dark:bg-gray-700 text-pink-700 dark:text-pink-300 py-3.5 rounded-2xl text-xs font-black hover:bg-pink-50 dark:hover:bg-gray-600 transition-colors shadow-lg shadow-black/5">
+                  <a href={`mailto:${CORREO}`} className="flex items-center justify-center gap-2 w-full bg-white dark:bg-gray-700 text-pink-700 dark:text-pink-300 py-3.5 rounded-2xl text-xs font-black hover:bg-pink-50 dark:hover:bg-gray-600 transition-colors shadow-lg shadow-black/5">
                     ENVIAR SOLICITUD
                   </a>
                 </div>
@@ -287,14 +260,14 @@ export default function AvisoPrivacidadPage() {
                           </div>
                         ))}
                       </div>
-                     {sub.nota && (
-  <div className="mt-8 bg-white/60 dark:bg-gray-800/80 rounded-2xl p-5 border-l-4 border-pink-400 dark:border-pink-500 shadow-sm">
-    <p className="text-xs text-gray-500 dark:text-gray-300 leading-relaxed italic">
-      <span className="font-bold text-pink-600 dark:text-pink-400 not-italic mr-1">Nota:</span>
-      {sub.nota}
-    </p>
-  </div>
-)}
+                      {sub.nota && (
+                        <div className="mt-8 bg-white/60 dark:bg-gray-800/80 rounded-2xl p-5 border-l-4 border-pink-400 dark:border-pink-500 shadow-sm">
+                          <p className="text-xs text-gray-500 dark:text-gray-300 leading-relaxed italic">
+                            <span className="font-bold text-pink-600 dark:text-pink-400 not-italic mr-1">Nota:</span>
+                            {sub.nota}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
