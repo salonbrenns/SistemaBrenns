@@ -8,7 +8,7 @@ export const TERMINOS_SECCIONES = [
     clave: "terminos_s0",
     titulo: "Información general",
     default:
-      "Se establecen los Términos y Condiciones (\"T&C\") que rigen el acceso y uso de la plataforma digital \"Sistema Integral Multiplataforma Salón Brenn's\". La Plataforma es propiedad y está operada por Distribuidora, Academia y Salón Brenn's.\n\nGiro: Salón de Belleza, Distribución y Academia\nUbicación: Huejutla de Reyes, Hidalgo, México\nContacto: salonbrennsdudas@gmail.com",
+      "Se establecen los Términos y Condiciones (\"T&C\") que rigen el acceso y uso de la plataforma digital \"Sistema Integral Multiplataforma Salón Brenn's\". La Plataforma es propiedad y está operada por Distribuidora, Academia y Salón Brenn's.\n\nGiro: Salón de Belleza, Distribución y Academia\nUbicación: Plaza de la Revolución Mexicana 5, Centro, Huejutla de Reyes, Hidalgo, México\nContacto: salonbrenns11@gmail.com",
   },
   {
     clave: "terminos_s1",
@@ -65,7 +65,7 @@ export const PRIVACIDAD_SECCIONES = [
     clave: "privacidad_s0",
     titulo: "Identidad y domicilio del responsable",
     default:
-      "Academia, Distribuidora y Salón Brenn's (\"Brenn's\"), con domicilio en calle Juan Mogica Ugalde, colonia Capitán Antonio Reyes, municipio Huejutla de Reyes, Hgo., C.P. 43000, en la entidad de Hidalgo, México, y portal de internet: salonbrenns11@gmail.com, es el responsable del tratamiento y protección de sus datos personales.\n\nBrenn's se compromete a cumplir con los principios de Licitud, Consentimiento, Información, Calidad, Finalidad, Lealtad, Proporcionalidad y Responsabilidad establecidos en la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) y su Reglamento.",
+      "Academia, Distribuidora y Salón Brenn's (\"Brenn's\"), con domicilio en Plaza de la Revolución Mexicana 5, Centro, Huejutla de Reyes, Hgo., C.P. 43000, en la entidad de Hidalgo, México, y portal de internet: https://brenns-sistema.vercel.app/, es el responsable del tratamiento y protección de sus datos personales.\n\nBrenn's se compromete a cumplir con los principios de Licitud, Consentimiento, Información, Calidad, Finalidad, Lealtad, Proporcionalidad y Responsabilidad establecidos en la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) y su Reglamento.",
   },
   {
     clave: "privacidad_s1",
@@ -77,7 +77,7 @@ export const PRIVACIDAD_SECCIONES = [
     clave: "privacidad_s2",
     titulo: "Finalidades del tratamiento",
     default:
-      "Finalidades Primarias: Gestión de citas y salón, administración de cursos y certificaciones, procesamiento de pedidos e-commerce, atención al cliente personalizada, notificaciones críticas del servicio.\n\nFinalidades Secundarias: Promociones, ofertas y marketing, estudios de mercado y calidad. Si no desea que sus datos se usen para fines secundarios, envíe un correo a salonbrennsdudas@gmail.com.",
+      "Finalidades Primarias: Gestión de citas y salón, administración de cursos y certificaciones, procesamiento de pedidos e-commerce, atención al cliente personalizada, notificaciones críticas del servicio.\n\nFinalidades Secundarias: Promociones, ofertas y marketing, estudios de mercado y calidad. Si no desea que sus datos se usen para fines secundarios, envíe un correo a salonbrenns11@gmail.com.",
   },
   {
     clave: "privacidad_s3",
@@ -89,7 +89,7 @@ export const PRIVACIDAD_SECCIONES = [
     clave: "privacidad_s4",
     titulo: "Derechos ARCO",
     default:
-      "Usted tiene derecho a Acceder, Rectificar, Cancelar u Oponerse (Derechos ARCO) al tratamiento de su información.\n\nProcedimiento: Envíe un correo a salonbrennsdudas@gmail.com con su nombre, correo electrónico, el derecho que desea ejercer e identificación oficial adjunta. Plazo de respuesta: 20 días hábiles.",
+      "Usted tiene derecho a Acceder, Rectificar, Cancelar u Oponerse (Derechos ARCO) al tratamiento de su información.\n\nProcedimiento: Envíe un correo a salonbrenns11@gmail.com con su nombre, correo electrónico, el derecho que desea ejercer e identificación oficial adjunta. Plazo de respuesta: 20 días hábiles.",
   },
   {
     clave: "privacidad_s5",
@@ -108,6 +108,12 @@ export const PRIVACIDAD_SECCIONES = [
     titulo: "Cambios al Aviso",
     default:
       "Este aviso puede actualizarse por reformas legales o necesidades del negocio. Notificaremos cambios sustanciales vía correo electrónico.",
+  },
+    {
+    clave: "privacidad_s8",
+    titulo: "Eliminación de cuenta",
+    default:
+      "Si deseas eliminar tu cuenta de Salón Brenn's y los datos personales asociados, puedes solicitarlo mediante el correo electrónico salonbrenns11@gmail.com.\n\nNo necesitas tener instalada la aplicación móvil ni iniciar sesión para solicitar la eliminación.\n\nResponsable: Brenda Hernandez Garcia, titular de Academia, Distribuidora y Salón Brenn's.",
   },
 ]
 
