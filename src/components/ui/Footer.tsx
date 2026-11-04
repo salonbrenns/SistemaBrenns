@@ -67,12 +67,14 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <h5 className="text-xs font-black uppercase tracking-[0.2em] text-pink-500 mb-8">Legalidad</h5>
             <ul className="space-y-4">
-              {[
-                { n: 'Privacidad', h: '/aviso-privacidad' },
-                { n: 'Términos', h: '/terminos' },
-                { n: 'Políticas', h: '/politicas' },
-                { n: 'Devoluciones', h: '/politicas#devoluciones' }
-              ].map((link) => (
+             {[
+  { n: 'Privacidad', h: '/aviso-privacidad' },
+  { n: 'Privacidad App Móvil', h: '/privacidad-movil' },
+  { n: 'Eliminar cuenta', h: '/eliminar-cuenta' },
+  { n: 'Términos', h: '/terminos' },
+  { n: 'Políticas', h: '/politicas' },
+  { n: 'Devoluciones', h: '/politicas#devoluciones' },
+].map((link) => (
                 <li key={link.n}>
                   <Link href={link.h} className="text-sm text-gray-400 hover:text-white transition-colors font-medium">
                     {link.n}
