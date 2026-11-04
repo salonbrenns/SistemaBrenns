@@ -218,7 +218,8 @@ export default function AvisoPrivacidadPage() {
                 </nav>
               </div>
 
-<div className="bg-gradient-to-tr from-pink-600 to-rose-500 rounded-[2.5rem] p-8 text-white relative overflow-hidden group">/                <div className="relative z-10">
+<div className="bg-gradient-to-tr from-pink-600 to-rose-500 rounded-[2.5rem] p-8 text-white relative overflow-hidden group">
+                <div className="relative z-10">
                   <Mail className="w-8 h-8 mb-4 text-pink-200" />
                   <p className="text-lg font-bold mb-2">¿Dudas Legales?</p>
                   <p className="text-sm text-pink-100 mb-6 opacity-90 leading-relaxed">Si deseas ejercer tus derechos ARCO, nuestro equipo jurídico está para ayudarte.</p>
