@@ -7,21 +7,25 @@ import { Loader2, CheckCircle2, XCircle, MailCheck } from "lucide-react"
 function VerificarContenido() {
   const searchParams = useSearchParams()
   const token = searchParams.get("token")
+  const correoParam = searchParams.get("correo") ?? ""
 
   const [estado, setEstado] = useState<"cargando" | "ok" | "error" | "expirado" | "sinToken">(
     () => (token ? "cargando" : "sinToken")
   )
   const [errorMsg, setErrorMsg] = useState("")
   const [reenviando, setReenviando] = useState(false)
-  const [correoInput, setCorreoInput] = useState("")
+  const [correoInput, setCorreoInput] = useState(correoParam)
   const [reenviado, setReenviado] = useState(false)
+  const [errorReenvio, setErrorReenvio] = useState("")
 
   useEffect(() => {
     if (!token) return
+    let cancelado = false
 
     fetch(`/api/auth/verificar-email?token=${token}`)
       .then(r => r.json())
       .then(data => {
+        if (cancelado) return
         if (data.ok) {
           setEstado("ok")
         } else if (data.code === "TOKEN_EXPIRED") {
@@ -31,19 +35,39 @@ function VerificarContenido() {
           setEstado("error")
         }
       })
-      .catch(() => { setErrorMsg("Error de conexión"); setEstado("error") })
+      .catch(() => {
+        if (cancelado) return
+        setErrorMsg("Error de conexión")
+        setEstado("error")
+      })
+
+    // Evita que la segunda ejecución del efecto (Strict Mode) pise el estado
+    return () => { cancelado = true }
   }, [token])
 
   const handleReenviar = async (e: React.FormEvent) => {
     e.preventDefault()
     setReenviando(true)
-    await fetch("/api/auth/reenviar-verificacion", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ correo: correoInput }),
-    })
-    setReenviando(false)
-    setReenviado(true)
+    setErrorReenvio("")
+
+    try {
+      const res = await fetch("/api/auth/reenviar-verificacion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ correo: correoInput }),
+      })
+
+      if (res.ok) {
+        setReenviado(true)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setErrorReenvio(data.error ?? "No se pudo reenviar. Intenta más tarde.")
+      }
+    } catch {
+      setErrorReenvio("Error de conexión. Intenta de nuevo.")
+    } finally {
+      setReenviando(false)
+    }
   }
 
   return (
@@ -99,6 +123,7 @@ function VerificarContenido() {
                 setCorreoInput={setCorreoInput}
                 reenviando={reenviando}
                 reenviado={reenviado}
+                errorReenvio={errorReenvio}
                 onSubmit={handleReenviar}
               />
             </>
@@ -117,6 +142,7 @@ function VerificarContenido() {
                 setCorreoInput={setCorreoInput}
                 reenviando={reenviando}
                 reenviado={reenviado}
+                errorReenvio={errorReenvio}
                 onSubmit={handleReenviar}
               />
             </>
@@ -138,6 +164,7 @@ function VerificarContenido() {
                 setCorreoInput={setCorreoInput}
                 reenviando={reenviando}
                 reenviado={reenviado}
+                errorReenvio={errorReenvio}
                 onSubmit={handleReenviar}
               />
             </>
@@ -156,12 +183,13 @@ function VerificarContenido() {
 }
 
 function ReenviarForm({
-  correoInput, setCorreoInput, reenviando, reenviado, onSubmit,
+  correoInput, setCorreoInput, reenviando, reenviado, errorReenvio, onSubmit,
 }: {
   correoInput: string
   setCorreoInput: (v: string) => void
   reenviando: boolean
   reenviado: boolean
+  errorReenvio: string
   onSubmit: (e: React.FormEvent) => void
 }) {
   if (reenviado) {
@@ -184,6 +212,13 @@ function ReenviarForm({
         placeholder="tu@correo.com"
         className="w-full px-4 py-3 rounded-2xl bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 outline-none text-sm transition-colors"
       />
+
+      {errorReenvio && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl px-4 py-3">
+          <p className="text-red-400 text-sm font-medium">{errorReenvio}</p>
+        </div>
+      )}
+
       <button
         type="submit"
         disabled={reenviando}

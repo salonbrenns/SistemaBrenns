@@ -79,22 +79,23 @@ function RegisterContenido() {
       const fullPhone = `${countryCode}${telefono}`
       const fullName = `${name} ${appaterno} ${apmaterno}`.trim()
 
-      const res = await fetch("/api/auth/register", {
+        const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          name: fullName, 
-          email, 
-          password, 
-          telefono: fullPhone 
+        body: JSON.stringify({
+          name: fullName,
+          email: email.trim().toLowerCase(),
+          password,
+          telefono: fullPhone
         }),
       })
 
       const data = await res.json()
       if (!res.ok) throw new Error(data?.error || "Error en el registro")
 
-      // Redirigir a página de verificación — el email ya no puede hacer login hasta verificar
-      router.push("/verificar-email")
+      // Pasamos el correo para que no tenga que escribirlo de nuevo si pide el reenvío
+      router.push(`/verificar-email?correo=${encodeURIComponent(email.trim().toLowerCase())}`)
+
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Error inesperado")
     } finally {

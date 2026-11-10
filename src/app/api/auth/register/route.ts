@@ -30,7 +30,10 @@ async function registerHandler(req: NextRequest) {
     )
   }
   try {
-    const { name, email, password, telefono } = await req.json()
+    const { name, email: emailRaw, password, telefono } = await req.json()
+
+    // Normalizamos el correo: sin espacios y en minúsculas
+    const email = String(emailRaw ?? "").trim().toLowerCase()
 
     if (!name || !email || !password || !telefono) {
       return NextResponse.json(
@@ -63,9 +66,46 @@ async function registerHandler(req: NextRequest) {
     })
 
     if (usuarioExistente) {
+      const filas = await prisma.$queryRaw<{ correo_verificado: boolean }[]>`
+        SELECT correo_verificado FROM seguridad.tblusuarios WHERE id = ${usuarioExistente.id}
+      `
+
+      // Si ya verificó su correo, la cuenta es de alguien más: no se puede registrar de nuevo
+      if (filas[0]?.correo_verificado) {
+        return NextResponse.json(
+          { error: "Ya existe una cuenta con ese correo" },
+          { status: 409 }
+        )
+      }
+
+      // Cuenta sin verificar: generamos token nuevo y reenviamos el correo.
+      // No tocamos la contraseña original para que nadie pueda pisar una cuenta ajena.
+      const tokenNuevo  = crypto.randomBytes(32).toString("hex")
+      const expiraNuevo = new Date(Date.now() + 60 * 60 * 1000)
+
+      await prisma.$executeRaw`
+        INSERT INTO seguridad.tbltoken_verificacion (usuario_id, token, expira)
+        VALUES (${usuarioExistente.id}, ${tokenNuevo}, ${expiraNuevo})
+        ON CONFLICT (usuario_id) DO UPDATE SET token = ${tokenNuevo}, expira = ${expiraNuevo}
+      `
+
+      const reenviado = await sendVerificacionEmail({
+        to:     usuarioExistente.correo,
+        nombre: usuarioExistente.nombre,
+        token:  tokenNuevo,
+      })
+
+      if (!reenviado) {
+        console.error(`No se pudo reenviar la verificación a ${usuarioExistente.correo}`)
+      }
+
       return NextResponse.json(
-        { error: "Ya existe una cuenta con ese correo" },
-        { status: 409 }
+        {
+          message: "Te reenviamos el correo de verificación.",
+          requiresVerification: true,
+          emailEnviado: reenviado,
+        },
+        { status: 201 }
       )
     }
 
@@ -95,17 +135,26 @@ async function registerHandler(req: NextRequest) {
       ON CONFLICT (usuario_id) DO UPDATE SET token = ${token}, expira = ${expira}
     `
 
-    // Enviar email (fire-and-forget, no bloquea el registro)
-    sendVerificacionEmail({
+    // Esperamos el envío: en Vercel la función se congela apenas responde,
+    // y si el fetch a Brevo no terminó, el correo nunca sale.
+    const enviado = await sendVerificacionEmail({
       to:     nuevoUsuario.correo,
       nombre: nuevoUsuario.nombre,
       token,
-    }).catch(err => console.error("Error enviando email de verificación:", err))
+    })
 
+    if (!enviado) {
+      console.error(`No se pudo enviar la verificación a ${nuevoUsuario.correo}`)
+    }
+
+    // Aunque el correo falle, la cuenta ya existe: el usuario puede pedir el reenvío
     return NextResponse.json(
       {
-        message: "Cuenta creada. Revisa tu correo para verificarla.",
+        message: enviado
+          ? "Cuenta creada. Revisa tu correo para verificarla."
+          : "Cuenta creada, pero no pudimos enviar el correo. Solicita el reenvío.",
         requiresVerification: true,
+        emailEnviado: enviado,
       },
       { status: 201 }
     )

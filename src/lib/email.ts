@@ -32,8 +32,10 @@ export async function sendEmail(opts: EmailOptions): Promise<boolean> {
       body: JSON.stringify({
         sender:      { name: FROM_NAME, email: FROM_EMAIL },
         to:          [{ email: opts.to }],
+        replyTo:     { email: FROM_EMAIL },
         subject:     opts.subject,
         htmlContent: opts.html,
+        ...(opts.text ? { textContent: opts.text } : {}),
       }),
     })
 
