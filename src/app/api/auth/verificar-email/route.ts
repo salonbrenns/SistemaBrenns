@@ -38,15 +38,16 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "El enlace expiró. Solicita uno nuevo.", code: "TOKEN_EXPIRED" }, { status: 400 })
     }
 
-    // Marcar correo como verificado y eliminar token
+    // Marcar correo como verificado (si ya lo estaba, no pasa nada)
     await prisma.$executeRaw`
       UPDATE seguridad.tblusuarios
       SET correo_verificado = true
       WHERE id = ${registro.usuario_id}
     `
-    await prisma.$executeRaw`
-      DELETE FROM seguridad.tbltoken_verificacion WHERE id = ${registro.id}
-    `
+
+    // Ya no borramos el token aquí: así el enlace sigue funcionando si un
+    // escáner de correo lo abre primero o si el efecto de React corre dos veces.
+    // Se invalida solo por expiración o cuando se genera uno nuevo.
 
     return NextResponse.json({ ok: true })
   } catch (err) {

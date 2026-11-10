@@ -32,13 +32,17 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { correo } = await req.json()
+    const { correo: correoRaw } = await req.json()
+
+    // Sin espacios y en minúsculas, igual que en el registro
+    const correo = String(correoRaw ?? "").trim().toLowerCase()
     if (!correo) return NextResponse.json({ error: "Correo requerido" }, { status: 400 })
 
+    // LOWER() por si hay cuentas viejas guardadas con mayúsculas
     const rows = await prisma.$queryRaw<UsuarioRow[]>`
       SELECT id, nombre, correo, correo_verificado
       FROM seguridad.tblusuarios
-      WHERE correo = ${correo}
+      WHERE LOWER(correo) = ${correo}
     `
 
     // Siempre responder igual para no revelar si el correo existe
@@ -56,11 +60,20 @@ export async function POST(req: NextRequest) {
       ON CONFLICT (usuario_id) DO UPDATE SET token = ${token}, expira = ${expira}
     `
 
-    sendVerificacionEmail({ to: usuario.correo, nombre: usuario.nombre, token })
-      .catch(() => {})
+    // Con await para que Vercel no congele la función antes de que Brevo responda
+    const enviado = await sendVerificacionEmail({
+      to:     usuario.correo,
+      nombre: usuario.nombre,
+      token,
+    })
+
+    if (!enviado) {
+      console.error(`No se pudo reenviar la verificación a ${usuario.correo}`)
+    }
 
     return NextResponse.json({ ok: true })
-  } catch {
+  } catch (err) {
+    console.error("Error en reenviar-verificacion:", err)
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
