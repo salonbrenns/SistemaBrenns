@@ -14,6 +14,7 @@ import EditarPerfilModal from "@/components/ui/EditarPerfilModal"
 import { useFavoritos } from "@/hooks/useFavoritos"
 import Image from "next/image"
 import { toast as showToast } from "@/lib/toast"
+import ActivarNotificaciones from "@/components/pwa/ActivarNotificaciones"
 
 interface CustomUser {
   id?: number | string
@@ -202,6 +203,8 @@ export default function PerfilPage() {
                 </div>
               </div>
             </div>
+
+            <ActivarNotificaciones />
 
             <Link href="/favoritos" className="block bg-[#fff0f5] dark:bg-gray-800 border border-[#ffd0e0] dark:border-gray-700 rounded-[1.5rem] p-8 text-center group hover:scale-[1.02] transition-transform">
               <Heart className="w-8 h-8 text-rose-500 mx-auto mb-3 fill-rose-500" />
