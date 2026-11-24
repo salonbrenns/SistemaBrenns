@@ -5,6 +5,7 @@
 // para que funcionen sin internet aunque el usuario todavía no las haya abierto.
 
 import { useEffect } from "react"
+import { notificar } from "./notificaciones"
 
 // Páginas que deben abrir offline desde el primer momento
 const PAGINAS_OFFLINE = [
@@ -26,7 +27,7 @@ function esperarControl(): Promise<void> {
   })
 }
 
-async function precargarPaginas() {
+async function precargarPaginas(motivo: "instalacion" | "reconexion" = "instalacion") {
   await navigator.serviceWorker.ready
   await esperarControl()
 
@@ -37,6 +38,23 @@ async function precargarPaginas() {
   )
   const guardadas = resultados.filter((r) => r.status === "fulfilled" && r.value.ok).length
   console.log(`[PWA] Páginas y datos guardados para usar sin conexión: ${guardadas}/${urls.length}`)
+
+  // Avisamos a la interfaz (AvisoConexion) cuando fue una sincronización por reconexión
+  if (motivo === "reconexion") {
+    window.dispatchEvent(new CustomEvent("pwa:sincronizado", { detail: { guardadas, total: urls.length } }))
+    // Si el usuario activó las notificaciones, también se avisa con una del sistema
+    await notificar("Contenido actualizado", {
+      cuerpo: `Se sincronizaron ${guardadas} de ${urls.length} páginas y datos para usar sin conexión.`,
+      etiqueta: "pwa-sincronizacion",
+    })
+  }
+}
+
+// Sincronización: al volver el internet se vuelven a pedir las páginas y datos,
+// así la copia guardada queda igual que la del servidor
+function sincronizarAlReconectar() {
+  console.log("[PWA] Conexión restablecida, sincronizando contenido guardado…")
+  precargarPaginas("reconexion").catch(() => {})
 }
 
 export default function RegistrarSW() {
@@ -59,6 +77,9 @@ export default function RegistrarSW() {
         }
       })
       .catch((err) => console.error("[PWA] Error al registrar el service worker:", err))
+
+    window.addEventListener("online", sincronizarAlReconectar)
+    return () => window.removeEventListener("online", sincronizarAlReconectar)
   }, [])
 
   return null
